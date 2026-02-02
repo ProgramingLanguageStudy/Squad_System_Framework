@@ -1,14 +1,20 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class InputHandler : MonoBehaviour
 {
-    // 다른 스크립트에서 읽을 수 있도록 프로퍼티로 노출
+    // 1. 연속적인 입력 (변수 방식 유지)
     public Vector2 MoveInput { get; private set; }
-    public bool InteractTriggered { get; private set; } // 상호작용 트리거 추가
-    public bool AttackTriggered { get; private set; } // 나중에 공격 구현 시 사용
 
-    // Player Input 컴포넌트에서 Send Messages 방식으로 호출
+    // 2. 단발성 입력 (이벤트 방식)
+    // 누군가 이 이벤트를 구독하면, 키가 눌릴 때마다 소식을 들을 수 있습니다.
+    public event Action OnInteractPerformed;
+    public event Action OnAttackPerformed;
+    public event Action OnInventoryPerformed;
+
+    // Player Input 컴포넌트에서 Send Messages 방식으로 호출됩니다.
+
     public void OnMove(InputValue value)
     {
         MoveInput = value.Get<Vector2>();
@@ -16,17 +22,26 @@ public class InputHandler : MonoBehaviour
 
     public void OnInteract(InputValue value)
     {
-        InteractTriggered = value.isPressed;
+        // 키를 누른 순간(isPressed가 true일 때) 이벤트를 쏩니다.
+        if (value.isPressed)
+        {
+            OnInteractPerformed?.Invoke();
+        }
     }
 
     public void OnAttack(InputValue value)
     {
-        // 버튼을 누른 순간만 감지
-        AttackTriggered = value.isPressed;
+        if (value.isPressed)
+        {
+            OnAttackPerformed?.Invoke();
+        }
     }
 
-    // 로직 처리 후 트리거를 꺼주기 위한 메서드
-    public void ResetInteractTrigger() => InteractTriggered = false;
-    // 로직 처리가 끝난 후 트리거를 초기화해야 할 경우 사용
-    public void ResetAttackTrigger() => AttackTriggered = false;
+    public void OnInventory(InputValue value)
+    {
+        if (value.isPressed)
+        {
+            OnInventoryPerformed?.Invoke();
+        }
+    }
 }
