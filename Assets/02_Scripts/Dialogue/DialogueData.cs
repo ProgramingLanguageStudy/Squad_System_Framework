@@ -1,18 +1,29 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections.Generic;
-
-[System.Serializable]
-public struct DialogueBranch
-{
-    public int requiredStep;    // ÀÌ ´ë»ç°¡ ³ª¿À±â À§ÇÑ ÇÃ·¡±× ´Ü°è
-    public string[] sentences;  // ½ÇÁ¦ ´ë»ç ³»¿ë
-    public int nextStepValue;   // ´ëÈ­ Á¾·á ÈÄ ÇÃ·¡±×¸¦ ¸î ´Ü°è·Î ¿Ã¸± °ÍÀÎ°¡?
-}
 
 [CreateAssetMenu(fileName = "NewDialogue", menuName = "Dialogue/Data")]
 public class DialogueData : ScriptableObject
 {
-    public string npcName;      // NPC ÀÌ¸§
-    public string flagKey;      // È®ÀÎÇÒ ÇÃ·¡±× ÀÌ¸§ (¿¹: "Quest_Chief")
-    public List<DialogueBranch> branches; // ´Ü°èº° ´ë»ç ¹­À½
+    public string NpcName; // ëŒ€ë³¸ìš© ì´ë¦„ (ë¹„ì›Œë‘ë©´ NPC ì´ë¦„ ì‚¬ìš©)
+    public string QuestKey;
+
+    [Header("--- í€˜ìŠ¤íŠ¸ìš© ë¸Œëœì¹˜ ---")]
+    public List<QuestDialogueBranch> QuestBranches;
+
+    [Header("--- ì¼ìƒìš© ëŒ€ì‚¬ ---")]
+    public List<DialogueGroup> NormalGroups;
+}
+
+[System.Serializable]
+public struct QuestDialogueBranch
+{
+    public QuestState RequiredState;
+    [TextArea(3, 5)] public string[] Sentences;
+    public int NextStepValue; // ëŒ€í™” í›„ ë³€ê²½ë  ë‹¨ê³„ (ì—†ìœ¼ë©´ -1)
+}
+
+[System.Serializable]
+public struct DialogueGroup
+{
+    [TextArea(3, 5)] public string[] Sentences;
 }

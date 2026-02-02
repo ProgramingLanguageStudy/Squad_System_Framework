@@ -1,7 +1,8 @@
 ﻿using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class DialogueUI : MonoBehaviour
+public class DialogueUI : MonoBehaviour, IPointerClickHandler
 {
     [SerializeField] private GameObject _uiPanel;
     [SerializeField] private TextMeshProUGUI _nameText;
@@ -12,6 +13,14 @@ public class DialogueUI : MonoBehaviour
 
     public bool IsActive => _uiPanel.activeSelf;
 
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (IsActive)
+        {
+            Next();
+        }
+    }
+
     public void Open(string npcName, string[] sentences)
     {
         _uiPanel.SetActive(true);
@@ -20,6 +29,9 @@ public class DialogueUI : MonoBehaviour
         _index = 0;
 
         ShowCurrentSentence();
+
+        // [중요] 대화 시작 시점에 시스템에 "지금 대화 중"이라고 알려줘야 함
+        DialogueSystem.Instance.IsTalking = true;
     }
 
     public void Next()
@@ -40,5 +52,12 @@ public class DialogueUI : MonoBehaviour
         _msgText.text = _sentences[_index];
     }
 
-    public void Close() => _uiPanel.SetActive(false);
+    public void Close()
+    {
+        _uiPanel.SetActive(false);
+
+        // [핵심] 대화가 완전히 끝났으니 시스템에 보고함 (여기서 Step이 올라감)
+        DialogueSystem.Instance.IsTalking = false; // 대화 종료 알림
+        DialogueSystem.Instance.OnDialogueComplete();
+    }
 }
