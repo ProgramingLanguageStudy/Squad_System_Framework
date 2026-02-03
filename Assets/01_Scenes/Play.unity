@@ -10026,6 +10026,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2515c3f0c0b59ff409d571c9218a129b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _activeQuests: []
 --- !u!4 &1136875178
 Transform:
   m_ObjectHideFlags: 0
