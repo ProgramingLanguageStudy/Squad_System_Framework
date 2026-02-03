@@ -25,6 +25,7 @@ public class InputHandler : MonoBehaviour
         // 키를 누른 순간(isPressed가 true일 때) 이벤트를 쏩니다.
         if (value.isPressed)
         {
+            Debug.Log("상호작용 누름");
             OnInteractPerformed?.Invoke();
         }
     }

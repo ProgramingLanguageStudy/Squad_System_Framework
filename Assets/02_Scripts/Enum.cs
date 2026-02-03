@@ -6,3 +6,10 @@ public enum QuestState
     Completed,  // 3
     None        // 4 (예외 처리용)
 }
+
+public enum DialogueType
+{
+    Quest,
+    Common,
+    Affection,
+}

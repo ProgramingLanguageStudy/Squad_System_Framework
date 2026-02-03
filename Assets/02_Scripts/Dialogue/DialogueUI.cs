@@ -1,63 +1,61 @@
-﻿using TMPro;
+﻿using System.Collections;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
-public class DialogueUI : MonoBehaviour, IPointerClickHandler
+public class DialogueUI : MonoBehaviour
 {
-    [SerializeField] private GameObject _uiPanel;
-    [SerializeField] private TextMeshProUGUI _nameText;
-    [SerializeField] private TextMeshProUGUI _msgText;
+    [SerializeField] private TMPro.TextMeshProUGUI _nameText;
+    [SerializeField] private TMPro.TextMeshProUGUI _dialogueText;
+    [SerializeField] private GameObject _panel;
 
+    private bool _isTyping; // 현재 글자가 타이핑 중인가?
     private string[] _sentences;
-    private int _index;
+    private int _currentIndex;
 
-    public bool IsActive => _uiPanel.activeSelf;
-
-    public void OnPointerClick(PointerEventData eventData)
+    public void Open(string name, string[] sentences)
     {
-        if (IsActive)
-        {
-            Next();
-        }
-    }
-
-    public void Open(string npcName, string[] sentences)
-    {
-        _uiPanel.SetActive(true);
-        _nameText.text = npcName;
+        _panel.SetActive(true);
+        _nameText.text = name;
         _sentences = sentences;
-        _index = 0;
+        _currentIndex = 0;
 
-        ShowCurrentSentence();
-
-        // [중요] 대화 시작 시점에 시스템에 "지금 대화 중"이라고 알려줘야 함
-        DialogueSystem.Instance.IsTalking = true;
+        UpdateUI();
     }
 
-    public void Next()
+    public bool ShowNext()
     {
-        _index++;
-        if (_index < _sentences.Length)
+        // 1. 만약 글자가 아직 타이핑 중이라면?
+        if (_isTyping)
         {
-            ShowCurrentSentence();
+            StopAllCoroutines(); // 타이핑 멈추고
+            _dialogueText.text = _sentences[_currentIndex]; // 전체 문장 즉시 표시
+            _isTyping = false;
+            return false; // 아직 '끝'은 아니니까 false 반환
         }
-        else
+
+        // 2. 글자가 이미 다 보여진 상태라면? 다음 문장으로!
+        _currentIndex++;
+        if (_currentIndex >= _sentences.Length) return true; // 진짜 끝!
+
+        StartCoroutine(TypeSentence(_sentences[_currentIndex]));
+        return false;
+    }
+
+    private IEnumerator TypeSentence(string sentence)
+    {
+        _isTyping = true;
+        _dialogueText.text = "";
+        foreach (char letter in sentence.ToCharArray())
         {
-            Close();
+            _dialogueText.text += letter;
+            yield return new WaitForSeconds(0.05f); // 찰나의 대기 (타이핑 속도)
         }
+        _isTyping = false;
     }
 
-    private void ShowCurrentSentence()
+    private void UpdateUI()
     {
-        _msgText.text = _sentences[_index];
+        _dialogueText.text = _sentences[_currentIndex];
     }
 
-    public void Close()
-    {
-        _uiPanel.SetActive(false);
-
-        // [핵심] 대화가 완전히 끝났으니 시스템에 보고함 (여기서 Step이 올라감)
-        DialogueSystem.Instance.IsTalking = false; // 대화 종료 알림
-        DialogueSystem.Instance.OnDialogueComplete();
-    }
+    public void Close() => _panel.SetActive(false);
 }

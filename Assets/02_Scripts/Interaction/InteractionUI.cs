@@ -6,6 +6,14 @@ public class InteractionUI : MonoBehaviour
     [SerializeField] private GameObject _uiPanel;
     [SerializeField] private TextMeshProUGUI _msgText;
 
+    private void Update()
+    {
+        if (DialogueSystem.Instance.IsTalking)
+        {
+            Refresh(string.Empty);
+        }
+    }
+
     // 이제 Initialize에서 Interactor를 받을 필요가 없습니다.
     public void Setup()
     {

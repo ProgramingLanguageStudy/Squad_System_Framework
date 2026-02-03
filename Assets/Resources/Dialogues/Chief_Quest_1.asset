@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bfb51a6792633b418706756853c58c4, type: 3}
+  m_Name: Chief_Quest_1
+  m_EditorClassIdentifier: 
+  NpcId: Chief
+  DialogueType: 0
+  ConditionKey: Mushroom
+  ConditionValue: 0
+  Sentence: "\uC774\uBCF4\uAC8C, \uC232\uC5D0 \uAC00\uC11C \uBC84\uC12F 5\uAC1C\uB9CC
+    \uC880 \uAD6C\uD574\uB2E4 \uC8FC\uAC8C\uB098."
+  AfterActionEvent: Start_Mushroom

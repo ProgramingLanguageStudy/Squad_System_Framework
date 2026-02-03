@@ -2,27 +2,29 @@ using UnityEngine;
 
 public class Npc : MonoBehaviour, IInteractable
 {
-    public string NpcName;
-    public DialogueData QuestDialogue;  // 퀘스트 대본
-    public DialogueData CommonDialogue; // 일상 대본
+    // 이제 에셋을 직접 할당할 필요 없이, 엑셀에 적은 NpcId만 적어주면 됩니다.
+    [SerializeField] private string npcId;
 
-    public string GetInteractText() => $"{NpcName}와 대화하기";
+    public string GetInteractText()
+    {
+        return $"{npcId}와 대화하기[E]";
+    }
 
     public void Interact(Player player)
     {
-        // 대화 시작
-        Debug.Log("NPC와 대화 시도!");
-        DialogueSystem.Instance.StartDialogue(this);
-    }
+        DialogueData data = DialogueManager.Instance.GetBestDialogue(npcId);
 
-    public DialogueData GetCurrentDialogue()
-    {
-        // 퀘스트가 있고, 완료되지 않았다면 퀘스트 대본 우선
-        if (QuestDialogue != null && !string.IsNullOrEmpty(QuestDialogue.QuestKey))
+        if (data == null) return; // 데이터가 없을 경우를 대비한 안전장치
+
+        // 문장들을 쪼개고, 각 문장 앞뒤에 붙었을지 모를 불필요한 공백을 제거합니다.
+        string[] sentences = data.Sentence.Split('/');
+        for (int i = 0; i < sentences.Length; i++)
         {
-            QuestState state = QuestManager.Instance.GetQuestState(QuestDialogue.QuestKey);
-            if (state != QuestState.Completed) return QuestDialogue;
+            sentences[i] = sentences[i].Trim();
         }
-        return CommonDialogue;
+
+        // AfterActionEvent가 있다면 넘겨주는 로직도 나중에 여기에 추가될 수 있겠죠?
+        DialogueSystem.Instance.StartDialogue(npcId, sentences);
+        Debug.Log($"{npcId} {sentences.Length}");
     }
 }

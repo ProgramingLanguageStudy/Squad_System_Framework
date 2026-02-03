@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-[RequireComponent (typeof(InputHandler)), RequireComponent(typeof(PlayerMover)), RequireComponent(typeof(PlayerAnimator)), RequireComponent(typeof(PlayerInteractor))]
+[RequireComponent(typeof(PlayerMover)), RequireComponent(typeof(PlayerAnimator)), RequireComponent(typeof(PlayerInteractor))]
 public class Player : MonoBehaviour
 {
     // 각 부품들
@@ -22,7 +22,7 @@ public class Player : MonoBehaviour
         // 부품들 연결
         Mover.Initialize();
         Animator.Initialize(Mover);
-        Interactor.Initialize(this, InputHandler);
+        Interactor.Initialize(this);
     }
 
     private void Update()

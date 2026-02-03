@@ -13,15 +13,13 @@ public class PlayerInteractor : MonoBehaviour
 
     private IInteractable _lastTarget;
     private Player _player;
-    private InputHandler _input;
     private RaycastHit[] _results = new RaycastHit[1];
 
     public event Action<IInteractable> OnTargetChanged;
 
-    public void Initialize(Player player, InputHandler input)
+    public void Initialize(Player player)
     {
         _player = player;
-        _input = input;
     }
 
     private void Update()
@@ -51,6 +49,8 @@ public class PlayerInteractor : MonoBehaviour
             CurrentTarget = found;
             OnTargetChanged?.Invoke(found);
         }
+
+        Debug.Log($"{CurrentTarget}");
     }
 
     // [중요] PlayScene에서 이 함수를 호출하게 됩니다.
