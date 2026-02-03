@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Chief_Common_5
   m_EditorClassIdentifier: 
   NpcId: Chief
-  DialogueType: 1
+  DialogueType: 2
   ConditionKey: None
   ConditionValue: 0
   Sentence: "\uB9C8\uC744\uC5D0\uC11C \uC9C0\uB0B4\uB294\uAC74 \uC880 \uC5B4\uB5A4\uAC00?"

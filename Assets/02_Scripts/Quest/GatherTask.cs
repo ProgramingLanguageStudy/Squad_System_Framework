@@ -1,11 +1,11 @@
-﻿[System.Serializable]
+[System.Serializable]
 public class GatherTask : QuestTask
 {
-    public string TargetItemId; // �����ؾ� �� ������ ID
+    public string TargetItemId; // 수집해야 할 아이템 ID
 
     public override void UpdateProgress(string id, int amount)
     {
-        // ���� ��ٸ��� ������ ID�� �´ٸ� ��ġ ����!
+        // 전달된 아이템 ID가 일치하면 진행도 반영
         if (id == TargetItemId)
         {
             CurrentAmount = amount;

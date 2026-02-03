@@ -1,42 +1,85 @@
-﻿using System.Collections;
+using System;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public class DialogueUI : MonoBehaviour
 {
-    [SerializeField] private TMPro.TextMeshProUGUI _nameText;
-    [SerializeField] private TMPro.TextMeshProUGUI _dialogueText;
+    [SerializeField] private TextMeshProUGUI _nameText;
+    [SerializeField] private TextMeshProUGUI _dialogueText;
     [SerializeField] private GameObject _panel;
 
-    private bool _isTyping; // 현재 글자가 타이핑 중인가?
+    [Header("버튼")]
+    [SerializeField] private Button _endButton;
+    [SerializeField] private Button _questButton;
+    [SerializeField] private TextMeshProUGUI _questButtonText;
+
+    private bool _isTyping;
     private string[] _sentences;
     private int _currentIndex;
 
-    public void Open(string name, string[] sentences)
+    private void Awake()
+    {
+        if (_endButton != null)
+            _endButton.onClick.AddListener(() => DialogueSystem.Instance?.EndDialogue());
+        if (_questButton != null)
+            _questButton.onClick.AddListener(() => DialogueSystem.Instance?.RequestQuestDialogue());
+    }
+
+    /// <summary>폰트에 없는 문자(\u00A0 등)를 일반 공백으로 치환해 TMP 경고를 막습니다.</summary>
+    private static string SanitizeForTMP(string s)
+    {
+        if (string.IsNullOrEmpty(s)) return s;
+        return s.Replace('\u00A0', ' ');
+    }
+
+    public void Open(string name, string[] sentences, bool showQuestButton = false, string questButtonText = "퀘스트")
     {
         _panel.SetActive(true);
-        _nameText.text = name;
-        _sentences = sentences;
+        _nameText.text = SanitizeForTMP(name ?? "");
+        _sentences = sentences != null ? Array.ConvertAll(sentences, s => SanitizeForTMP(s ?? "")) : Array.Empty<string>();
         _currentIndex = 0;
+
+        if (_questButton != null)
+            _questButton.gameObject.SetActive(showQuestButton);
+        if (_questButtonText != null)
+            _questButtonText.text = SanitizeForTMP(questButtonText ?? "퀘스트");
 
         UpdateUI();
     }
 
+    /// <summary>퀘스트 버튼 클릭 후 대사만 바꿀 때 사용.</summary>
+    public void ReplaceContent(string speakerName, string[] sentences)
+    {
+        _nameText.text = SanitizeForTMP(speakerName ?? "");
+        _sentences = sentences != null ? Array.ConvertAll(sentences, s => SanitizeForTMP(s ?? "")) : Array.Empty<string>();
+        _currentIndex = 0;
+        StopAllCoroutines();
+        _isTyping = false;
+        UpdateUI();
+    }
+
+    public void SetQuestButtonVisible(bool visible)
+    {
+        if (_questButton != null)
+            _questButton.gameObject.SetActive(visible);
+    }
+
     public bool ShowNext()
     {
-        // 1. 만약 글자가 아직 타이핑 중이라면?
         if (_isTyping)
         {
-            StopAllCoroutines(); // 타이핑 멈추고
-            _dialogueText.text = _sentences[_currentIndex]; // 전체 문장 즉시 표시
+            StopAllCoroutines();
+            _dialogueText.text = SanitizeForTMP(_sentences[_currentIndex]);
             _isTyping = false;
-            return false; // 아직 '끝'은 아니니까 false 반환
+            return false;
         }
 
-        // 2. 글자가 이미 다 보여진 상태라면? 다음 문장으로!
         _currentIndex++;
-        if (_currentIndex >= _sentences.Length) return true; // 진짜 끝!
+        if (_currentIndex >= _sentences.Length) return true;
 
-        StartCoroutine(TypeSentence(_sentences[_currentIndex]));
+        StartCoroutine(TypeSentence(SanitizeForTMP(_sentences[_currentIndex])));
         return false;
     }
 
@@ -47,14 +90,15 @@ public class DialogueUI : MonoBehaviour
         foreach (char letter in sentence.ToCharArray())
         {
             _dialogueText.text += letter;
-            yield return new WaitForSeconds(0.05f); // 찰나의 대기 (타이핑 속도)
+            yield return new WaitForSeconds(0.05f);
         }
         _isTyping = false;
     }
 
     private void UpdateUI()
     {
-        _dialogueText.text = _sentences[_currentIndex];
+        if (_sentences != null && _sentences.Length > 0 && _currentIndex < _sentences.Length)
+            _dialogueText.text = SanitizeForTMP(_sentences[_currentIndex]);
     }
 
     public void Close() => _panel.SetActive(false);

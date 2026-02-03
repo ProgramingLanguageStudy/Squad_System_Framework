@@ -13,9 +13,11 @@ MonoBehaviour:
   m_Name: Chief_Quest_1
   m_EditorClassIdentifier: 
   NpcId: Chief
-  DialogueType: 0
+  DialogueType: 1
   ConditionKey: Mushroom
   ConditionValue: 0
   Sentence: "\uC774\uBCF4\uAC8C, \uC232\uC5D0 \uAC00\uC11C \uBC84\uC12F 5\uAC1C\uB9CC
     \uC880 \uAD6C\uD574\uB2E4 \uC8FC\uAC8C\uB098."
   AfterActionEvent: Start_Mushroom
+  LinkedQuestId: MushroomGather
+  QuestButtonText: "\uBC84\uC12F \uC218\uC9D1 \uD018\uC2A4\uD2B8"

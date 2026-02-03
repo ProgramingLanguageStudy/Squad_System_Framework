@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Chief_Affection_7
   m_EditorClassIdentifier: 
   NpcId: Chief
-  DialogueType: 2
+  DialogueType: 3
   ConditionKey: Affection
   ConditionValue: 100
   Sentence: "\uC790\uB124\uB294 \uC6B0\uB9AC\uB9C8\uC744\uC758 \uC790\uB791\uC774\uC57C!"

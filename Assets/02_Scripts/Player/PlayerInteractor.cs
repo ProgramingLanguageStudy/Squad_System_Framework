@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 public class PlayerInteractor : MonoBehaviour
@@ -49,21 +49,12 @@ public class PlayerInteractor : MonoBehaviour
             CurrentTarget = found;
             OnTargetChanged?.Invoke(found);
         }
-
-        Debug.Log($"{CurrentTarget}");
     }
 
-    // [�߿�] PlayScene���� �� �Լ��� ȣ���ϰ� �˴ϴ�.
+    /// <summary>PlayScene에서 E 입력 시 호출됩니다.</summary>
     public void TryInteract()
     {
         if (CurrentTarget != null)
-        {
-            Debug.Log($"{CurrentTarget}�� ��ȣ�ۿ� �õ�");
             CurrentTarget.Interact(_player);
-        }
-        else
-        {
-            Debug.Log("��ȣ�ۿ� ����� �����ϴ�.");
-        }
     }
 }
