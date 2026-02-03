@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -12,6 +12,7 @@ public class InputHandler : MonoBehaviour
     public event Action OnInteractPerformed;
     public event Action OnAttackPerformed;
     public event Action OnInventoryPerformed;
+    public event Action OnQuestPerformed;
 
     // Player Input ������Ʈ���� Send Messages ������� ȣ��˴ϴ�.
 
@@ -41,8 +42,12 @@ public class InputHandler : MonoBehaviour
     public void OnInventory(InputValue value)
     {
         if (value.isPressed)
-        {
             OnInventoryPerformed?.Invoke();
-        }
+    }
+
+    public void OnQuest(InputValue value)
+    {
+        if (value.isPressed)
+            OnQuestPerformed?.Invoke();
     }
 }

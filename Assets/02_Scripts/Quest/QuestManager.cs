@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
 public class QuestManager : Singleton<QuestManager>
 {
-    // 현재 수락해서 진행 중인 퀘스트 목록
     [SerializeField] private List<QuestData> _activeQuests = new List<QuestData>();
 
     // 이미 완료된 퀘스트 ID 저장 (중복 수락 방지 및 세이브용)
@@ -66,4 +65,7 @@ public class QuestManager : Singleton<QuestManager>
 
         GameEvents.OnQuestUpdated?.Invoke(quest);
     }
+
+    /// <summary>진행 중인 퀘스트 목록 (퀘스트 UI 등에서 사용).</summary>
+    public IReadOnlyList<QuestData> GetActiveQuests() => _activeQuests;
 }

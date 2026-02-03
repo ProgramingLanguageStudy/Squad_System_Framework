@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class PlayScene : MonoBehaviour
 {
@@ -11,39 +11,38 @@ public class PlayScene : MonoBehaviour
     // DialogueUI 대신 실제 로직을 담당하는 DialogueSystem을 참조하는 것이 좋습니다.
     [SerializeField] private DialogueUI _dialogueUI;
     [SerializeField] private FlagManager _flagManager;
+    [SerializeField] private QuestUI _questUI;
 
     private void Awake()
     {
-        // 1. 자동 할당 (없을 경우에만)
         if (_input == null) _input = FindFirstObjectByType<InputHandler>();
         if (_player == null) _player = FindFirstObjectByType<Player>();
         if (_interactionUI == null) _interactionUI = FindFirstObjectByType<InteractionUI>();
         if (_flagManager == null) _flagManager = FindFirstObjectByType<FlagManager>();
         if (_dialogueUI == null) _dialogueUI = FindFirstObjectByType<DialogueUI>();
         if (_inventoryUI == null) _inventoryUI = FindFirstObjectByType<InventoryUI>();
+        if (_questUI == null) _questUI = FindFirstObjectByType<QuestUI>();
 
         InitializeScene();
     }
 
     private void Start()
     {
-        // 2. 이벤트 구독 (New Input System 기반)
         if (_input != null)
         {
             _input.OnInteractPerformed += HandleInteract;
             _input.OnInventoryPerformed += HandleInventory;
+            _input.OnQuestPerformed += HandleQuest;
         }
     }
 
     private void Update()
     {
-        // 대화 중이거나 인벤토리가 열려있으면 플레이어 이동 제한
-        // DialogueSystem의 상태를 체크하는 프로퍼티가 있다면 그걸 사용하세요.
         bool isInventoryOpen = _inventoryUI != null && _inventoryUI.gameObject.activeSelf;
+        bool isQuestOpen = _questUI != null && _questUI.IsOpen;
+        bool isTalking = _dialogueUI != null && DialogueSystem.Instance.IsTalking;
 
-        _player.CanMove = !(_dialogueUI != null && DialogueSystem.Instance.IsTalking || isInventoryOpen);
-
-        Debug.Log($"{_dialogueUI != null && DialogueSystem.Instance.IsTalking}");
+        _player.CanMove = !(isTalking || isInventoryOpen || isQuestOpen);
     }
 
     private void InitializeScene()
@@ -95,27 +94,32 @@ public class PlayScene : MonoBehaviour
     private void HandleInventory()
     {
         if (_dialogueUI != null && DialogueSystem.Instance.IsTalking) return;
-
         if (_inventoryUI != null)
         {
             _inventoryUI.ToggleInventory();
-
-            // 인벤토리가 열리면 다른 UI(상호작용 가이드 등)를 정리
             if (_inventoryUI.gameObject.activeSelf)
-            {
-                _interactionUI.Refresh(null); // "대화하기[E]" 숨기기
-                                              // 마우스 커서 활성화 로직 등이 들어갈 자리
-            }
+                _interactionUI.Refresh(null);
+        }
+    }
+
+    private void HandleQuest()
+    {
+        if (_dialogueUI != null && DialogueSystem.Instance.IsTalking) return;
+        if (_questUI != null)
+        {
+            _questUI.Toggle();
+            if (_questUI.IsOpen)
+                _interactionUI.Refresh(null);
         }
     }
 
     private void OnDestroy()
     {
-        // 이벤트 구독 해제 (메모리 누수 및 에러 방지)
         if (_input != null)
         {
             _input.OnInteractPerformed -= HandleInteract;
             _input.OnInventoryPerformed -= HandleInventory;
+            _input.OnQuestPerformed -= HandleQuest;
         }
     }
 }
