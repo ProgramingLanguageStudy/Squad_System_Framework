@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8d1600ac9662d36428317388bef94ae3, type: 3}
-  m_Name: Mushroom
+  m_Name: Apple
   m_EditorClassIdentifier: 
-  ItemId: Mushroom
-  ItemName: "\uBC84\uC12F"
-  Icon: {fileID: 21300000, guid: 6ec173940519a0142aa24280ca2c58b1, type: 3}
-  Description: "\uB3C5\uBC84\uC12F\uC740 \uC544\uB2C8\uACA0\uC9C0?"
+  ItemId: Apple
+  ItemName: "\uC0AC\uACFC"
+  Icon: {fileID: 21300000, guid: 3f578f197302031458cc582b2d3c38a4, type: 3}
+  Description: "\uB3C5\uC0AC\uACFC\uB294 \uC544\uB2C8\uACA0\uC9C0?"
   IsStackable: 1
-  MaxStack: 2
+  MaxStack: 3

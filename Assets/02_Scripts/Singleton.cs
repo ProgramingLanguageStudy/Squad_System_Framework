@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 {
@@ -10,12 +10,12 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         {
             if (_instance == null)
             {
-                // ¾À¿¡¼­ ÇØ´ç Å¸ÀÔÀ» Ã£À½
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ø´ï¿½ Å¸ï¿½ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½
                 _instance = FindFirstObjectByType<T>();
 
                 if (_instance == null)
                 {
-                    // ¾À¿¡ ¾ø´Ù¸é »õ·Î »ý¼º (¼±ÅÃ »çÇ×)
+                    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
                     GameObject obj = new GameObject(typeof(T).Name);
                     _instance = obj.AddComponent<T>();
                 }
@@ -29,7 +29,7 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         if (_instance == null)
         {
             _instance = this as T;
-            // ¾ÀÀÌ ¹Ù²î¾îµµ À¯ÁöÇÏ°í ½Í´Ù¸é ¾Æ·¡ ÁÖ¼® ÇØÁ¦
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½Ù²ï¿½îµµ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Í´Ù¸ï¿½ ï¿½Æ·ï¿½ ï¿½Ö¼ï¿½ ï¿½ï¿½ï¿½ï¿½
             // DontDestroyOnLoad(gameObject); 
         }
         else if (_instance != this)

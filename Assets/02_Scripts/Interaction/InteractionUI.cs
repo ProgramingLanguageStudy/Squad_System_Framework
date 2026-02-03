@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using TMPro;
 
 public class InteractionUI : MonoBehaviour
@@ -6,21 +6,13 @@ public class InteractionUI : MonoBehaviour
     [SerializeField] private GameObject _uiPanel;
     [SerializeField] private TextMeshProUGUI _msgText;
 
-    private void Update()
-    {
-        if (DialogueSystem.Instance.IsTalking)
-        {
-            Refresh(string.Empty);
-        }
-    }
-
-    // ÀÌÁ¦ Initialize¿¡¼­ Interactor¸¦ ¹ÞÀ» ÇÊ¿ä°¡ ¾ø½À´Ï´Ù.
+    // ï¿½ï¿½ï¿½ï¿½ Initializeï¿½ï¿½ï¿½ï¿½ Interactorï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ä°¡ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.
     public void Setup()
     {
         _uiPanel.SetActive(false);
     }
 
-    // ¿ÜºÎ(PlayScene)¿¡¼­ "ÀÌ°É º¸¿©Áà"¶ó°í ºÎ¸¦ ÇÔ¼ö
+    // ï¿½Üºï¿½(PlayScene)ï¿½ï¿½ï¿½ï¿½ "ï¿½Ì°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"ï¿½ï¿½ï¿½ ï¿½Î¸ï¿½ ï¿½Ô¼ï¿½
     public void Refresh(string message)
     {
         if (string.IsNullOrEmpty(message))

@@ -1,30 +1,44 @@
-using UnityEngine;
+ï»¿using UnityEngine;
+using System.Linq;
 
 public class Npc : MonoBehaviour, IInteractable
 {
-    // ÀÌÁ¦ ¿¡¼ÂÀ» Á÷Á¢ ÇÒ´çÇÒ ÇÊ¿ä ¾øÀÌ, ¿¢¼¿¿¡ ÀûÀº NpcId¸¸ Àû¾îÁÖ¸é µË´Ï´Ù.
-    [SerializeField] private string npcId;
+    [SerializeField] private string _npcId;
 
-    public string GetInteractText()
+    // ï¿½×½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Î½ï¿½ï¿½ï¿½ï¿½Í¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Í´Ù¸ï¿½ ï¿½Æ·ï¿½Ã³ï¿½ï¿½ ï¿½Û¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+    [Header("Debug Info")]
+    [SerializeField] private int _currentAffectionDebug;
+
+    private void Update()
     {
-        return $"{npcId}¿Í ´ëÈ­ÇÏ±â[E]";
+        // ï¿½ï¿½ï¿½ï¿½ 1ï¿½ï¿½: È£ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ / 2ï¿½ï¿½: È£ï¿½ï¿½ï¿½ï¿½ ï¿½Ï¶ï¿½
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            DialogueManager.Instance.AddAffection(_npcId, 10);
+            _currentAffectionDebug = DialogueManager.Instance.GetAffection(_npcId);
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            DialogueManager.Instance.AddAffection(_npcId, -10);
+            _currentAffectionDebug = DialogueManager.Instance.GetAffection(_npcId);
+        }
     }
 
     public void Interact(Player player)
     {
-        DialogueData data = DialogueManager.Instance.GetBestDialogue(npcId);
+        // ï¿½Å´ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å³Ê¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ç¸¦ Ã£ï¿½ï¿½ï¿½Ý´Ï´ï¿½.
+        DialogueData data = DialogueManager.Instance.GetBestDialogue(_npcId);
 
-        if (data == null) return; // µ¥ÀÌÅÍ°¡ ¾øÀ» °æ¿ì¸¦ ´ëºñÇÑ ¾ÈÀüÀåÄ¡
+        if (data == null) return;
 
-        // ¹®ÀåµéÀ» ÂÉ°³°í, °¢ ¹®Àå ¾ÕµÚ¿¡ ºÙ¾úÀ»Áö ¸ð¸¦ ºÒÇÊ¿äÇÑ °ø¹éÀ» Á¦°ÅÇÕ´Ï´Ù.
-        string[] sentences = data.Sentence.Split('/');
-        for (int i = 0; i < sentences.Length; i++)
-        {
-            sentences[i] = sentences[i].Trim();
-        }
+        // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+        string[] sentences = data.Sentence.Split('/')
+                                .Select(s => s.Trim())
+                                .ToArray();
 
-        // AfterActionEvent°¡ ÀÖ´Ù¸é ³Ñ°ÜÁÖ´Â ·ÎÁ÷µµ ³ªÁß¿¡ ¿©±â¿¡ Ãß°¡µÉ ¼ö ÀÖ°ÚÁÒ?
-        DialogueSystem.Instance.StartDialogue(npcId, sentences);
-        Debug.Log($"{npcId} {sentences.Length}");
+        // ï¿½ï¿½È­ ï¿½Ã½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+        DialogueSystem.Instance.StartDialogue(_npcId, sentences);
     }
+
+    public string GetInteractText() => _npcId;
 }

@@ -1,19 +1,19 @@
-using System;
+ï»¿using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class InputHandler : MonoBehaviour
 {
-    // 1. ¿¬¼ÓÀûÀÎ ÀÔ·Â (º¯¼ö ¹æ½Ä À¯Áö)
+    // 1. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ô·ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
     public Vector2 MoveInput { get; private set; }
 
-    // 2. ´Ü¹ß¼º ÀÔ·Â (ÀÌº¥Æ® ¹æ½Ä)
-    // ´©±º°¡ ÀÌ ÀÌº¥Æ®¸¦ ±¸µ¶ÇÏ¸é, Å°°¡ ´­¸± ¶§¸¶´Ù ¼Ò½ÄÀ» µéÀ» ¼ö ÀÖ½À´Ï´Ù.
+    // 2. ï¿½Ü¹ß¼ï¿½ ï¿½Ô·ï¿½ (ï¿½Ìºï¿½Æ® ï¿½ï¿½ï¿½)
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ìºï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½, Å°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ò½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö½ï¿½ï¿½Ï´ï¿½.
     public event Action OnInteractPerformed;
     public event Action OnAttackPerformed;
     public event Action OnInventoryPerformed;
 
-    // Player Input ÄÄÆ÷³ÍÆ®¿¡¼­ Send Messages ¹æ½ÄÀ¸·Î È£ÃâµË´Ï´Ù.
+    // Player Input ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ Send Messages ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½Ë´Ï´ï¿½.
 
     public void OnMove(InputValue value)
     {
@@ -22,10 +22,10 @@ public class InputHandler : MonoBehaviour
 
     public void OnInteract(InputValue value)
     {
-        // Å°¸¦ ´©¸¥ ¼ø°£(isPressed°¡ trueÀÏ ¶§) ÀÌº¥Æ®¸¦ ½õ´Ï´Ù.
+        // Å°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(isPressedï¿½ï¿½ trueï¿½ï¿½ ï¿½ï¿½) ï¿½Ìºï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½Ï´ï¿½.
         if (value.isPressed)
         {
-            Debug.Log("»óÈ£ÀÛ¿ë ´©¸§");
+            Debug.Log("ï¿½ï¿½È£ï¿½Û¿ï¿½ ï¿½ï¿½ï¿½ï¿½");
             OnInteractPerformed?.Invoke();
         }
     }

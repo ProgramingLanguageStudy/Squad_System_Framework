@@ -1,10 +1,10 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 public class CSVReader : MonoBehaviour
 {
-    // ¿¢¼¿ÀÇ Ã¹ ¹øÂ° ÁÙ(Çì´õ)À» Á¦¿ÜÇÏ°í ÀÐ±â À§ÇÑ Á¤±Ô½Ä
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã¹ ï¿½ï¿½Â° ï¿½ï¿½(ï¿½ï¿½ï¿½)ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Ð±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ô½ï¿½
     static string SPLIT_RE = @",(?=(?:[^""]*""[^""]*"")*(?![^""]*""))";
     static string LINE_SPLIT_RE = @"\r\n|\n\r|\n|\r";
     static char[] TRIM_CHARS = { '\"' };
@@ -12,12 +12,12 @@ public class CSVReader : MonoBehaviour
     public static List<DialogueData> Read(string file)
     {
         var list = new List<DialogueData>();
-        // Resources Æú´õ¿¡¼­ ÆÄÀÏÀ» ÀÐ¾î¿É´Ï´Ù.
+        // Resources ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ð¾ï¿½É´Ï´ï¿½.
         TextAsset data = Resources.Load<TextAsset>(file);
 
         if (data == null)
         {
-            Debug.LogError($"ÆÄÀÏÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù: {file}");
+            Debug.LogError($"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½: {file}");
             return list;
         }
 
@@ -25,30 +25,30 @@ public class CSVReader : MonoBehaviour
 
         if (lines.Length <= 1) return list;
 
-        // Ã¹ ¹øÂ° ÁÙÀº Çì´õ(º¯¼ö¸í)ÀÌ¹Ç·Î i = 1ºÎÅÍ ½ÃÀÛÇÕ´Ï´Ù.
+        // Ã¹ ï¿½ï¿½Â° ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)ï¿½Ì¹Ç·ï¿½ i = 1ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         for (var i = 1; i < lines.Length; i++)
         {
             var values = Regex.Split(lines[i], SPLIT_RE);
             if (values.Length == 0 || values[0] == "") continue;
 
-            // »õ·Î¿î DialogueData °´Ã¼ »ý¼º (ScriptableObject)
-            // ÁÖÀÇ: ½ÇÁ¦ ÇÁ·ÎÁ§Æ®¿¡¼­´Â ÆÄÀÏ·Î ÀúÀåÇÏ°Å³ª ¸®½ºÆ®·Î¸¸ °ü¸®ÇÒ ¼ö ÀÖ½À´Ï´Ù.
+            // ï¿½ï¿½ï¿½Î¿ï¿½ DialogueData ï¿½ï¿½Ã¼ ï¿½ï¿½ï¿½ï¿½ (ScriptableObject)
+            // ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°Å³ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½Î¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö½ï¿½ï¿½Ï´ï¿½.
             DialogueData entry = ScriptableObject.CreateInstance<DialogueData>();
 
             entry.NpcId = values[0].Trim(TRIM_CHARS);
 
-            // Enum º¯È¯ (Quest, Common, Affection)
+            // Enum ï¿½ï¿½È¯ (Quest, Common, Affection)
             entry.DialogueType = (DialogueType)System.Enum.Parse(typeof(DialogueType), values[1]);
 
             entry.ConditionKey = values[2].Trim(TRIM_CHARS);
 
-            // ¼ýÀÚ·Î º¯È¯
+            // ï¿½ï¿½ï¿½Ú·ï¿½ ï¿½ï¿½È¯
             int.TryParse(values[3], out entry.ConditionValue);
 
-            // ´ë»ç ³»¿ë (µû¿ÈÇ¥ Á¦°Å)
-            entry.Sentence = values[4].Trim(TRIM_CHARS).Replace("\\n", "\n"); // \nÀ» ½ÇÁ¦ ÁÙ¹Ù²ÞÀ¸·Î º¯°æ
+            // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½Ç¥ ï¿½ï¿½ï¿½ï¿½)
+            entry.Sentence = values[4].Trim(TRIM_CHARS).Replace("\\n", "\n"); // \nï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ù¹Ù²ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
-            // AfterActionEvent Ãß°¡
+            // AfterActionEvent ï¿½ß°ï¿½
             if (values.Length > 5)
             {
                 entry.AfterActionEvent = values[5].Trim(TRIM_CHARS);

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using UnityEngine;
 
 public class PlayerInteractor : MonoBehaviour
@@ -53,17 +53,17 @@ public class PlayerInteractor : MonoBehaviour
         Debug.Log($"{CurrentTarget}");
     }
 
-    // [Áß¿ä] PlayScene¿¡¼­ ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ°Ô µË´Ï´Ù.
+    // [ï¿½ß¿ï¿½] PlaySceneï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ È£ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Ë´Ï´ï¿½.
     public void TryInteract()
     {
         if (CurrentTarget != null)
         {
-            Debug.Log($"{CurrentTarget}¿Í »óÈ£ÀÛ¿ë ½Ãµµ");
+            Debug.Log($"{CurrentTarget}ï¿½ï¿½ ï¿½ï¿½È£ï¿½Û¿ï¿½ ï¿½Ãµï¿½");
             CurrentTarget.Interact(_player);
         }
         else
         {
-            Debug.Log("»óÈ£ÀÛ¿ë ´ë»óÀÌ ¾ø½À´Ï´Ù.");
+            Debug.Log("ï¿½ï¿½È£ï¿½Û¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.");
         }
     }
 }

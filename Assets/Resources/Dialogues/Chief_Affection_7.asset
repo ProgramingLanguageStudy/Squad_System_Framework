@@ -16,6 +16,5 @@ MonoBehaviour:
   DialogueType: 2
   ConditionKey: Affection
   ConditionValue: 100
-  Sentence: "\uC790\uB124\uAC00 \uC6B0\uB9AC\uB9C8\uC744\uC5D0 \uC788\uC5B4\uC11C
-    \uC815\uB9D0 \uAC10\uC0AC\uD558\uB124."
+  Sentence: "\uC790\uB124\uB294 \uC6B0\uB9AC\uB9C8\uC744\uC758 \uC790\uB791\uC774\uC57C!"
   AfterActionEvent: 

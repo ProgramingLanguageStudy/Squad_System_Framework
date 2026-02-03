@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
@@ -14,11 +14,11 @@ public class PlayerMover : MonoBehaviour
     {
         _agent = GetComponent<NavMeshAgent>();
         _mainCameraTransform = Camera.main.transform;
-        _agent.updateRotation = false; // È¸ÀüÀº Á÷Á¢ Á¦¾î
+        _agent.updateRotation = false; // È¸ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     }
 
     /// <summary>
-    /// PlayerÀÇ Update¿¡¼­ È£ÃâÇÏ¿© ÀÌµ¿À» Á¦¾îÇÏ´Â ÇÔ¼ö
+    /// Playerï¿½ï¿½ Updateï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½Ìµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½
     /// </summary>
     /// <param name="input"></param>
     public void Move(Vector2 input)
@@ -40,14 +40,14 @@ public class PlayerMover : MonoBehaviour
         Vector3 moveDir = (forward * input.y) + (right * input.x);
         moveDir.Normalize();
 
-        // È¸Àü Ã³¸®
+        // È¸ï¿½ï¿½ Ã³ï¿½ï¿½
         Quaternion targetRotation = Quaternion.LookRotation(moveDir);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
 
-        // ÀÌµ¿ Ã³¸®
+        // ï¿½Ìµï¿½ Ã³ï¿½ï¿½
         _agent.velocity = moveDir * _moveSpeed;
     }
 
-    // Animator°¡ ¼Óµµ¸¦ ÂüÁ¶ÇÒ ¼ö ÀÖµµ·Ï Getter Á¦°ø
+    // Animatorï¿½ï¿½ ï¿½Óµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Öµï¿½ï¿½ï¿½ Getter ï¿½ï¿½ï¿½ï¿½
     public float GetCurrentSpeed() => _agent.velocity.magnitude;
 }

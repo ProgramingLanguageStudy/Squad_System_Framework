@@ -5,6 +5,7 @@ public class DialogueSystem : Singleton<DialogueSystem>
 {
     [SerializeField] private DialogueUI _ui;
     public bool IsTalking { get; private set; }
+    public event Action OnDialogueEnd;
     private Action _onDialogueComplete;
 
     protected override void Awake()
@@ -32,6 +33,7 @@ public class DialogueSystem : Singleton<DialogueSystem>
         if (!IsTalking) return;
         IsTalking = false;
         _ui.Close();
+        OnDialogueEnd?.Invoke();
         _onDialogueComplete?.Invoke();
         _onDialogueComplete = null;
     }

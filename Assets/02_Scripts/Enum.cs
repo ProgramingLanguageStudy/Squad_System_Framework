@@ -1,11 +1,5 @@
-public enum QuestState
-{
-    NotStarted, // 0 (±âº»°ª)
-    InProgress, // 1
-    GoalMet,    // 2
-    Completed,  // 3
-    None        // 4 (¿¹¿Ü Ã³¸®¿ë)
-}
+ï»¿public enum QuestType { Gather, Kill, Visit } // ï¿½ï¿½ï¿½ï¿½, Ã³Ä¡, ï¿½æ¹®
+public enum QuestState { CanStart, InProgress, CanComplete, Completed }
 
 public enum DialogueType
 {

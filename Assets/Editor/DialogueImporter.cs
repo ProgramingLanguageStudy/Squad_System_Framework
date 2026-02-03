@@ -1,15 +1,15 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEditor;
 using System.IO;
 using System.Collections.Generic;
-using System.Text.RegularExpressions; // Á¤±Ô½Ä »ç¿ëÀ» À§ÇØ Ãß°¡
+using System.Text.RegularExpressions; // ï¿½ï¿½ï¿½Ô½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 
 public class DialogueImporter : EditorWindow
 {
     private string csvPath = "Assets/Resources/DialogueTable.csv";
     private string savePath = "Assets/Resources/Dialogues";
 
-    // CSVÀÇ ½°Ç¥¸¦ Á¦´ë·Î ºÐ¸®ÇÏ±â À§ÇÑ Á¤±Ô½Ä (µû¿ÈÇ¥ ¾ÈÀÇ ½°Ç¥´Â ¹«½Ã)
+    // CSVï¿½ï¿½ ï¿½ï¿½Ç¥ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ð¸ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ô½ï¿½ (ï¿½ï¿½ï¿½ï¿½Ç¥ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ç¥ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
     private static string SPLIT_RE = @",(?=(?:[^""]*""[^""]*"")*(?![^""]*""))";
 
     [MenuItem("Tools/Dialogue Importer")]
@@ -36,7 +36,7 @@ public class DialogueImporter : EditorWindow
 
         List<string> lineList = new List<string>();
 
-        // 1. ÆÄÀÏ °øÀ¯ ¸ðµå·Î ÀÐ±â (¿¢¼¿ÀÌ ÄÑÁ® ÀÖ¾îµµ ¿¡·¯ ¹æÁö)
+        // 1. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ð±ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö¾îµµ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
         try
         {
             using (FileStream fs = new FileStream(csvPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
@@ -52,31 +52,31 @@ public class DialogueImporter : EditorWindow
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"ÆÄÀÏÀ» ÀÐ´Â Áß ¿¡·¯ ¹ß»ý: {e.Message}");
+            Debug.LogError($"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ð´ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½: {e.Message}");
             return;
         }
 
         string[] lines = lineList.ToArray();
 
-        // 2. µ¥ÀÌÅÍ º¯È¯ ½ÃÀÛ
+        // 2. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½ï¿½ï¿½
         for (int i = 1; i < lines.Length; i++)
         {
             if (string.IsNullOrWhiteSpace(lines[i])) continue;
 
-            // Á¤±Ô½ÄÀ» ÀÌ¿ëÇØ ½°Ç¥ ºÐ¸® (¹®Àå ³» ½°Ç¥ º¸È£)
+            // ï¿½ï¿½ï¿½Ô½ï¿½ï¿½ï¿½ ï¿½Ì¿ï¿½ï¿½ï¿½ ï¿½ï¿½Ç¥ ï¿½Ð¸ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½Ç¥ ï¿½ï¿½È£)
             string[] values = Regex.Split(lines[i], SPLIT_RE);
 
-            // ScriptableObject »ý¼º
+            // ScriptableObject ï¿½ï¿½ï¿½ï¿½
             DialogueData entry = CreateInstance<DialogueData>();
 
-            // Trim('\"')À» »ç¿ëÇÏ¿© ¾ç ³¡ÀÇ Å«µû¿ÈÇ¥ Á¦°Å
+            // Trim('\"')ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å«ï¿½ï¿½ï¿½ï¿½Ç¥ ï¿½ï¿½ï¿½ï¿½
             entry.NpcId = values[0].Trim('\"').Trim();
             entry.DialogueType = (DialogueType)System.Enum.Parse(typeof(DialogueType), values[1].Trim('\"').Trim());
             entry.ConditionKey = values[2].Trim('\"').Trim();
 
             int.TryParse(values[3].Trim('\"').Trim(), out entry.ConditionValue);
 
-            // Sentence ÇÊµåÀÇ Å«µû¿ÈÇ¥ Á¦°Å ¹× ÁÙ¹Ù²Þ Ã³¸®
+            // Sentence ï¿½Êµï¿½ï¿½ï¿½ Å«ï¿½ï¿½ï¿½ï¿½Ç¥ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ù¹Ù²ï¿½ Ã³ï¿½ï¿½
             entry.Sentence = values[4].Trim('\"').Replace("\\n", "\n").Trim();
 
             if (values.Length > 5)
@@ -84,13 +84,13 @@ public class DialogueImporter : EditorWindow
                 entry.AfterActionEvent = values[5].Trim('\"').Trim();
             }
 
-            // ÆÄÀÏ·Î ÀúÀå
+            // ï¿½ï¿½ï¿½Ï·ï¿½ ï¿½ï¿½ï¿½ï¿½
             string fileName = $"{entry.NpcId}_{entry.DialogueType}_{i}.asset";
             AssetDatabase.CreateAsset(entry, $"{savePath}/{fileName}");
         }
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        Debug.Log("<color=green><b>CSV ÀÓÆ÷Æ® ¿Ï·á!</b></color> Asset ÆÄÀÏµéÀÌ »ý¼ºµÇ¾ú½À´Ï´Ù.");
+        Debug.Log("<color=green><b>CSV ï¿½ï¿½ï¿½ï¿½Æ® ï¿½Ï·ï¿½!</b></color> Asset ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.");
     }
 }

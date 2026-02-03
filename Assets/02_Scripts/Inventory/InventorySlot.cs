@@ -1,21 +1,52 @@
-using TMPro;
+ï»¿using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class InventorySlot : MonoBehaviour
+public class InventorySlot : MonoBehaviour,
+    IPointerEnterHandler, IPointerExitHandler,
+    IBeginDragHandler, IDragHandler, IEndDragHandler // ï¿½å·¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì½ï¿½ ï¿½ß°ï¿½
 {
-    public Image icon;
-    public TextMeshProUGUI countText;
+    [Header("----- UI ï¿½ï¿½ï¿½ï¿½ -----")]
+    [SerializeField] private Image _icon;
+    [SerializeField] private TextMeshProUGUI _countText;
 
-    // ½½·Ô ºñ¿ì±â (ÃÊ±â »óÅÂ)
-    public void ClearSlot()
+    [Header("----- ï¿½ï¿½ï¿½ï¿½ -----")]
+    [SerializeField] private int _index; // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½Â° ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (Inspectorï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
+
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    private ItemData _currentItem;
+    private int _currentCount;
+
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Üºï¿½(DragManager)ï¿½ï¿½ï¿½ï¿½ Indexï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö°ï¿½ ï¿½Õ´Ï´ï¿½.
+    public int Index => _index;
+
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Sprite ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Þ¿ï¿½ Getter
+    public Sprite GetIcon() => _currentItem != null ? _currentItem.Icon : null;
+
+    public void SetIndex(int index)
     {
-        icon.sprite = null;
-        icon.enabled = false;
-        countText.text = "";
+        _index = index;
+        // ï¿½ï¿½ï¿½Ì¾ï¿½ï¿½Å° Ã¢ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ï¿½ï¿½ ï¿½Ù²ï¿½ï¿½Ö¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.
+        gameObject.name = $"Slot_{index:00}";
     }
 
-    // ¾ÆÀÌÅÛ Á¤º¸ Ã¤¿ì±â
+    /// <summary>
+    /// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    /// </summary>
+    public void ClearSlot()
+    {
+        _currentItem = null;
+        _currentCount = 0;
+
+        _icon.sprite = null;
+        _icon.enabled = false;
+        _countText.text = string.Empty;
+    }
+
+    /// <summary>
+    /// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
+    /// </summary>
     public void UpdateSlot(ItemData item, int count)
     {
         if (item == null || count <= 0)
@@ -24,8 +55,61 @@ public class InventorySlot : MonoBehaviour
             return;
         }
 
-        icon.sprite = item.Icon;
-        icon.enabled = true;
-        countText.text = count > 1 ? count.ToString() : "";
+        _currentItem = item;
+        _currentCount = count;
+
+        _icon.sprite = _currentItem.Icon;
+        _icon.enabled = true;
+        _countText.text = _currentCount > 1 ? _currentCount.ToString() : string.Empty;
     }
+
+    #region ï¿½ï¿½ï¿½ì½º ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìºï¿½Æ® (ï¿½ï¿½ï¿½ï¿½)
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (_currentItem != null && TooltipUI.Instance != null)
+        {
+            TooltipUI.Instance.Show(_currentItem.ItemName, _currentItem.Description);
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (TooltipUI.Instance != null)
+        {
+            TooltipUI.Instance.Hide();
+        }
+    }
+
+    #endregion
+
+    #region ï¿½å·¡ï¿½ï¿½ ï¿½Ìºï¿½Æ® (ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½)
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½å·¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+        if (_currentItem != null && InventoryDragManager.Instance != null)
+        {
+            InventoryDragManager.Instance.StartDrag(this);
+        }
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        if (InventoryDragManager.Instance != null)
+        {
+            // ï¿½ï¿½ï¿½ì½º ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½Ç½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½ (eventData.position ï¿½ï¿½ï¿½)
+            InventoryDragManager.Instance.OnDrag(eventData.position);
+        }
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        if (InventoryDragManager.Instance != null)
+        {
+            InventoryDragManager.Instance.EndDrag();
+        }
+    }
+
+    #endregion
 }

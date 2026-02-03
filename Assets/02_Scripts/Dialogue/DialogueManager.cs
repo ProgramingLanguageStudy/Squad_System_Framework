@@ -1,74 +1,106 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
 public class DialogueManager : Singleton<DialogueManager>
 {
-    // CSV¿¡¼­ º¯È¯µÈ ¸ðµç DialogueData ¿¡¼ÂµéÀ» ´ã¾ÆµÎ´Â ¸®½ºÆ®
+    // CSVï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½ï¿½ ï¿½ï¿½ï¿½ DialogueData ï¿½ï¿½ï¿½Âµï¿½ï¿½ï¿½ ï¿½ï¿½ÆµÎ´ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®
     private List<DialogueData> _dialogueDatabase = new List<DialogueData>();
 
-    // ·Îµå ¿Ï·á ¿©ºÎ¸¦ È®ÀÎÇÏ±â À§ÇÑ ÇÁ·ÎÆÛÆ¼
+    // NPC IDï¿½ï¿½ È£ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½Å³Ê¸ï¿½ (ï¿½ß¿ï¿½!)
+    private Dictionary<string, int> _affectionTable = new Dictionary<string, int>();
+
+    // ï¿½Îµï¿½ ï¿½Ï·ï¿½ ï¿½ï¿½ï¿½Î¸ï¿½ È®ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¼
     public bool IsLoaded { get; private set; } = false;
 
     protected override void Awake()
     {
-        base.Awake(); // ½Ì±ÛÅæ ÃÊ±âÈ­ ½ÇÇà
+        base.Awake(); // ï¿½Ì±ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­ ï¿½ï¿½ï¿½ï¿½
         LoadAllDialogueAssets();
     }
 
     /// <summary>
-    /// Resources/Dialogues Æú´õ ³»ÀÇ ¸ðµç DialogueData ¿¡¼ÂÀ» ¸Þ¸ð¸®·Î ·ÎµåÇÕ´Ï´Ù.
+    /// Resources/Dialogues ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ DialogueData ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Þ¸ð¸®·ï¿½ ï¿½Îµï¿½ï¿½Õ´Ï´ï¿½.
     /// </summary>
     private void LoadAllDialogueAssets()
     {
-        // Åø·Î »ý¼ºÇß´ø .asset ÆÄÀÏµéÀ» ½Ï ±Ü¾î¿É´Ï´Ù.
         DialogueData[] assets = Resources.LoadAll<DialogueData>("Dialogues");
 
         if (assets == null || assets.Length == 0)
         {
-            Debug.LogWarning("<color=yellow>[DialogueManager]</color> ·ÎµåÇÒ ´ë»ç ¿¡¼ÂÀÌ ¾ø½À´Ï´Ù. CSV Importer¸¦ È®ÀÎÇÏ¼¼¿ä.");
+            Debug.LogWarning("<color=yellow>[DialogueManager]</color> ï¿½Îµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.");
             return;
         }
 
         _dialogueDatabase = assets.ToList();
         IsLoaded = true;
 
-        Debug.Log($"<color=cyan>[DialogueManager]</color> ÃÑ {_dialogueDatabase.Count}°³ÀÇ ´ë»ç µ¥ÀÌÅÍ¸¦ ·ÎµåÇß½À´Ï´Ù.");
+        Debug.Log($"<color=cyan>[DialogueManager]</color> ï¿½ï¿½ {_dialogueDatabase.Count}ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½Îµï¿½ï¿½ß½ï¿½ï¿½Ï´ï¿½.");
     }
 
     /// <summary>
-    /// NPC ID¸¦ ±â¹ÝÀ¸·Î ÇöÀç »óÈ²(Äù½ºÆ®, È£°¨µµ µî)¿¡ °¡Àå ÀûÇÕÇÑ ´ë»ç ÇÑ ÁÙÀ» ¹ÝÈ¯ÇÕ´Ï´Ù.
+    /// NPC IDï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È²ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½È¯ï¿½Õ´Ï´ï¿½.
     /// </summary>
     public DialogueData GetBestDialogue(string npcId)
     {
-        // 1. ÇØ´ç NPCÀÇ ´ë»ç¸¸ ÇÊÅÍ¸µ
+        // 1. ï¿½Ø´ï¿½ NPCï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½
         var npcTalks = _dialogueDatabase.Where(d => d.NpcId == npcId).ToList();
 
         if (npcTalks.Count == 0)
         {
-            Debug.LogError($"[DialogueManager] {npcId}¿¡ ÇØ´çÇÏ´Â ´ë»ç µ¥ÀÌÅÍ¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            Debug.LogError($"[DialogueManager] {npcId}ï¿½ï¿½ ï¿½Ø´ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.");
             return null;
         }
 
-        // 2. ¿ì¼±¼øÀ§ ÆÇº° (Áö±ÝÀº ´Ü¼ø ¿¹½ÃÁö¸¸, ³ªÁß¿¡ ¿©±â¿¡ Äù½ºÆ® ´Ü°è Ã¼Å© ·ÎÁ÷ÀÌ µé¾î°©´Ï´Ù)
+        // 2. ï¿½ï¿½ï¿½ï¿½ NPCï¿½ï¿½ È£ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        int currentAffection = GetAffection(npcId);
 
-        // 2-1. Äù½ºÆ® ´ë»ç (ConditionKey¿Í Value°¡ ÇöÀç Äù½ºÆ® ½Ã½ºÅÛ°ú ÀÏÄ¡ÇÏ´ÂÁö È®ÀÎ)
-        // DialogueData questTalk = npcTalks.FirstOrDefault(t => t.DialogueType == DialogueType.Quest && CheckQuestCondition(t));
+        // 3. ï¿½ì¼±ï¿½ï¿½ï¿½ï¿½ ï¿½Çºï¿½
+
+        // 3-1. ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ß¿ï¿½ QuestManager ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ È°ï¿½ï¿½È­)
+        // DialogueData questTalk = npcTalks.FirstOrDefault(t => t.DialogueType == DialogueType.Quest && CheckQuest(t));
         // if (questTalk != null) return questTalk;
 
-        // 2-2. È£°¨µµ ´ë»ç
-        // DialogueData affectionTalk = npcTalks.FirstOrDefault(t => t.DialogueType == DialogueType.Affection && CheckAffection(t));
-        // if (affectionTalk != null) return affectionTalk;
+        // 3-2. È£ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ä±¸Ä¡ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
+        var affectionTalk = npcTalks
+            .Where(t => t.DialogueType == DialogueType.Affection)
+            .Where(t => t.ConditionValue <= currentAffection)
+            .OrderByDescending(t => t.ConditionValue)
+            .FirstOrDefault();
 
-        // 2-3. ±âº» ´ë»ç (Common)
-        // ¿©·¯ °³ÀÏ °æ¿ì ±×Áß ·£´ýÀ¸·Î ÇÏ³ª¸¦ ¹ÝÈ¯ÇÏ°Ô ÇÏ¸é °ÔÀÓÀÌ ´õ ÀÚ¿¬½º·´½À´Ï´Ù.
+        if (affectionTalk != null) return affectionTalk;
+
+        // 3-3. ï¿½âº» ï¿½ï¿½ï¿½ (Common) ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
         var commonTalks = npcTalks.Where(t => t.DialogueType == DialogueType.Common).ToList();
         if (commonTalks.Count > 0)
         {
-            int randomIndex = Random.Range(0, commonTalks.Count);
-            return commonTalks[randomIndex];
+            return commonTalks[Random.Range(0, commonTalks.Count)];
         }
 
-        return npcTalks[0]; // ÃÖÈÄÀÇ º¸·ç: ¸®½ºÆ®ÀÇ Ã¹ ¹øÂ° µ¥ÀÌÅÍ¶óµµ ¹ÝÈ¯
+        return npcTalks[0];
+    }
+
+    // --- È£ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ API ---
+
+    /// <summary>
+    /// NPCï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½Õ´Ï´ï¿½.
+    /// </summary>
+    public int GetAffection(string npcId)
+    {
+        if (_affectionTable.ContainsKey(npcId))
+            return _affectionTable[npcId];
+        return 0;
+    }
+
+    /// <summary>
+    /// NPCï¿½ï¿½ È£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Åµï¿½Ï´ï¿½.
+    /// </summary>
+    public void AddAffection(string npcId, int amount)
+    {
+        if (!_affectionTable.ContainsKey(npcId))
+            _affectionTable[npcId] = 0;
+
+        _affectionTable[npcId] += amount;
+        Debug.Log($"<color=magenta>[Affection]</color> {npcId}ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½ï¿½ï¿½: {_affectionTable[npcId]}");
     }
 }

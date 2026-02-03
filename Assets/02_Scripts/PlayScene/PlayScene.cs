@@ -50,19 +50,32 @@ public class PlayScene : MonoBehaviour
     {
         Debug.Log("PlayScene: 시스템 초기화");
 
-        // 퀘스트 매니저에 플래그 매니저 전달
-        QuestManager.Instance.Setup(_flagManager);
-
         _player.Initialize();
         _interactionUI.Setup();
 
         // 상호작용 타겟 변경 시 가이드 UI (예: "촌장과 대화하기[E]") 업데이트
         _player.Interactor.OnTargetChanged += (target) =>
         {
-            // 대화 중이 아닐 때만 상호작용 텍스트 표시
-            string text = (target != null && !(_dialogueUI != null && DialogueSystem.Instance.IsTalking)) ? target.GetInteractText() : null;
-            _interactionUI.Refresh(text);
+            UpdateInteractionUI(target);
         };
+
+        // [중요] 대화가 끝나는 시점에 UI를 다시 계산하도록 이벤트 연결
+        // DialogueSystem에 OnDialogueEnd 같은 Action이 있다면 연결하세요.
+        DialogueSystem.Instance.OnDialogueEnd += () =>
+        {
+            // 대화가 끝나면 현재 바라보고 있는 타겟으로 UI 다시 갱신
+            UpdateInteractionUI(_player.Interactor.CurrentTarget);
+        };
+    }
+
+    // UI 갱신 로직을 별도 함수로 분리
+    private void UpdateInteractionUI(IInteractable target)
+    {
+        bool isDialoguing = DialogueSystem.Instance.IsTalking; // IsActive 또는 IsTalking
+
+        // 대화 중이 아니고 타겟이 있을 때만 텍스트 표시
+        string text = (target != null && !isDialoguing) ? target.GetInteractText() : null;
+        _interactionUI.Refresh(text);
     }
 
     // --- 입력 처리 핸들러 (방아쇠) ---
@@ -81,17 +94,17 @@ public class PlayScene : MonoBehaviour
 
     private void HandleInventory()
     {
-        // 대화 중에는 인벤토리 조작 금지
         if (_dialogueUI != null && DialogueSystem.Instance.IsTalking) return;
 
         if (_inventoryUI != null)
         {
             _inventoryUI.ToggleInventory();
 
-            // 인벤토리를 열면 상호작용 가이드 UI는 숨김
+            // 인벤토리가 열리면 다른 UI(상호작용 가이드 등)를 정리
             if (_inventoryUI.gameObject.activeSelf)
             {
-                _interactionUI.Refresh(null);
+                _interactionUI.Refresh(null); // "대화하기[E]" 숨기기
+                                              // 마우스 커서 활성화 로직 등이 들어갈 자리
             }
         }
     }

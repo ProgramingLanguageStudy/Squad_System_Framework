@@ -1,10 +1,12 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 [CreateAssetMenu(fileName = "New Item", menuName = "Inventory/Item")]
 public class ItemData : ScriptableObject
 {
-    public string ItemName;
-    public Sprite Icon;
-    public string Description;
-    public int MaxStack; // °ãÄ¥ ¼ö ÀÖ´Â ÃÖ´ë °³¼ö
+    public string ItemId;     // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ID (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½)
+    public string ItemName;   // ï¿½Ì¸ï¿½
+    public Sprite Icon;       // ï¿½Îºï¿½ï¿½ä¸®ï¿½ï¿½ Ç¥ï¿½Ãµï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½
+    public string Description;// ï¿½ï¿½ï¿½ï¿½
+    public bool IsStackable;  // ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    public int MaxStack = 50; // ï¿½âº»ï¿½ï¿½ 50ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½Û¸ï¿½ï¿½ï¿½ ï¿½Ù¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 }
