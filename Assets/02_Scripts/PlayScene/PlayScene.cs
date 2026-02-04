@@ -74,13 +74,20 @@ public class PlayScene : MonoBehaviour
             UpdateInteractionUI(target);
         };
 
-        // [중요] 대화가 끝나는 시점에 UI를 다시 계산하도록 이벤트 연결
-        // DialogueSystem에 OnDialogueEnd 같은 Action이 있다면 연결하세요.
-        DialogueSystem.Instance.OnDialogueEnd += () =>
+        // 대화 종료 시 InteractionUI 다시 갱신
+        DialogueSystem.Instance.OnDialogueEnd += OnDialogueEnded;
+
+        // DialogueSystem ↔ QuestManager: 퀘스트 수락/제출은 한 곳(QuestManager)에서 처리
+        if (QuestManager.Instance != null)
         {
-            // 대화가 끝나면 현재 바라보고 있는 타겟으로 UI 다시 갱신
-            UpdateInteractionUI(_player.Interactor.CurrentTarget);
-        };
+            DialogueSystem.Instance.OnQuestAcceptRequested += QuestManager.Instance.HandleQuestAcceptRequestedFromDialogue;
+            DialogueSystem.Instance.OnQuestSubmitRequested += QuestManager.Instance.HandleQuestSubmitRequestedFromDialogue;
+        }
+    }
+
+    private void OnDialogueEnded()
+    {
+        UpdateInteractionUI(_player.Interactor.CurrentTarget);
     }
 
     // UI 갱신 로직을 별도 함수로 분리
@@ -133,6 +140,17 @@ public class PlayScene : MonoBehaviour
             _input.OnInteractPerformed -= HandleInteract;
             _input.OnInventoryPerformed -= HandleInventory;
             _input.OnQuestPerformed -= HandleQuest;
+        }
+        var ds = DialogueSystem.Instance;
+        var qm = QuestManager.Instance;
+        if (ds != null)
+        {
+            ds.OnDialogueEnd -= OnDialogueEnded;
+            if (qm != null)
+            {
+                ds.OnQuestAcceptRequested -= qm.HandleQuestAcceptRequestedFromDialogue;
+                ds.OnQuestSubmitRequested -= qm.HandleQuestSubmitRequestedFromDialogue;
+            }
         }
     }
 }

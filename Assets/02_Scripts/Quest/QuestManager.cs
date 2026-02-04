@@ -6,9 +6,6 @@ public class QuestManager : Singleton<QuestManager>
 {
     [SerializeField] private List<QuestData> _activeQuests = new List<QuestData>();
 
-    // 이미 완료된 퀘스트 ID 저장 (중복 수락 방지 및 세이브용)
-    private HashSet<string> _completedQuestIds = new HashSet<string>();
-
     private void OnEnable()
     {
         // 이벤트 구독: 무언가 목표와 관련된 행동이 일어나면 실행
@@ -96,5 +93,42 @@ public class QuestManager : Singleton<QuestManager>
 
         GameEvents.OnQuestUpdated?.Invoke(quest);
         return true;
+    }
+
+    // --- 대화창 퀘스트 버튼 처리 (PlayScene이 DialogueSystem 이벤트로 연결) ---
+
+    /// <summary>대화창에서 퀘스트 수락 버튼 클릭 시. 퀘스트 관련 처리는 이 클래스 한 곳에서.</summary>
+    public void HandleQuestAcceptRequestedFromDialogue(string npcId)
+    {
+        var questDialogue = DialogueManager.Instance.GetQuestDialogue(npcId);
+        if (questDialogue == null || string.IsNullOrEmpty(questDialogue.LinkedQuestId)) return;
+
+        string[] sentences = questDialogue.Sentence.Split('/').Select(s => s.Trim()).ToArray();
+        var ds = DialogueSystem.Instance;
+        ds.ReplaceContent(ds.CurrentSpeakerName, sentences);
+        ds.SetQuestButtonVisible(false);
+
+        ds.RegisterOnDialogueEndOnce(() =>
+        {
+            var flagManager = FindFirstObjectByType<FlagManager>();
+            if (flagManager != null)
+                flagManager.SetFlag(GameStateKeys.QuestAccepted(questDialogue.LinkedQuestId), 1);
+            var questData = Resources.Load<QuestData>($"Quests/{questDialogue.LinkedQuestId}");
+            if (questData != null)
+                AcceptQuest(questData);
+        });
+    }
+
+    /// <summary>대화창에서 퀘스트 제출 버튼 클릭 시.</summary>
+    public void HandleQuestSubmitRequestedFromDialogue(string npcId)
+    {
+        if (!DialogueManager.Instance.GetCompletableQuestForNpc(npcId, out var quest, out var completionDialogue, out _))
+            return;
+        if (!CompleteQuest(quest.QuestId)) return;
+
+        string[] sentences = completionDialogue.Sentence.Split('/').Select(s => s.Trim()).ToArray();
+        var ds = DialogueSystem.Instance;
+        ds.ReplaceContent(ds.CurrentSpeakerName, sentences);
+        ds.SetQuestButtonVisible(false);
     }
 }
