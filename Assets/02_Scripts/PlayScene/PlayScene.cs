@@ -34,15 +34,31 @@ public class PlayScene : MonoBehaviour
             _input.OnInventoryPerformed += HandleInventory;
             _input.OnQuestPerformed += HandleQuest;
         }
+        // 플레이 중 기본: 커서 숨김
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     private void Update()
     {
         bool isInventoryOpen = _inventoryUI != null && _inventoryUI.gameObject.activeSelf;
-        bool isQuestOpen = _questUI != null && _questUI.IsOpen;
         bool isTalking = _dialogueUI != null && DialogueSystem.Instance.IsTalking;
+        // 퀘스트 트래커는 항상 표시되므로 이동 제한에서 제외
 
-        _player.CanMove = !(isTalking || isInventoryOpen || isQuestOpen);
+        _player.CanMove = !(isTalking || isInventoryOpen);
+
+        // 대화 중이거나 UI(인벤토리 등)를 쓰는 동안만 커서 표시
+        bool needCursor = isTalking || isInventoryOpen;
+        if (needCursor)
+        {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+        }
+        else
+        {
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
     }
 
     private void InitializeScene()
@@ -89,6 +105,8 @@ public class PlayScene : MonoBehaviour
         }
 
         _player.Interactor.TryInteract();
+        // 대화 등 상호작용이 시작되면 InteractionUI(예: "[E] 대화하기") 숨김
+        UpdateInteractionUI(_player.Interactor.CurrentTarget);
     }
 
     private void HandleInventory()
@@ -105,12 +123,7 @@ public class PlayScene : MonoBehaviour
     private void HandleQuest()
     {
         if (_dialogueUI != null && DialogueSystem.Instance.IsTalking) return;
-        if (_questUI != null)
-        {
-            _questUI.Toggle();
-            if (_questUI.IsOpen)
-                _interactionUI.Refresh(null);
-        }
+        // TODO: 나중에 전체 퀘스트 목록 UI 열기/닫기 (현재 퀘스트 트래커는 항상 표시됨)
     }
 
     private void OnDestroy()

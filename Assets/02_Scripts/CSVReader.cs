@@ -36,24 +36,9 @@ public class CSVReader : MonoBehaviour
             DialogueData entry = ScriptableObject.CreateInstance<DialogueData>();
 
             entry.NpcId = values[0].Trim(TRIM_CHARS);
-
-            // Enum 변환 (Quest, Common, Affection)
             entry.DialogueType = (DialogueType)System.Enum.Parse(typeof(DialogueType), values[1]);
-
-            entry.ConditionKey = values[2].Trim(TRIM_CHARS);
-
-            // 숫자로 변환
-            int.TryParse(values[3], out entry.ConditionValue);
-
-            // 문장 데이터 (줄바꿈 치환)
-            entry.Sentence = values[4].Trim(TRIM_CHARS).Replace("\\n", "\n"); // \n을 실제 줄바꿈으로 치환
-
-            // AfterActionEvent 추가
-            if (values.Length > 5)
-            {
-                entry.AfterActionEvent = values[5].Trim(TRIM_CHARS);
-            }
-
+            if (values.Length > 3) int.TryParse(values[3], out entry.ConditionValue);
+            entry.Sentence = values[4].Trim(TRIM_CHARS).Replace("\\n", "\n");
             list.Add(entry);
         }
         return list;

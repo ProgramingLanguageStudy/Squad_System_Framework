@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6bfb51a6792633b418706756853c58c4, type: 3}
-  m_Name: Chief_Common_4
+  m_Name: Chief_Common_1
   m_EditorClassIdentifier: 
   NpcId: Chief
-  DialogueType: 2
-  ConditionKey: None
+  DialogueType: 3
   ConditionValue: 0
-  Sentence: "\uD5C8\uD5C8, \uC6B0\uB9AC \uB9C8\uC744\uC740 \uC624\uB298\uB3C4 \uD3C9\uD654\uB86D\uAD6C\uBA3C."
-  AfterActionEvent: 
+  Sentence: "\uC694\uC998 \uB9C8\uBB3C\uC774 \uB9CE\uC544\uC838\uC11C \uCC38 \uAC71\uC815\uC774\uC57C."
+  LinkedQuestId: 
+  QuestButtonText: 

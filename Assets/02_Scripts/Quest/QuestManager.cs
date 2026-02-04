@@ -68,4 +68,33 @@ public class QuestManager : Singleton<QuestManager>
 
     /// <summary>진행 중인 퀘스트 목록 (퀘스트 UI 등에서 사용).</summary>
     public IReadOnlyList<QuestData> GetActiveQuests() => _activeQuests;
+
+    /// <summary>
+    /// 퀘스트 제출: 수집 아이템을 인벤토리에서 차감하고, 퀘스트를 완료 처리합니다.
+    /// </summary>
+    /// <returns>성공 시 true (아이템 부족 등이면 false)</returns>
+    public bool CompleteQuest(string questId)
+    {
+        var quest = _activeQuests.FirstOrDefault(q => q.QuestId == questId);
+        if (quest == null) return false;
+
+        // 수집 퀘스트: 인벤토리에서 목표 수량만큼 제거
+        foreach (var task in quest.Tasks)
+        {
+            if (task is GatherTask gatherTask)
+            {
+                if (InventoryManager.Instance == null) return false;
+                if (!InventoryManager.Instance.RemoveItem(gatherTask.TargetItemId, gatherTask.TargetAmount))
+                    return false;
+            }
+        }
+
+        _activeQuests.Remove(quest);
+        var flagManager = FindFirstObjectByType<FlagManager>();
+        if (flagManager != null)
+            flagManager.SetFlag(GameStateKeys.QuestCompleted(questId), 1);
+
+        GameEvents.OnQuestUpdated?.Invoke(quest);
+        return true;
+    }
 }

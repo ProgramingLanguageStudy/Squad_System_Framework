@@ -12,6 +12,7 @@ public class DialogueSystem : Singleton<DialogueSystem>
     private string _currentSpeakerName;
     private string _currentNpcId;
     private DialogueType _currentDialogueType;
+    private bool _questButtonIsSubmit; // true면 제출, false면 수락
 
     /// <summary>지금 대화 중인 NPC ID. 퀘스트 버튼 클릭 시 사용.</summary>
     public string CurrentNpcId => _currentNpcId;
@@ -24,9 +25,11 @@ public class DialogueSystem : Singleton<DialogueSystem>
     }
 
     /// <summary>
-    /// 대화 시작. 일상 대사일 때만 showQuestButton=true로 호출합니다.
+    /// 대화 시작. 일상 대사일 때 퀘스트 수락/제출 버튼을 표시할 수 있습니다.
     /// </summary>
-    public void StartDialogue(string speakerName, string[] sentences, string npcId, DialogueType dialogueType, bool showQuestButton, string questButtonText, Action onComplete = null)
+    public void StartDialogue(string speakerName, string[] sentences, string npcId, DialogueType dialogueType,
+        bool showQuestButton, string questButtonText, Action onComplete = null,
+        bool showSubmitButton = false, string submitButtonText = "제출하기")
     {
         if (IsTalking) return;
         IsTalking = true;
@@ -34,7 +37,8 @@ public class DialogueSystem : Singleton<DialogueSystem>
         _currentSpeakerName = speakerName;
         _currentNpcId = npcId;
         _currentDialogueType = dialogueType;
-        _ui.Open(speakerName, sentences, showQuestButton, questButtonText);
+        _questButtonIsSubmit = showSubmitButton;
+        _ui.Open(speakerName, sentences, showQuestButton, questButtonText, showSubmitButton, submitButtonText);
     }
 
     /// <summary>다음 문장으로. 끝이 나도 자동 종료하지 않음 (대화 끝내기 버튼으로만 종료).</summary>
@@ -60,6 +64,15 @@ public class DialogueSystem : Singleton<DialogueSystem>
         _currentDialogueType = DialogueType.Common;
     }
 
+    /// <summary>퀘스트 패널 버튼 클릭 시: 수락/제출 모드에 따라 분기.</summary>
+    public void OnQuestPanelButtonClicked()
+    {
+        if (_questButtonIsSubmit)
+            RequestQuestComplete();
+        else
+            RequestQuestDialogue();
+    }
+
     /// <summary>퀘스트 버튼 클릭 시: 퀘스트 제시 대사로 바꾸고, 끝나면 수락 처리.</summary>
     public void RequestQuestDialogue()
     {
@@ -82,6 +95,21 @@ public class DialogueSystem : Singleton<DialogueSystem>
 
         _onDialogueComplete = questOnComplete;
         _currentDialogueType = DialogueType.Quest;
+        _ui.ReplaceContent(_currentSpeakerName, sentences);
+        _ui.SetQuestButtonVisible(false);
+    }
+
+    /// <summary>퀘스트 제출 버튼 클릭 시: 아이템 차감·퀘스트 완료 후 완료 대사를 표시.</summary>
+    public void RequestQuestComplete()
+    {
+        if (string.IsNullOrEmpty(_currentNpcId)) return;
+        if (!DialogueManager.Instance.GetCompletableQuestForNpc(_currentNpcId, out var quest, out var completionDialogue, out _))
+            return;
+
+        if (QuestManager.Instance == null || !QuestManager.Instance.CompleteQuest(quest.QuestId))
+            return;
+
+        string[] sentences = completionDialogue.Sentence.Split('/').Select(s => s.Trim()).ToArray();
         _ui.ReplaceContent(_currentSpeakerName, sentences);
         _ui.SetQuestButtonVisible(false);
     }

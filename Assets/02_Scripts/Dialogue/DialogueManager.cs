@@ -1,21 +1,40 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 public class DialogueManager : Singleton<DialogueManager>
 {
-    // CSV로 변환된 모든 DialogueData 에셋들을 리스트로 보관
     private List<DialogueData> _dialogueDatabase = new List<DialogueData>();
+    /// <summary>NpcId별 대화 목록 (로드 시 1회만 구성, GetBestDialogue 등에서 GC 없이 조회)</summary>
+    private Dictionary<string, List<DialogueData>> _dialogueByNpcId = new Dictionary<string, List<DialogueData>>();
 
-    // NPC ID별 호감도 값을 저장하는 테이블 (중요!)
     private Dictionary<string, int> _affectionTable = new Dictionary<string, int>();
+
+    private FlagManager _cachedFlagManager;
 
     // 로드 완료 여부를 확인하기 위한 프로퍼티
     public bool IsLoaded { get; private set; } = false;
 
     protected override void Awake()
     {
-        base.Awake(); // 싱글톤 초기화 호출
+        base.Awake();
+        // Resources.LoadAll은 첫 프레임에 부담을 줌 → 다음 프레임으로 미룸
+        StartCoroutine(LoadAllDialogueAssetsNextFrame());
+    }
+
+    private FlagManager GetCachedFlagManager()
+    {
+        if (_cachedFlagManager == null)
+            _cachedFlagManager = FindFirstObjectByType<FlagManager>();
+        return _cachedFlagManager;
+    }
+
+    /// <summary>
+    /// 다음 프레임에 대화 데이터 로드. 첫 Play 시 렉 방지.
+    /// </summary>
+    private IEnumerator LoadAllDialogueAssetsNextFrame()
+    {
+        yield return null;
         LoadAllDialogueAssets();
     }
 
@@ -32,7 +51,19 @@ public class DialogueManager : Singleton<DialogueManager>
             return;
         }
 
-        _dialogueDatabase = assets.ToList();
+        _dialogueDatabase = new List<DialogueData>(assets);
+        _dialogueByNpcId.Clear();
+        for (int i = 0; i < assets.Length; i++)
+        {
+            var d = assets[i];
+            if (string.IsNullOrEmpty(d.NpcId)) continue;
+            if (!_dialogueByNpcId.TryGetValue(d.NpcId, out var list))
+            {
+                list = new List<DialogueData>();
+                _dialogueByNpcId[d.NpcId] = list;
+            }
+            list.Add(d);
+        }
         IsLoaded = true;
 
         Debug.Log($"<color=cyan>[DialogueManager]</color> 총 {_dialogueDatabase.Count}개의 대화 데이터를 로드했습니다.");
@@ -43,46 +74,48 @@ public class DialogueManager : Singleton<DialogueManager>
     /// </summary>
     public DialogueData GetBestDialogue(string npcId)
     {
-        // 1. 해당 NPC의 모든 대화 데이터
-        var npcTalks = _dialogueDatabase.Where(d => d.NpcId == npcId).ToList();
-
-        if (npcTalks.Count == 0)
+        if (!IsLoaded || !_dialogueByNpcId.TryGetValue(npcId, out var npcTalks) || npcTalks.Count == 0)
         {
-            Debug.LogError($"[DialogueManager] {npcId}에 해당하는 대화 데이터가 없습니다.");
+            if (IsLoaded) Debug.LogError($"[DialogueManager] {npcId}에 해당하는 대화 데이터가 없습니다.");
             return null;
         }
 
-        // 2. 현재 NPC의 호감도 값 가져오기
         int currentAffection = GetAffection(npcId);
+        var flagManager = GetCachedFlagManager();
 
-        // 3. 우선순위 체크
-
-        // 3-0. 첫 만남: 아직 말한 적 없으면 FirstMeet 대사 사용
-        var flagManager = FindFirstObjectByType<FlagManager>();
+        // 3-0. 첫 만남
         if (flagManager != null && flagManager.GetFlag(GameStateKeys.FirstTalkNpc(npcId)) == 0)
         {
-            var firstMeet = npcTalks.FirstOrDefault(t => t.DialogueType == DialogueType.FirstMeet);
-            if (firstMeet != null) return firstMeet;
+            for (int i = 0; i < npcTalks.Count; i++)
+            {
+                if (npcTalks[i].DialogueType == DialogueType.FirstMeet)
+                    return npcTalks[i];
+            }
         }
 
-        // 3-1. 퀘스트 대사 (나중에 QuestManager 연동 시 활성화)
-        // DialogueData questTalk = npcTalks.FirstOrDefault(t => t.DialogueType == DialogueType.Quest && CheckQuest(t));
-        // if (questTalk != null) return questTalk;
-
-        // 3-2. 호감도 대사 (조건 만족하는 것 중 호감도 높은 순으로 선택)
-        var affectionTalk = npcTalks
-            .Where(t => t.DialogueType == DialogueType.Affection)
-            .Where(t => t.ConditionValue <= currentAffection)
-            .OrderByDescending(t => t.ConditionValue)
-            .FirstOrDefault();
-
-        if (affectionTalk != null) return affectionTalk;
-
-        // 3-3. 기본 대사 (Common) 중 랜덤 반환
-        var commonTalks = npcTalks.Where(t => t.DialogueType == DialogueType.Common).ToList();
-        if (commonTalks.Count > 0)
+        // 3-2. 호감도 대사 (조건 만족 중 호감도 최고)
+        DialogueData bestAffection = null;
+        for (int i = 0; i < npcTalks.Count; i++)
         {
-            return commonTalks[Random.Range(0, commonTalks.Count)];
+            var t = npcTalks[i];
+            if (t.DialogueType != DialogueType.Affection || t.ConditionValue > currentAffection) continue;
+            if (bestAffection == null || t.ConditionValue > bestAffection.ConditionValue)
+                bestAffection = t;
+        }
+        if (bestAffection != null) return bestAffection;
+
+        // 3-3. Common 중 랜덤
+        int commonCount = 0;
+        for (int i = 0; i < npcTalks.Count; i++)
+            if (npcTalks[i].DialogueType == DialogueType.Common) commonCount++;
+        if (commonCount > 0)
+        {
+            int pick = Random.Range(0, commonCount);
+            for (int i = 0; i < npcTalks.Count; i++)
+            {
+                if (npcTalks[i].DialogueType != DialogueType.Common) continue;
+                if (pick-- == 0) return npcTalks[i];
+            }
         }
 
         return npcTalks[0];
@@ -93,8 +126,53 @@ public class DialogueManager : Singleton<DialogueManager>
     /// </summary>
     public DialogueData GetQuestDialogue(string npcId)
     {
-        return _dialogueDatabase
-            .FirstOrDefault(d => d.NpcId == npcId && d.DialogueType == DialogueType.Quest);
+        if (!_dialogueByNpcId.TryGetValue(npcId, out var list)) return null;
+        for (int i = 0; i < list.Count; i++)
+            if (list[i].DialogueType == DialogueType.Quest) return list[i];
+        return null;
+    }
+
+    public DialogueData GetQuestCompleteDialogue(string npcId, string questId)
+    {
+        if (!_dialogueByNpcId.TryGetValue(npcId, out var list)) return null;
+        for (int i = 0; i < list.Count; i++)
+        {
+            var d = list[i];
+            if (d.DialogueType == DialogueType.QuestComplete && d.LinkedQuestId == questId)
+                return d;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 이 NPC에게 제출 가능한 퀘스트가 있는지 확인합니다.
+    /// (이 NPC가 퀘스트를 줬고, 해당 퀘스트가 수락됐으며 목표 달성 상태일 때)
+    /// </summary>
+    public bool GetCompletableQuestForNpc(string npcId, out QuestData quest, out DialogueData completionDialogue, out string submitButtonText)
+    {
+        quest = null;
+        completionDialogue = null;
+        submitButtonText = null;
+
+        var questDialogue = GetQuestDialogue(npcId);
+        if (questDialogue == null || string.IsNullOrEmpty(questDialogue.LinkedQuestId)) return false;
+
+        if (QuestManager.Instance == null) return false;
+        var activeQuests = QuestManager.Instance.GetActiveQuests();
+        QuestData found = null;
+        for (int i = 0; i < activeQuests.Count; i++)
+        {
+            var q = activeQuests[i];
+            if (q.QuestId == questDialogue.LinkedQuestId && q.IsAllTasksCompleted()) { found = q; break; }
+        }
+        if (found == null) return false;
+
+        completionDialogue = GetQuestCompleteDialogue(npcId, found.QuestId);
+        if (completionDialogue == null) return false;
+
+        quest = found;
+        submitButtonText = string.IsNullOrEmpty(completionDialogue.QuestButtonText) ? "제출하기" : completionDialogue.QuestButtonText;
+        return true;
     }
 
     /// <summary>
@@ -104,7 +182,7 @@ public class DialogueManager : Singleton<DialogueManager>
     public bool GetAvailableQuestForNpc(string npcId, out string questButtonText)
     {
         questButtonText = null;
-        var flagManager = FindFirstObjectByType<FlagManager>();
+        var flagManager = GetCachedFlagManager();
         if (flagManager == null) return false;
         if (flagManager.GetFlag(GameStateKeys.FirstTalkNpc(npcId)) == 0) return false;
 

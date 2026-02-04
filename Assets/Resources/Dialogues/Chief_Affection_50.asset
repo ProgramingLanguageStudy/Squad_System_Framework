@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6bfb51a6792633b418706756853c58c4, type: 3}
-  m_Name: Chief_Quest_2
+  m_Name: Chief_Affection_50
   m_EditorClassIdentifier: 
   NpcId: Chief
-  DialogueType: 1
-  ConditionKey: Mushroom
-  ConditionValue: 1
-  Sentence: "\uBC84\uC12F\uC740 \uC544\uC9C1\uC778\uAC00? \uC232 \uC11C\uCABD\uC73C\uB85C
-    \uAC00\uBA74 \uB9CE\uB2E4\uB124."
-  AfterActionEvent: 
+  DialogueType: 4
+  ConditionValue: 50
+  Sentence: "\uC790\uB124\uB77C\uBA74 \uC6B0\uB9AC \uB9C8\uC744\uC758 \uC911\uC694\uD55C
+    \uC77C\uC744 \uB9E1\uAE38 \uC218\uB3C4 \uC788\uACA0\uC5B4."
+  LinkedQuestId: 
+  QuestButtonText: 

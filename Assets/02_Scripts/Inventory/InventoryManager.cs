@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 [System.Serializable]
@@ -58,6 +58,7 @@ public class InventoryManager : Singleton<InventoryManager>
                     if (amount <= 0)
                     {
                         OnItemChanged?.Invoke();
+                        GameEvents.OnQuestGoalProcessed?.Invoke(item.ItemId, GetTotalCount(item.ItemId));
                         return;
                     }
                 }
@@ -163,6 +164,32 @@ public class InventoryManager : Singleton<InventoryManager>
     }
 
     public ItemSlotData[] GetSlots() => _slots;
+
+    /// <summary>
+    /// 특정 아이템을 지정 수량만큼 제거합니다. (퀘스트 제출 등)
+    /// </summary>
+    /// <returns>요청한 수량만큼 제거했으면 true, 부족하면 false</returns>
+    public bool RemoveItem(string itemId, int amount)
+    {
+        if (GetTotalCount(itemId) < amount) return false;
+
+        int remaining = amount;
+        foreach (var slot in _slots)
+        {
+            if (remaining <= 0) break;
+            if (slot.Item == null || slot.Item.ItemId != itemId) continue;
+
+            int toRemove = Mathf.Min(slot.Count, remaining);
+            slot.Count -= toRemove;
+            remaining -= toRemove;
+            if (slot.Count <= 0)
+                slot.Clear();
+        }
+
+        OnItemChanged?.Invoke();
+        GameEvents.OnQuestGoalProcessed?.Invoke(itemId, GetTotalCount(itemId));
+        return true;
+    }
 
     /// <summary>
     /// 인벤토리 전체를 뒤져서 특정 아이템의 총 개수를 반환합니다.

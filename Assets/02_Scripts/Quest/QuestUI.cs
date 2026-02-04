@@ -1,11 +1,12 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using TMPro;
 
 /// <summary>
-/// 진행 중인 퀘스트 목록을 표시. OnQuestUpdated 시 자동 갱신.
-/// 패널/텍스트는 인스펙터에서 연결. 열기/닫기는 Toggle() 또는 패널 SetActive로 제어.
+/// 퀘스트 트래커 UI. 진행 중인 퀘스트를 항상 표시하며, OnQuestUpdated 시 자동 갱신.
+/// 패널/텍스트는 인스펙터에서 연결. (전체 퀘스트 목록은 별도 UI에서 Q 키로 열 예정)
 /// </summary>
 public class QuestUI : MonoBehaviour
 {
@@ -14,7 +15,15 @@ public class QuestUI : MonoBehaviour
 
     private void OnEnable()
     {
+        if (_panel != null)
+            _panel.SetActive(true); // 트래커는 항상 표시
         GameEvents.OnQuestUpdated += OnQuestUpdated;
+        StartCoroutine(RefreshNextFrame());
+    }
+
+    private IEnumerator RefreshNextFrame()
+    {
+        yield return null;
         Refresh();
     }
 
@@ -28,14 +37,14 @@ public class QuestUI : MonoBehaviour
         Refresh();
     }
 
+    /// <summary>전체 퀘스트 목록용으로 나중에 사용. 현재 트래커 패널은 항상 표시.</summary>
     public void Toggle()
     {
-        if (_panel != null)
-            _panel.SetActive(!_panel.activeSelf);
+        // 트래커는 항상 켜 둠. 나중에 전체 목록 패널 토글 시 여기서 처리 가능
     }
 
-    /// <summary>패널이 열려 있는지 (이동 제한 등에 사용).</summary>
-    public bool IsOpen => _panel != null && _panel.activeSelf;
+    /// <summary>트래커는 항상 표시되므로 이동 제한에 사용하지 않음.</summary>
+    public bool IsOpen => false;
 
     public void Refresh()
     {
@@ -56,7 +65,7 @@ public class QuestUI : MonoBehaviour
             {
                 string progress = $"{task.CurrentAmount}/{task.TargetAmount}";
                 string done = task.IsCompleted ? " [완료]" : "";
-                sb.AppendLine($"  · {task.Description} ({progress}){done}");
+                sb.AppendLine($"  - {task.Description} ({progress}){done}");
             }
             sb.AppendLine();
         }

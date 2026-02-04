@@ -24,7 +24,7 @@ public class DialogueUI : MonoBehaviour
         if (_endButton != null)
             _endButton.onClick.AddListener(() => DialogueSystem.Instance?.EndDialogue());
         if (_questButton != null)
-            _questButton.onClick.AddListener(() => DialogueSystem.Instance?.RequestQuestDialogue());
+            _questButton.onClick.AddListener(() => DialogueSystem.Instance?.OnQuestPanelButtonClicked());
     }
 
     /// <summary>폰트에 없는 문자(\u00A0 등)를 일반 공백으로 치환해 TMP 경고를 막습니다.</summary>
@@ -34,17 +34,20 @@ public class DialogueUI : MonoBehaviour
         return s.Replace('\u00A0', ' ');
     }
 
-    public void Open(string name, string[] sentences, bool showQuestButton = false, string questButtonText = "퀘스트")
+    /// <summary>퀘스트 버튼: 수락용(showQuestButton) 또는 제출용(showSubmitButton) 중 하나만 사용.</summary>
+    public void Open(string name, string[] sentences, bool showQuestButton = false, string questButtonText = "퀘스트",
+        bool showSubmitButton = false, string submitButtonText = "제출하기")
     {
         _panel.SetActive(true);
         _nameText.text = SanitizeForTMP(name ?? "");
         _sentences = sentences != null ? Array.ConvertAll(sentences, s => SanitizeForTMP(s ?? "")) : Array.Empty<string>();
         _currentIndex = 0;
 
+        bool showButton = showQuestButton || showSubmitButton;
         if (_questButton != null)
-            _questButton.gameObject.SetActive(showQuestButton);
+            _questButton.gameObject.SetActive(showButton);
         if (_questButtonText != null)
-            _questButtonText.text = SanitizeForTMP(questButtonText ?? "퀘스트");
+            _questButtonText.text = SanitizeForTMP(showSubmitButton ? (submitButtonText ?? "제출하기") : (questButtonText ?? "퀘스트"));
 
         UpdateUI();
     }

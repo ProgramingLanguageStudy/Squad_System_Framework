@@ -1,36 +1,36 @@
-﻿using System.Collections.Generic;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
-using System.Linq; // ToList() 사용을 위해 필요
 
 public class InventoryUI : MonoBehaviour
 {
     [SerializeField] private GameObject _slotPrefab;
     [SerializeField] private Transform _slotContainer;
-    [SerializeField] private int _maxSlotCount = 30; // 상수로 관리하면 좋습니다.
+    [SerializeField] private int _maxSlotCount = 30;
 
     private List<InventorySlot> _slots = new List<InventorySlot>();
 
     private void Start()
     {
-        // 1. 슬롯 미리 생성
+        StartCoroutine(CreateSlotsOverFrames());
+    }
+
+    /// <summary>슬롯 생성을 여러 프레임에 나눠 첫 실행 시 렉 완화.</summary>
+    private IEnumerator CreateSlotsOverFrames()
+    {
+        const int slotsPerFrame = 5;
         for (int i = 0; i < _maxSlotCount; i++)
         {
             var slotGo = Instantiate(_slotPrefab, _slotContainer);
             var slot = slotGo.GetComponent<InventorySlot>();
-
-            // [추가] 생성되는 순서대로 슬롯에 인덱스(0, 1, 2...)를 부여합니다.
             slot.SetIndex(i);
-
             slot.ClearSlot();
             _slots.Add(slot);
+            if ((i + 1) % slotsPerFrame == 0)
+                yield return null;
         }
-
-        // 2. 인벤토리 매니저 이벤트 구독
         if (InventoryManager.Instance != null)
-        {
             InventoryManager.Instance.OnItemChanged += () => Refresh();
-        }
-
         gameObject.SetActive(false);
     }
 
@@ -40,16 +40,10 @@ public class InventoryUI : MonoBehaviour
         gameObject.SetActive(isActive);
 
         if (isActive)
-        {
             Refresh();
-            Cursor.visible = true;
-            Cursor.lockState = CursorLockMode.None;
-        }
-        else
-        {
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
-        }
+        else if (TooltipUI.Instance != null)
+            TooltipUI.Instance.Hide();
+        // 커서 표시/숨김은 PlayScene.Update()에서 통합 처리
     }
 
     public void Refresh()

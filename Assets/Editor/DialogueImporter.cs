@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using System.IO;
 using System.Collections.Generic;
@@ -72,17 +72,11 @@ public class DialogueImporter : EditorWindow
             // Trim('\"')�� ����Ͽ� �� ���� ū����ǥ ����
             entry.NpcId = values[0].Trim('\"').Trim();
             entry.DialogueType = (DialogueType)System.Enum.Parse(typeof(DialogueType), values[1].Trim('\"').Trim());
-            entry.ConditionKey = values[2].Trim('\"').Trim();
-
             int.TryParse(values[3].Trim('\"').Trim(), out entry.ConditionValue);
 
             // Sentence �ʵ��� ū����ǥ ���� �� �ٹٲ� ó��
             entry.Sentence = values[4].Trim('\"').Replace("\\n", "\n").Trim();
 
-            if (values.Length > 5)
-            {
-                entry.AfterActionEvent = values[5].Trim('\"').Trim();
-            }
 
             // ���Ϸ� ����
             string fileName = $"{entry.NpcId}_{entry.DialogueType}_{i}.asset";

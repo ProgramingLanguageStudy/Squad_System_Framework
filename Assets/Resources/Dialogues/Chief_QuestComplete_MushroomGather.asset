@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6bfb51a6792633b418706756853c58c4, type: 3}
-  m_Name: Chief_Quest_3
+  m_Name: Chief_QuestComplete_MushroomGather
   m_EditorClassIdentifier: 
   NpcId: Chief
-  DialogueType: 1
-  ConditionKey: Mushroom
-  ConditionValue: 2
-  Sentence: "\uC624! \uC815\uB9D0 \uC2F1\uC2F1\uD55C \uBC84\uC12F\uC774\uAD70. \uC5EC\uAE30
-    \uBCF4\uC0C1\uC774\uB77C\uB124."
-  AfterActionEvent: Complete_Mushroom
+  DialogueType: 2
+  ConditionValue: 0
+  Sentence: "\uC624\uC624 \uBC84\uC12F\uC744 \uB2E4 \uAD6C\uD574\uC654\uAD70! \uC815\uB9D0
+    \uACE0\uB9D9\uB124."
+  LinkedQuestId: MushroomGather
+  QuestButtonText: "\uBC84\uC12F 5\uAC1C \uC81C\uCD9C\uD558\uAE30"
