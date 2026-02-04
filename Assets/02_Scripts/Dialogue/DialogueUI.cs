@@ -27,6 +27,14 @@ public class DialogueUI : MonoBehaviour
             _questButton.onClick.AddListener(() => DialogueSystem.Instance?.OnQuestPanelButtonClicked());
     }
 
+    /// <summary>
+    /// 대화창을 켤 때마다 필요한 변수들을 초기화하기 위한 함수
+    /// </summary>
+    public void Initialize()
+    {
+
+    }
+
     /// <summary>폰트에 없는 문자(\u00A0 등)를 일반 공백으로 치환해 TMP 경고를 막습니다.</summary>
     private static string SanitizeForTMP(string s)
     {

@@ -1,0 +1,5 @@
+# 스크립트 파일 UTF-8 (65001) 고정
+root = true
+
+[*.cs]
+charset = utf-8
