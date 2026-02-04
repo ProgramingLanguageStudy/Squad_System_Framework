@@ -42,20 +42,20 @@ public class DialogueUI : MonoBehaviour
         return s.Replace('\u00A0', ' ');
     }
 
-    /// <summary>퀘스트 버튼: 수락용(showQuestButton) 또는 제출용(showSubmitButton) 중 하나만 사용.</summary>
+    /// <summary>퀘스트 버튼: 수락용(showQuestButton) 또는 완료용(showCompleteButton) 중 하나만 사용.</summary>
     public void Open(string name, string[] sentences, bool showQuestButton = false, string questButtonText = "퀘스트",
-        bool showSubmitButton = false, string submitButtonText = "제출하기")
+        bool showCompleteButton = false, string completeButtonText = "완료")
     {
         _panel.SetActive(true);
         _nameText.text = SanitizeForTMP(name ?? "");
         _sentences = sentences != null ? Array.ConvertAll(sentences, s => SanitizeForTMP(s ?? "")) : Array.Empty<string>();
         _currentIndex = 0;
 
-        bool showButton = showQuestButton || showSubmitButton;
+        bool showButton = showQuestButton || showCompleteButton;
         if (_questButton != null)
             _questButton.gameObject.SetActive(showButton);
         if (_questButtonText != null)
-            _questButtonText.text = SanitizeForTMP(showSubmitButton ? (submitButtonText ?? "제출하기") : (questButtonText ?? "퀘스트"));
+            _questButtonText.text = SanitizeForTMP(showCompleteButton ? (completeButtonText ?? "완료") : (questButtonText ?? "퀘스트"));
 
         UpdateUI();
     }

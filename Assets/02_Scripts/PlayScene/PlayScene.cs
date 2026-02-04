@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 public class PlayScene : MonoBehaviour
@@ -6,22 +7,34 @@ public class PlayScene : MonoBehaviour
     [SerializeField] private InputHandler _input;
     [SerializeField] private Player _player;
     [SerializeField] private InteractionUI _interactionUI;
-    [SerializeField] private InventoryUI _inventoryUI;
-
-    // DialogueUI 대신 실제 로직을 담당하는 DialogueSystem을 참조하는 것이 좋습니다.
+    [SerializeField] private InventoryView _inventoryView;
+    [SerializeField] private InventoryPresenter _inventoryPresenter;
     [SerializeField] private DialogueUI _dialogueUI;
     [SerializeField] private FlagManager _flagManager;
-    [SerializeField] private QuestUI _questUI;
+    [SerializeField] private Inventory _inventory;
+
+    [Header("----- 퀘스트 (MVP) -----")]
+    [SerializeField] private QuestModel _questModel;
+    [SerializeField] private QuestView _questView;
+    [SerializeField] private QuestPresenter _questPresenter;
+
+    [Header("----- 대화 조율 -----")]
+    [SerializeField] private DialogueCoordinator _dialogueCoordinator;
 
     private void Awake()
     {
         if (_input == null) _input = FindFirstObjectByType<InputHandler>();
         if (_player == null) _player = FindFirstObjectByType<Player>();
         if (_interactionUI == null) _interactionUI = FindFirstObjectByType<InteractionUI>();
-        if (_flagManager == null) _flagManager = FindFirstObjectByType<FlagManager>();
+        if (_inventoryView == null) _inventoryView = FindFirstObjectByType<InventoryView>();
+        if (_inventoryPresenter == null) _inventoryPresenter = FindFirstObjectByType<InventoryPresenter>();
         if (_dialogueUI == null) _dialogueUI = FindFirstObjectByType<DialogueUI>();
-        if (_inventoryUI == null) _inventoryUI = FindFirstObjectByType<InventoryUI>();
-        if (_questUI == null) _questUI = FindFirstObjectByType<QuestUI>();
+        if (_flagManager == null) _flagManager = FindFirstObjectByType<FlagManager>();
+        if (_inventory == null) _inventory = FindFirstObjectByType<Inventory>();
+        if (_questModel == null) _questModel = FindFirstObjectByType<QuestModel>();
+        if (_questView == null) _questView = FindFirstObjectByType<QuestView>();
+        if (_questPresenter == null) _questPresenter = FindFirstObjectByType<QuestPresenter>();
+        if (_dialogueCoordinator == null) _dialogueCoordinator = FindFirstObjectByType<DialogueCoordinator>();
 
         InitializeScene();
     }
@@ -41,7 +54,7 @@ public class PlayScene : MonoBehaviour
 
     private void Update()
     {
-        bool isInventoryOpen = _inventoryUI != null && _inventoryUI.gameObject.activeSelf;
+        bool isInventoryOpen = _inventoryView != null && _inventoryView.IsPanelActive;
         bool isTalking = _dialogueUI != null && DialogueSystem.Instance.IsTalking;
         // 퀘스트 트래커는 항상 표시되므로 이동 제한에서 제외
 
@@ -68,21 +81,78 @@ public class PlayScene : MonoBehaviour
         _player.Initialize();
         _interactionUI.Setup();
 
-        // 상호작용 타겟 변경 시 가이드 UI (예: "촌장과 대화하기[E]") 업데이트
-        _player.Interactor.OnTargetChanged += (target) =>
-        {
-            UpdateInteractionUI(target);
-        };
+        if (_inventory != null)
+            _inventory.OnItemChangedWithId += OnInventoryItemChanged;
 
-        // 대화 종료 시 InteractionUI 다시 갱신
+        if (_dialogueCoordinator != null && DialogueManager.Instance != null && DialogueSystem.Instance != null && _questModel != null && _flagManager != null)
+            _dialogueCoordinator.Initialize(DialogueManager.Instance, DialogueSystem.Instance, _questModel, _flagManager);
+
+        _player.Interactor.OnTargetChanged += (target) => UpdateInteractionUI(target);
         DialogueSystem.Instance.OnDialogueEnd += OnDialogueEnded;
 
-        // DialogueSystem ↔ QuestManager: 퀘스트 수락/제출은 한 곳(QuestManager)에서 처리
-        if (QuestManager.Instance != null)
+        var ds = DialogueSystem.Instance;
+        if (ds != null && _questModel != null)
         {
-            DialogueSystem.Instance.OnQuestAcceptRequested += QuestManager.Instance.HandleQuestAcceptRequestedFromDialogue;
-            DialogueSystem.Instance.OnQuestSubmitRequested += QuestManager.Instance.HandleQuestSubmitRequestedFromDialogue;
+            ds.OnQuestAcceptRequested += HandleQuestAcceptRequested;
+            ds.OnQuestCompleteRequested += HandleQuestCompleteRequested;
         }
+    }
+
+    /// <summary>대화창에서 퀘스트 수락 버튼 클릭 시. 대사 전환 후 대화 종료 시 수락·플래그·수집 소급 적용.</summary>
+    private void HandleQuestAcceptRequested(string npcId)
+    {
+        var questDialogue = DialogueManager.Instance.GetQuestDialogue(npcId);
+        if (questDialogue == null || string.IsNullOrEmpty(questDialogue.LinkedQuestId)) return;
+
+        string[] sentences = questDialogue.Sentence.Split('/').Select(s => s.Trim()).ToArray();
+        var ds = DialogueSystem.Instance;
+        ds.ReplaceContent(ds.CurrentSpeakerName, sentences);
+        ds.SetQuestButtonVisible(false);
+
+        ds.RegisterOnDialogueEndOnce(() =>
+        {
+            if (_flagManager != null)
+                _flagManager.SetFlag(GameStateKeys.QuestAccepted(questDialogue.LinkedQuestId), 1);
+            var questData = Resources.Load<QuestData>($"Quests/{questDialogue.LinkedQuestId}");
+            if (questData == null || _questModel == null) return;
+
+            _questModel.AcceptQuest(questData);
+            // 수집 퀘스트: 인벤토리 현재 개수로 진행도 동기화 (퀘스트 시스템은 인벤토리를 모름 → 조율에서 처리)
+            if (_inventory != null)
+            {
+                foreach (var task in questData.Tasks)
+                {
+                    if (task is GatherTask gatherTask)
+                        _questModel.SetGatherProgress(questData.QuestId, gatherTask.TargetItemId, _inventory.GetTotalCount(gatherTask.TargetItemId));
+                }
+            }
+        });
+    }
+
+    /// <summary>대화창에서 퀘스트 완료 버튼 클릭 시. 아이템 차감·플래그는 여기서, 목록 제거만 QuestModel에 위임.</summary>
+    private void HandleQuestCompleteRequested(string npcId)
+    {
+        if (!QuestDialogueQueries.GetCompletableQuestForNpc(DialogueManager.Instance, _questModel, npcId, out var quest, out var completionDialogue, out _))
+            return;
+        if (_questModel == null) return;
+
+        if (_inventory != null)
+        {
+            foreach (var task in quest.Tasks)
+            {
+                if (task.RequiresItemDeduction && !_inventory.RemoveItem(task.TargetId, task.TargetAmount))
+                    return;
+            }
+        }
+
+        _questModel.CompleteQuest(quest.QuestId);
+        if (_flagManager != null)
+            _flagManager.SetFlag(GameStateKeys.QuestCompleted(quest.QuestId), 1);
+
+        string[] sentences = completionDialogue.Sentence.Split('/').Select(s => s.Trim()).ToArray();
+        var ds = DialogueSystem.Instance;
+        ds.ReplaceContent(ds.CurrentSpeakerName, sentences);
+        ds.SetQuestButtonVisible(false);
     }
 
     private void OnDialogueEnded()
@@ -119,10 +189,10 @@ public class PlayScene : MonoBehaviour
     private void HandleInventory()
     {
         if (_dialogueUI != null && DialogueSystem.Instance.IsTalking) return;
-        if (_inventoryUI != null)
+        if (_inventoryView != null)
         {
-            _inventoryUI.ToggleInventory();
-            if (_inventoryUI.gameObject.activeSelf)
+            _inventoryView.ToggleInventory();
+            if (_inventoryView.IsPanelActive)
                 _interactionUI.Refresh(null);
         }
     }
@@ -133,8 +203,15 @@ public class PlayScene : MonoBehaviour
         // TODO: 나중에 전체 퀘스트 목록 UI 열기/닫기 (현재 퀘스트 트래커는 항상 표시됨)
     }
 
+    private void OnInventoryItemChanged(string itemId, int totalCount)
+    {
+        GameEvents.OnQuestGoalProcessed?.Invoke(itemId, totalCount);
+    }
+
     private void OnDestroy()
     {
+        if (_inventory != null)
+            _inventory.OnItemChangedWithId -= OnInventoryItemChanged;
         if (_input != null)
         {
             _input.OnInteractPerformed -= HandleInteract;
@@ -142,15 +219,11 @@ public class PlayScene : MonoBehaviour
             _input.OnQuestPerformed -= HandleQuest;
         }
         var ds = DialogueSystem.Instance;
-        var qm = QuestManager.Instance;
         if (ds != null)
         {
             ds.OnDialogueEnd -= OnDialogueEnded;
-            if (qm != null)
-            {
-                ds.OnQuestAcceptRequested -= qm.HandleQuestAcceptRequestedFromDialogue;
-                ds.OnQuestSubmitRequested -= qm.HandleQuestSubmitRequestedFromDialogue;
-            }
+            ds.OnQuestAcceptRequested -= HandleQuestAcceptRequested;
+            ds.OnQuestCompleteRequested -= HandleQuestCompleteRequested;
         }
     }
 }

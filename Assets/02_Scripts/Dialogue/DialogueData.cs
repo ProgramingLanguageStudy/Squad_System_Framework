@@ -11,6 +11,6 @@ public class DialogueData : ScriptableObject
 
     /// <summary>퀘스트 제시/완료 대사일 때 연결된 퀘스트 ID (Resources/Quests/{id}.asset).</summary>
     public string LinkedQuestId = string.Empty;
-    /// <summary>대화창 퀘스트 버튼 문구 (예: "버섯 채집 퀘스트", "버섯 5개 제출하기").</summary>
+    /// <summary>대화창 퀘스트 버튼 문구. 수락 시 예: "버섯 채집 퀘스트", 완료 시 예: "완료" 또는 "버섯 5개 제출".</summary>
     public string QuestButtonText = "퀘스트";
 }

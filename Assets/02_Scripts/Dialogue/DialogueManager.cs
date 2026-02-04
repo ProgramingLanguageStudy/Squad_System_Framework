@@ -144,56 +144,6 @@ public class DialogueManager : Singleton<DialogueManager>
         return null;
     }
 
-    /// <summary>
-    /// 이 NPC에게 제출 가능한 퀘스트가 있는지 확인합니다.
-    /// (이 NPC가 퀘스트를 줬고, 해당 퀘스트가 수락됐으며 목표 달성 상태일 때)
-    /// </summary>
-    public bool GetCompletableQuestForNpc(string npcId, out QuestData quest, out DialogueData completionDialogue, out string submitButtonText)
-    {
-        quest = null;
-        completionDialogue = null;
-        submitButtonText = null;
-
-        var questDialogue = GetQuestDialogue(npcId);
-        if (questDialogue == null || string.IsNullOrEmpty(questDialogue.LinkedQuestId)) return false;
-
-        if (QuestManager.Instance == null) return false;
-        var activeQuests = QuestManager.Instance.GetActiveQuests();
-        QuestData found = null;
-        for (int i = 0; i < activeQuests.Count; i++)
-        {
-            var q = activeQuests[i];
-            if (q.QuestId == questDialogue.LinkedQuestId && q.IsAllTasksCompleted()) { found = q; break; }
-        }
-        if (found == null) return false;
-
-        completionDialogue = GetQuestCompleteDialogue(npcId, found.QuestId);
-        if (completionDialogue == null) return false;
-
-        quest = found;
-        submitButtonText = string.IsNullOrEmpty(completionDialogue.QuestButtonText) ? "제출하기" : completionDialogue.QuestButtonText;
-        return true;
-    }
-
-    /// <summary>
-    /// 일상 대사 시 퀘스트 버튼을 보여줄 수 있는지 확인합니다.
-    /// 첫 만남 완료 + 수락 전 퀘스트가 있을 때만 true, 버튼 텍스트를 반환합니다.
-    /// </summary>
-    public bool GetAvailableQuestForNpc(string npcId, out string questButtonText)
-    {
-        questButtonText = null;
-        var flagManager = GetCachedFlagManager();
-        if (flagManager == null) return false;
-        if (flagManager.GetFlag(GameStateKeys.FirstTalkNpc(npcId)) == 0) return false;
-
-        var questDialogue = GetQuestDialogue(npcId);
-        if (questDialogue == null || string.IsNullOrEmpty(questDialogue.LinkedQuestId)) return false;
-        if (flagManager.GetFlag(GameStateKeys.QuestAccepted(questDialogue.LinkedQuestId)) == 1) return false;
-
-        questButtonText = string.IsNullOrEmpty(questDialogue.QuestButtonText) ? "퀘스트" : questDialogue.QuestButtonText;
-        return true;
-    }
-
     // --- 호감도 관련 API ---
 
     /// <summary>
