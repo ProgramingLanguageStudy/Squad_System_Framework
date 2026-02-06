@@ -10,8 +10,6 @@ public class DialogueManager : Singleton<DialogueManager>
 
     private Dictionary<string, int> _affectionTable = new Dictionary<string, int>();
 
-    private FlagManager _cachedFlagManager;
-
     // 로드 완료 여부를 확인하기 위한 프로퍼티
     public bool IsLoaded { get; private set; } = false;
 
@@ -20,13 +18,6 @@ public class DialogueManager : Singleton<DialogueManager>
         base.Awake();
         // Resources.LoadAll은 첫 프레임에 부담을 줌 → 다음 프레임으로 미룸
         StartCoroutine(LoadAllDialogueAssetsNextFrame());
-    }
-
-    private FlagManager GetCachedFlagManager()
-    {
-        if (_cachedFlagManager == null)
-            _cachedFlagManager = FindFirstObjectByType<FlagManager>();
-        return _cachedFlagManager;
     }
 
     /// <summary>
@@ -81,19 +72,8 @@ public class DialogueManager : Singleton<DialogueManager>
         }
 
         int currentAffection = GetAffection(npcId);
-        var flagManager = GetCachedFlagManager();
 
-        // 3-0. 첫 만남
-        if (flagManager != null && flagManager.GetFlag(GameStateKeys.FirstTalkNpc(npcId)) == 0)
-        {
-            for (int i = 0; i < npcTalks.Count; i++)
-            {
-                if (npcTalks[i].DialogueType == DialogueType.FirstMeet)
-                    return npcTalks[i];
-            }
-        }
-
-        // 3-2. 호감도 대사 (조건 만족 중 호감도 최고)
+        // 호감도 대사 (조건 만족 중 호감도 최고)
         DialogueData bestAffection = null;
         for (int i = 0; i < npcTalks.Count; i++)
         {
@@ -104,7 +84,7 @@ public class DialogueManager : Singleton<DialogueManager>
         }
         if (bestAffection != null) return bestAffection;
 
-        // 3-3. Common 중 랜덤
+        // Common 중 랜덤
         int commonCount = 0;
         for (int i = 0; i < npcTalks.Count; i++)
             if (npcTalks[i].DialogueType == DialogueType.Common) commonCount++;
@@ -119,29 +99,6 @@ public class DialogueManager : Singleton<DialogueManager>
         }
 
         return npcTalks[0];
-    }
-
-    /// <summary>
-    /// 해당 NPC의 퀘스트 제시용 대사 1개를 반환합니다. (DialogueType.Quest)
-    /// </summary>
-    public DialogueData GetQuestDialogue(string npcId)
-    {
-        if (!_dialogueByNpcId.TryGetValue(npcId, out var list)) return null;
-        for (int i = 0; i < list.Count; i++)
-            if (list[i].DialogueType == DialogueType.Quest) return list[i];
-        return null;
-    }
-
-    public DialogueData GetQuestCompleteDialogue(string npcId, string questId)
-    {
-        if (!_dialogueByNpcId.TryGetValue(npcId, out var list)) return null;
-        for (int i = 0; i < list.Count; i++)
-        {
-            var d = list[i];
-            if (d.DialogueType == DialogueType.QuestComplete && d.LinkedQuestId == questId)
-                return d;
-        }
-        return null;
     }
 
     // --- 호감도 관련 API ---

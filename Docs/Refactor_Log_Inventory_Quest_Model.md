@@ -77,7 +77,7 @@
 - **AcceptQuest(QuestData)**: `ActiveQuest.CreateFrom(questData)` 생성 후 리스트에 추가.
 - **OnQuestUpdated**: **`Action<ActiveQuest>`**.
 - **GetActiveQuests()**: **`IReadOnlyList<ActiveQuest>`** 반환.
-- **SetGatherProgress** / **ProcessQuestProgress** / **CompleteQuest**: 모두 ActiveQuest·ActiveQuestTask 기준으로 동작.
+- **SetTaskProgress** / **NotifyProgress** / **CompleteQuest**: 모두 ActiveQuest·ActiveQuestTask 기준으로 동작.
 
 ### 2.3 연동부 수정
 
@@ -115,7 +115,7 @@
 - **QuestTask** / **GatherTask** / **KillTask** / **VisitTask**: 에셋용 정의 (CurrentAmount는 에셋 상에서는 사용하지 않고, 런타임은 ActiveQuestTask 사용).
 - **ActiveQuest**: QuestId, Title, Tasks(ActiveQuestTask), CreateFrom(QuestData).
 - **ActiveQuestTask**: Description, TargetAmount, CurrentAmount, TargetId, IsAccumulate, RequiresItemDeduction, UpdateProgress.
-- **QuestModel**: List<ActiveQuest>, AcceptQuest(QuestData), SetGatherProgress, CompleteQuest, OnQuestUpdated(ActiveQuest), GetActiveQuests() → IReadOnlyList<ActiveQuest>.
+- **QuestSystem**: List<ActiveQuest>, AcceptQuest(QuestData), SetTaskProgress, CompleteQuest, OnQuestUpdated(ActiveQuest), GetActiveQuests() → IReadOnlyList<ActiveQuest>.
 
 ---
 

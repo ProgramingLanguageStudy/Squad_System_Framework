@@ -1,19 +1,21 @@
-﻿using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "NewQuest", menuName = "Quest/QuestData")]
 public class QuestData : ScriptableObject
 {
     public string QuestId;
+    /// <summary>퀘스트 제목 (UI 헤더용).</summary>
     public string Title;
+    /// <summary>목표 설명 (UI용, 예: 버섯 3개 수집).</summary>
+    [TextArea(1, 3)]
+    public string Description;
 
-    // 핵심: 여러 개의 목표를 가질 수 있음!
-    [SerializeReference] // 다형성(상속) 데이터 저장을 위해 필요
-    public List<QuestTask> Tasks = new List<QuestTask>();
+    public QuestType QuestType;
+    /// <summary>목표 ID (아이템/몬스터/장소 등).</summary>
+    public string TargetId;
+    /// <summary>목표 수치. 방문/도착은 1.</summary>
+    public int TargetAmount = 1;
 
-    public bool IsAllTasksCompleted()
-    {
-        return Tasks.All(t => t.IsCompleted);
-    }
+    /// <summary>완료 시 인벤토리에서 차감할지 (채집 퀘스트만 true).</summary>
+    public bool RequiresItemDeduction;
 }

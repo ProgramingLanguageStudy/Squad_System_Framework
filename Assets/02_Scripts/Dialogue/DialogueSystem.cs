@@ -1,93 +1,66 @@
 using System;
 using UnityEngine;
 
+/// <summary>
+/// 대화 진입점(파사드). Model 보유, 외부는 StartDialogue/DisplayNextSentence/EndDialogue만 호출.
+/// Presenter가 Model·View를 연결함.
+/// </summary>
 public class DialogueSystem : Singleton<DialogueSystem>
 {
-    [SerializeField] private DialogueUI _ui;
-    public bool IsTalking { get; private set; }
-    public event Action OnDialogueEnd;
+    private readonly DialogueModel _model = new DialogueModel();
 
-    /// <summary>퀘스트 수락 버튼 클릭 시 (npcId). 구독처에서 대사 전환·수락 처리.</summary>
-    public event Action<string> OnQuestAcceptRequested;
-    /// <summary>퀘스트 완료 버튼 클릭 시 (npcId). 구독처에서 완료 대사 표시.</summary>
-    public event Action<string> OnQuestCompleteRequested;
+    public DialogueModel Model => _model;
 
-    private Action _onDialogueComplete;
-    private Action _onDialogueEndOnce;
-    private string _currentSpeakerName;
-    private string _currentNpcId;
-    private DialogueType _currentDialogueType;
-    private bool _questButtonIsComplete;
+    public bool IsTalking => _model.IsTalking;
+    public string CurrentNpcId => _model.CurrentNpcId;
+    public string CurrentSpeakerName => _model.CurrentSpeakerName;
+    public DialogueType CurrentDialogueType => _model.CurrentDialogueType;
 
-    public string CurrentNpcId => _currentNpcId;
-    public string CurrentSpeakerName => _currentSpeakerName;
-    public DialogueType CurrentDialogueType => _currentDialogueType;
+    public event Action OnDialogueEnd
+    {
+        add => _model.OnDialogueEnd += value;
+        remove => _model.OnDialogueEnd -= value;
+    }
 
     protected override void Awake()
     {
         base.Awake();
     }
 
-    /// <summary>다음 대화 종료 시 한 번만 호출될 콜백 등록. (퀘스트 수락 시 플래그·수락 처리용)</summary>
-    public void RegisterOnDialogueEndOnce(Action callback)
+    public void StartDialogue(string speakerName, string[] sentences, string npcId, DialogueType dialogueType, Action onComplete = null)
     {
-        _onDialogueEndOnce = callback;
+        _model.StartDialogue(speakerName, sentences, npcId, dialogueType, onComplete);
     }
 
-    /// <summary>대사 내용만 바꿀 때 (퀘스트 수락/제출 처리 쪽에서 호출)</summary>
-    public void ReplaceContent(string speakerName, string[] sentences)
-    {
-        _ui.ReplaceContent(speakerName, sentences);
-    }
-
-    public void SetQuestButtonVisible(bool visible)
-    {
-        _ui.SetQuestButtonVisible(visible);
-    }
-
-    public void StartDialogue(string speakerName, string[] sentences, string npcId, DialogueType dialogueType,
-        bool showQuestButton, string questButtonText, Action onComplete = null,
-        bool showCompleteButton = false, string completeButtonText = "완료")
-    {
-        if (IsTalking) return;
-        IsTalking = true;
-        _onDialogueComplete = onComplete;
-        _onDialogueEndOnce = null;
-        _currentSpeakerName = speakerName;
-        _currentNpcId = npcId;
-        _currentDialogueType = dialogueType;
-        _questButtonIsComplete = showCompleteButton;
-        _ui.Open(speakerName, sentences, showQuestButton, questButtonText, showCompleteButton, completeButtonText);
-    }
-
+    /// <summary>E키 등으로 "다음" 요청 시. Presenter가 Model 갱신 시 View 자동 반영.</summary>
     public void DisplayNextSentence()
     {
-        if (!IsTalking) return;
-        _ui.ShowNext();
+        if (!_model.IsTalking) return;
+        if (_model.AdvanceNext())
+            _model.EndDialogue();
     }
 
     public void EndDialogue()
     {
-        if (!IsTalking) return;
-        IsTalking = false;
-        _ui.Close();
-        OnDialogueEnd?.Invoke();
-        _onDialogueComplete?.Invoke();
-        _onDialogueComplete = null;
-        _onDialogueEndOnce?.Invoke();
-        _onDialogueEndOnce = null;
-        _currentSpeakerName = null;
-        _currentNpcId = null;
-        _currentDialogueType = DialogueType.Common;
+        _model.EndDialogue();
     }
 
-    /// <summary>퀘스트 버튼 클릭 시: 수락/완료 이벤트만 발행. 실제 처리는 구독처(PlayScene 등)에서.</summary>
+    public void ReplaceContent(string speakerName, string[] sentences)
+    {
+        _model.ReplaceContent(speakerName, sentences);
+    }
+
+    /// <summary>퀘스트 버튼 표시. Presenter 경유로 View에 전달하려면 Presenter.SetQuestButtonVisible 사용.</summary>
+    public void SetQuestButtonVisible(bool visible)
+    {
+        var presenter = FindFirstObjectByType<DialoguePresenter>();
+        if (presenter != null)
+            presenter.SetQuestButtonVisible(visible);
+    }
+
+    /// <summary>퀘스트 버튼 클릭 시. 연결 시 구독처에서 처리.</summary>
     public void OnQuestPanelButtonClicked()
     {
-        if (string.IsNullOrEmpty(_currentNpcId)) return;
-        if (_questButtonIsComplete)
-            OnQuestCompleteRequested?.Invoke(_currentNpcId);
-        else
-            OnQuestAcceptRequested?.Invoke(_currentNpcId);
+        // 퀘스트 연동 시 이벤트 발행 등
     }
 }
