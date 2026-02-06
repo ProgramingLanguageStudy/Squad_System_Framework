@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bfb51a6792633b418706756853c58c4, type: 3}
   m_Name: Chief_Common_1
   m_EditorClassIdentifier: 
-  NpcId: Chief
-  DialogueType: 3
-  ConditionValue: 0
-  Sentence: "\uC694\uC998 \uB9C8\uBB3C\uC774 \uB9CE\uC544\uC838\uC11C \uCC38 \uAC71\uC815\uC774\uC57C."
-  LinkedQuestId: 
-  QuestButtonText: 
+  id: Chief_Common_1
+  npcId: Chief
+  dialogueType: 3
+  conditionValue: 0
+  lines:
+  - "\uC694\uC998 \uB9C8\uC744\uC774 \uB9CE\uC544\uC838\uC11C \uCC38 \uAC71\uC815\uC774\uC57C."

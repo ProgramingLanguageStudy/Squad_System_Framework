@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// DialogueModel과 DialogueView 연결 (MVP의 Presenter). Model 상태 변경 시 View 갱신, View 버튼 시 Model 호출.
+/// DialogueModel과 DialogueView 연결. View 입력 시 System 제어만 호출.
 /// </summary>
 public class DialoguePresenter : MonoBehaviour
 {
@@ -51,17 +51,15 @@ public class DialoguePresenter : MonoBehaviour
 
     private void HandleNext()
     {
-        if (Model == null) return;
+        if (_system == null) return;
         if (_view != null && _view.TrySkipTyping())
             return;
-        if (Model.AdvanceNext())
-            Model.EndDialogue();
-        // else: Model이 OnDialogueStateChanged를 발행해 RefreshView가 자동 호출됨
+        _system.DisplayNextSentence();
     }
 
     private void HandleEnd()
     {
-        Model?.EndDialogue();
+        _system?.EndDialogue();
     }
 
     public void SetQuestButtonVisible(bool visible, string buttonText = "퀘스트")

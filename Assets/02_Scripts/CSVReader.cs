@@ -31,14 +31,13 @@ public class CSVReader : MonoBehaviour
             var values = Regex.Split(lines[i], SPLIT_RE);
             if (values.Length == 0 || values[0] == "") continue;
 
-            // 새로운 DialogueData 객체 생성 (ScriptableObject)
-            // 참고: 런타임에 생성해서 쓰거나 에셋으로 저장하는 방식으로 쓸 수 있습니다.
             DialogueData entry = ScriptableObject.CreateInstance<DialogueData>();
-
-            entry.NpcId = values[0].Trim(TRIM_CHARS);
-            entry.DialogueType = (DialogueType)System.Enum.Parse(typeof(DialogueType), values[1]);
-            if (values.Length > 3) int.TryParse(values[3], out entry.ConditionValue);
-            entry.Sentence = values[4].Trim(TRIM_CHARS).Replace("\\n", "\n");
+            entry.id = $"{values[0].Trim(TRIM_CHARS)}_{i}";
+            entry.npcId = values.Length > 0 ? values[0].Trim(TRIM_CHARS) : "";
+            if (values.Length > 1) System.Enum.TryParse(values[1].Trim(TRIM_CHARS), out entry.dialogueType);
+            if (values.Length > 3) int.TryParse(values[3].Trim(TRIM_CHARS), out entry.conditionValue);
+            string raw = values.Length > 4 ? values[4].Trim(TRIM_CHARS).Replace("\\n", "\n") : "";
+            entry.lines = string.IsNullOrEmpty(raw) ? System.Array.Empty<string>() : raw.Split('/');
             list.Add(entry);
         }
         return list;

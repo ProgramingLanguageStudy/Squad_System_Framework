@@ -1,5 +1,4 @@
 public enum QuestType { Gather, Kill, Visit } // 수집, 처치, 방문
-public enum QuestState { CanStart, InProgress, CanComplete, Completed }
 
 public enum DialogueType
 {

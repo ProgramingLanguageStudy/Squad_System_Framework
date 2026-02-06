@@ -1,16 +1,21 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 대화 진입점(파사드). Model 보유, 외부는 StartDialogue/DisplayNextSentence/EndDialogue만 호출.
-/// Presenter가 Model·View를 연결함.
+/// 대화 진입점. 데이터 로드·선택·제어(시작/다음/종료). Model은 상태만, System이 제어. 씬에 한 개 두거나 조율층에서 주입.
 /// </summary>
-public class DialogueSystem : Singleton<DialogueSystem>
+public class DialogueSystem : MonoBehaviour
 {
     private readonly DialogueModel _model = new DialogueModel();
+    private Action _onComplete;
 
+    private Dictionary<string, DialogueData> _dialogueById = new Dictionary<string, DialogueData>();
+    private Dictionary<string, List<DialogueData>> _dialogueByNpcId = new Dictionary<string, List<DialogueData>>();
+
+    public bool IsLoaded { get; private set; } = false;
     public DialogueModel Model => _model;
-
     public bool IsTalking => _model.IsTalking;
     public string CurrentNpcId => _model.CurrentNpcId;
     public string CurrentSpeakerName => _model.CurrentSpeakerName;
@@ -22,45 +27,129 @@ public class DialogueSystem : Singleton<DialogueSystem>
         remove => _model.OnDialogueEnd -= value;
     }
 
-    protected override void Awake()
+    private void Awake()
     {
-        base.Awake();
+        StartCoroutine(LoadNextFrame());
     }
 
-    public void StartDialogue(string speakerName, string[] sentences, string npcId, DialogueType dialogueType, Action onComplete = null)
+    private void OnEnable()
     {
-        _model.StartDialogue(speakerName, sentences, npcId, dialogueType, onComplete);
+        GameEvents.OnPlayDialogueRequested += HandlePlayDialogueRequested;
     }
 
-    /// <summary>E키 등으로 "다음" 요청 시. Presenter가 Model 갱신 시 View 자동 반영.</summary>
+    private void OnDisable()
+    {
+        GameEvents.OnPlayDialogueRequested -= HandlePlayDialogueRequested;
+    }
+
+    /// <summary>연결 포트. 외부(Interactor 등)가 OnPlayDialogueRequested 발행 시 여기서 재생.</summary>
+    private void HandlePlayDialogueRequested(DialogueData data)
+    {
+        if (data != null && IsLoaded && !IsTalking)
+            StartDialogue(data);
+    }
+
+    private IEnumerator LoadNextFrame()
+    {
+        yield return null;
+        LoadAll();
+    }
+
+    private void LoadAll()
+    {
+        var assets = Resources.LoadAll<DialogueData>("Dialogues");
+        _dialogueById.Clear();
+        _dialogueByNpcId.Clear();
+        if (assets != null)
+        {
+            for (int i = 0; i < assets.Length; i++)
+            {
+                var d = assets[i];
+                if (d == null) continue;
+                if (!string.IsNullOrEmpty(d.id))
+                    _dialogueById[d.id] = d;
+                if (!string.IsNullOrEmpty(d.npcId))
+                {
+                    if (!_dialogueByNpcId.TryGetValue(d.npcId, out var list))
+                    {
+                        list = new List<DialogueData>();
+                        _dialogueByNpcId[d.npcId] = list;
+                    }
+                    list.Add(d);
+                }
+            }
+        }
+        IsLoaded = true;
+        Debug.Log($"<color=cyan>[DialogueSystem]</color> 대화 {_dialogueById.Count}개 로드.");
+    }
+
+    /// <summary>FirstMeet 우선, 없으면 Common 중 랜덤, 없으면 첫 번째.</summary>
+    public DialogueData GetBestDialogue(string npcId)
+    {
+        if (!IsLoaded || !_dialogueByNpcId.TryGetValue(npcId, out var list) || list.Count == 0)
+        {
+            if (IsLoaded) Debug.LogWarning($"[DialogueSystem] {npcId}에 해당하는 대화가 없습니다.");
+            return null;
+        }
+        for (int i = 0; i < list.Count; i++)
+            if (list[i].dialogueType == DialogueType.FirstMeet) return list[i];
+        int commonCount = 0;
+        for (int i = 0; i < list.Count; i++)
+            if (list[i].dialogueType == DialogueType.Common) commonCount++;
+        if (commonCount > 0)
+        {
+            int pick = UnityEngine.Random.Range(0, commonCount);
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i].dialogueType != DialogueType.Common) continue;
+                if (pick-- == 0) return list[i];
+            }
+        }
+        return list[0];
+    }
+
+    public DialogueData GetDialogueById(string id)
+    {
+        return IsLoaded && _dialogueById.TryGetValue(id, out var data) ? data : null;
+    }
+
+    /// <summary>대화 시작. System이 Model에 데이터 세팅.</summary>
+    public void StartDialogue(DialogueData data, Action onComplete = null)
+    {
+        if (data == null) return;
+        _onComplete = onComplete;
+        _model.SetDialogue(data);
+    }
+
+    /// <summary>다음 문장으로. System이 인덱스 증가 또는 종료 판단.</summary>
     public void DisplayNextSentence()
     {
         if (!_model.IsTalking) return;
-        if (_model.AdvanceNext())
-            _model.EndDialogue();
+        int next = _model.CurrentIndex + 1;
+        if (next >= _model.LineCount)
+        {
+            _model.Clear();
+            _onComplete?.Invoke();
+            _onComplete = null;
+        }
+        else
+        {
+            _model.SetCurrentIndex(next);
+        }
     }
 
+    /// <summary>대화 강제 종료.</summary>
     public void EndDialogue()
     {
-        _model.EndDialogue();
+        if (!_model.IsTalking) return;
+        _model.Clear();
+        _onComplete?.Invoke();
+        _onComplete = null;
     }
 
-    public void ReplaceContent(string speakerName, string[] sentences)
-    {
-        _model.ReplaceContent(speakerName, sentences);
-    }
-
-    /// <summary>퀘스트 버튼 표시. Presenter 경유로 View에 전달하려면 Presenter.SetQuestButtonVisible 사용.</summary>
     public void SetQuestButtonVisible(bool visible)
     {
         var presenter = FindFirstObjectByType<DialoguePresenter>();
-        if (presenter != null)
-            presenter.SetQuestButtonVisible(visible);
-    }
-
-    /// <summary>퀘스트 버튼 클릭 시. 연결 시 구독처에서 처리.</summary>
-    public void OnQuestPanelButtonClicked()
-    {
-        // 퀘스트 연동 시 이벤트 발행 등
+        if (presenter != null) presenter.SetQuestButtonVisible(visible);
     }
 }

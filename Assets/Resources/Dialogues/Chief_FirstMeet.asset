@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bfb51a6792633b418706756853c58c4, type: 3}
   m_Name: Chief_FirstMeet
   m_EditorClassIdentifier: 
-  NpcId: Chief
-  DialogueType: 0
-  ConditionValue: 0
-  Sentence: "\uBC18\uAC11\uB124. \uB098\uB294 \uC774 \uB9C8\uC744\uC758 \uCD0C\uC7A5\uC77C\uC138."
-  LinkedQuestId: 
-  QuestButtonText: 
+  id: Chief_FirstMeet
+  npcId: Chief
+  dialogueType: 0
+  conditionValue: 0
+  lines:
+  - "\uBC18\uAC11\uB124. \uB098\uB294 \uC774 \uB9C8\uC744\uC758 \uCD0C\uC7A5\uC77C\uC138."

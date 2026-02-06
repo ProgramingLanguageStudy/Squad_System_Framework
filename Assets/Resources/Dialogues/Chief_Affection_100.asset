@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bfb51a6792633b418706756853c58c4, type: 3}
   m_Name: Chief_Affection_100
   m_EditorClassIdentifier: 
-  NpcId: Chief
-  DialogueType: 4
-  ConditionValue: 100
-  Sentence: "\uC790\uB124\uB294 \uC6B0\uB9AC\uB9C8\uC744\uC758 \uC790\uB791\uC774\uC57C!"
-  LinkedQuestId: 
-  QuestButtonText: 
+  id: Chief_Affection_100
+  npcId: Chief
+  dialogueType: 4
+  conditionValue: 100
+  lines:
+  - "\uC790\uB124\uB294 \uC6B0\uB9AC\uB9C8\uC744\uC758 \uC790\uB791\uC774\uC57C!"

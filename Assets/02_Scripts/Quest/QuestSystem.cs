@@ -8,9 +8,9 @@ using UnityEngine;
 /// </summary>
 public class QuestSystem : MonoBehaviour
 {
-    private readonly List<ActiveQuest> _activeQuests = new List<ActiveQuest>();
+    private readonly List<QuestModel> _activeQuests = new List<QuestModel>();
 
-    public event Action<ActiveQuest> OnQuestUpdated;
+    public event Action<QuestModel> OnQuestUpdated;
 
     /// <summary>targetId에 해당하는 진행이 일어났을 때 호출. 해당 퀘스트 current를 1 올림 (방문/채집/처치 공통).</summary>
     public void NotifyProgress(string targetId)
@@ -36,8 +36,7 @@ public class QuestSystem : MonoBehaviour
 
     public void AcceptQuest(QuestData questData)
     {
-        var quest = ActiveQuest.CreateFrom(questData);
-        if (quest == null) return;
+        var quest = new QuestModel(questData);
         _activeQuests.Add(quest);
         OnQuestUpdated?.Invoke(quest);
     }
@@ -52,5 +51,5 @@ public class QuestSystem : MonoBehaviour
         return true;
     }
 
-    public IReadOnlyList<ActiveQuest> GetActiveQuests() => _activeQuests;
+    public IReadOnlyList<QuestModel> GetActiveQuests() => _activeQuests;
 }

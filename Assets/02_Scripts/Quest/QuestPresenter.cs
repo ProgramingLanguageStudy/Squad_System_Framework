@@ -31,7 +31,7 @@ public class QuestPresenter : MonoBehaviour
             _system.OnQuestUpdated -= RefreshView;
     }
 
-    private void RefreshView(ActiveQuest _)
+    private void RefreshView(QuestModel _)
     {
         if (_view == null) return;
         if (_system == null)
@@ -40,7 +40,7 @@ public class QuestPresenter : MonoBehaviour
             return;
         }
 
-        IReadOnlyList<ActiveQuest> quests = _system.GetActiveQuests();
+        IReadOnlyList<QuestModel> quests = _system.GetActiveQuests();
         var sb = new StringBuilder();
         foreach (var quest in quests)
         {

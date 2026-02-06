@@ -11,8 +11,8 @@
 - **역할**: 대화·퀘스트·인벤토리·NPC 상호작용이 있는 프레임워크형 게임
 - **주요 시스템**
   - **Player**: 이동(PlayerMover, NavMeshAgent), 애니메이션(PlayerAnimator), 상호작용 감지(PlayerInteractor), 입력(InputHandler)
-  - **Dialogue**: DialogueManager(대화 데이터 로드/선택), DialogueSystem(대화 진행), DialogueUI, DialogueData(ScriptableObject)
-  - **Quest**: QuestModel, QuestView, QuestPresenter (MVP, 싱글톤 없음), QuestData / QuestTask(수집·처치·방문)
+  - **Dialogue**: DialogueSystem(데이터 로드·선택·재생), DialogueModel·Presenter·View, DialogueData(한 SO에 npcId·타입·조건·lines)
+  - **Quest**: QuestSystem, QuestModel(QuestData 필드·생성자), QuestPresenter·View, QuestData(수집·처치·방문)
   - **Interaction**: IInteractable 구현체(Npc, ItemObject 등), PlayerInteractor(SphereCast 감지)
   - **Inventory**: Inventory(Model), InventoryView(View), InventoryPresenter, Slot
   - **Flag**: FlagManager + GameStateKeys(첫 대화, 퀘스트 수락/완료 등 상태 키)
@@ -67,17 +67,27 @@
 - **이벤트**
   - 인스턴스 이벤트: `public event Action<T> OnXxx;` 후 `OnXxx?.Invoke(...);`
   - 전역 이벤트: `GameEvents` 정적 클래스에 `public static Action<...> OnXxx;`
-- **매니저/싱글톤**
-  - `Singleton<T>` 상속으로 `Instance` 제공.
-  - 필요 시 `Initialize()` 패턴으로 의존성 주입(예: Player가 Mover/Animator/Interactor에 `Initialize()` 호출).
+- **매니저/진입점**
+  - 필요한 곳만 `Singleton<T>` 사용. **DialogueSystem**은 싱글톤 없이 씬에 한 개 두거나 조율층에서 주입.
+  - 필요 시 `Initialize()` 패턴·`[SerializeField]` 로 의존성 주입(예: Npc에 DialogueSystem 주입).
 
 ---
 
-## 4. 폴더 구조 (Assets/02_Scripts)
+## 4. Model 역할 (상태 + 전환 로직)
+
+- **원칙**: MVP에서 **Model은 자기 상태를 바꾸는 규칙까지 갖는다.** System·Presenter는 "시작해/다음/끝내"처럼 Model의 메서드만 호출하고, 필드를 직접 수정하지 않는다.
+- **예시**
+  - **DialogueModel**: 상태만 보관(현재 문장 반환). 제어(시작/다음/종료)는 **DialogueSystem**에서.
+  - **QuestModel**(퀘스트 런타임): QuestData 필드 보유, 진행도 등 상태는 System이 설정.
+- **반대 패턴(피함)**: Model은 데이터만 두고, System이 `model.CurrentAmount = ...`처럼 직접 넣는 방식은 프로젝트 일관성을 위해 사용하지 않는다.
+
+---
+
+## 5. 폴더 구조 (Assets/02_Scripts)
 
 - `0_ScriptableObjects/` — 공용 SO
-- `Dialogue/` — 대화 데이터·매니저·시스템·UI
-- `Quest/` — 퀘스트 데이터·매니저·태스크·UI
+- `Dialogue/` — 대화 데이터·시스템·Model·Presenter·View
+- `Quest/` — 퀘스트 데이터·시스템·QuestModel·Presenter·View
 - `Player/` — Player, PlayerMover, PlayerAnimator, PlayerInteractor
 - `Interaction/` — 상호작용(Items, Npc 등)
 - `Interfaces/` — IInteractable 등
@@ -88,7 +98,7 @@
 
 ---
 
-## 5. AI 작업 시 적용 원칙
+## 6. AI 작업 시 적용 원칙
 
 - **새 C# 스크립트**: 위 네이밍·스타일 준수 (private 필드는 `_camelCase`, 메서드/프로퍼티/이벤트는 표와 동일).
 - **주석·summary**: 한글 + public API에는 `/// <summary>` 유지.

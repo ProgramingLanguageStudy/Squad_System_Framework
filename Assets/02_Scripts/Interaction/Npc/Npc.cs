@@ -3,30 +3,10 @@ using UnityEngine;
 public class Npc : MonoBehaviour, IInteractable
 {
     [SerializeField] private string _npcId;
-    [SerializeField] private DialogueCoordinator _dialogueCoordinator;
-
-    [Header("Debug Info")]
-    [SerializeField] private int _currentAffectionDebug;
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            DialogueManager.Instance.AddAffection(_npcId, 10);
-            _currentAffectionDebug = DialogueManager.Instance.GetAffection(_npcId);
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            DialogueManager.Instance.AddAffection(_npcId, -10);
-            _currentAffectionDebug = DialogueManager.Instance.GetAffection(_npcId);
-        }
-    }
 
     public void Interact(Player player)
     {
-        var coordinator = _dialogueCoordinator != null ? _dialogueCoordinator : FindFirstObjectByType<DialogueCoordinator>();
-        if (coordinator != null)
-            coordinator.StartDialogue(_npcId);
+        // 대화 시작은 나중에 DialogueInteractor 등에서 GameEvents.OnPlayDialogueRequested(data) 로 연결
     }
 
     public string GetInteractText() => _npcId;

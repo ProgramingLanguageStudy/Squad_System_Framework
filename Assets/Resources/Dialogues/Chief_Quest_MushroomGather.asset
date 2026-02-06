@@ -12,10 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bfb51a6792633b418706756853c58c4, type: 3}
   m_Name: Chief_Quest_MushroomGather
   m_EditorClassIdentifier: 
-  NpcId: Chief
-  DialogueType: 1
-  ConditionValue: 0
-  Sentence: "\uC774\uBCF4\uAC8C, \uD639\uC2DC \uBC84\uC12F 5\uAC1C\uB9CC \uAD6C\uD574\uC904
-    \uC218 \uC788\uACA0\uB294\uAC00?"
-  LinkedQuestId: MushroomGather
-  QuestButtonText: "\uBC84\uC12F \uC218\uC9D1 \uD018\uC2A4\uD2B8"
+  id: Chief_Quest_MushroomGather
+  npcId: Chief
+  dialogueType: 1
+  conditionValue: 0
+  lines:
+  - "\uC774\uBCF4\uAC8C, \uD639\uC2DC \uBC84\uC12F 5\uAC1C\uB9CC \uAD6C\uD574\uC904 \uC218 \uC788\uACA0\uB294\uAC00?"
