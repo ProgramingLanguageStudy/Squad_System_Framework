@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// DialogueModel과 DialogueView 연결. View 입력 시 System 제어만 호출.
+/// DialogueModel과 DialogueView 연결. 다음/끝내기만 System에 전달.
 /// </summary>
 public class DialoguePresenter : MonoBehaviour
 {
@@ -54,17 +54,11 @@ public class DialoguePresenter : MonoBehaviour
         if (_system == null) return;
         if (_view != null && _view.TrySkipTyping())
             return;
-        _system.DisplayNextSentence();
+        _system.Next();
     }
 
     private void HandleEnd()
     {
         _system?.EndDialogue();
-    }
-
-    public void SetQuestButtonVisible(bool visible, string buttonText = "퀘스트")
-    {
-        if (_view != null)
-            _view.SetQuestButtonVisible(visible, buttonText);
     }
 }

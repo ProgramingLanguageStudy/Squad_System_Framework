@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,9 +22,9 @@ public class UI_Button : MonoBehaviour
     {
         ResetSlot();
 
-        _buttonIcon.sprite = icon;
-        _buttonText.text = buttonText ?? string.Empty;
-        if (onClick != null)
+        if (_buttonIcon != null) _buttonIcon.sprite = icon;
+        if (_buttonText != null) _buttonText.text = buttonText ?? string.Empty;
+        if (_button != null && onClick != null)
             _button.onClick.AddListener(() => onClick.Invoke());
     }
 
@@ -33,8 +33,8 @@ public class UI_Button : MonoBehaviour
     /// </summary>
     public void ResetSlot()
     {
-        _buttonIcon.sprite = null;
-        _buttonText.text = string.Empty;
-        _button.onClick.RemoveAllListeners();
+        if (_buttonIcon != null) _buttonIcon.sprite = null;
+        if (_buttonText != null) _buttonText.text = string.Empty;
+        if (_button != null) _button.onClick.RemoveAllListeners();
     }
 }

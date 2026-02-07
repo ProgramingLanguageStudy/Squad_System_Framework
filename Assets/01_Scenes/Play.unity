@@ -269,6 +269,7 @@ GameObject:
   m_Component:
   - component: {fileID: 15230425}
   - component: {fileID: 15230424}
+  - component: {fileID: 15230427}
   - component: {fileID: 15230426}
   m_Layer: 0
   m_Name: DialogueSystem
@@ -289,7 +290,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6eaf2d0e94e76cd48a27b35d9ef2d826, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _ui: {fileID: 1448595308}
 --- !u!4 &15230425
 Transform:
   m_ObjectHideFlags: 0
@@ -314,9 +314,30 @@ MonoBehaviour:
   m_GameObject: {fileID: 15230423}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f6c2f3fa2f52ec94092f4bfd33172cf8, type: 3}
+  m_Script: {fileID: 11500000, guid: aca9e9344da0e0846ab9cd1a13c1824e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _nameText: {fileID: 1967587082}
+  _dialogueText: {fileID: 59329606}
+  _panel: {fileID: 1448595304}
+  _nextButton: {fileID: 0}
+  _endButton: {fileID: 0}
+  _questButton: {fileID: 0}
+  _questButtonText: {fileID: 0}
+--- !u!114 &15230427
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 15230423}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73dbd86283600304a927cd3e67f2e640, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _system: {fileID: 15230424}
+  _view: {fileID: 15230426}
 --- !u!4 &18982692 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 461458, guid: 1302c983138d8344f81486021c92aa98, type: 3}
@@ -1997,8 +2018,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _npcId: Chief
-  _dialogueCoordinator: {fileID: 0}
-  _currentAffectionDebug: 0
 --- !u!1001 &238430592
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10440,7 +10459,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1136875178}
-  - component: {fileID: 1136875177}
+  - component: {fileID: 1136875181}
+  - component: {fileID: 1136875180}
+  - component: {fileID: 1136875179}
   m_Layer: 0
   m_Name: QuestSystem
   m_TagString: Untagged
@@ -10448,18 +10469,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1136875177
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1136875176}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2515c3f0c0b59ff409d571c9218a129b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &1136875178
 Transform:
   m_ObjectHideFlags: 0
@@ -10475,6 +10484,46 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1088189961}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1136875179
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1136875176}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34ed95015bdf051489f78078c0afe12f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _panel: {fileID: 1523151049}
+  _logText: {fileID: 765537346}
+--- !u!114 &1136875180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1136875176}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 374b9aebe19806b42b822c7d83dbeea3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _system: {fileID: 1136875181}
+  _view: {fileID: 1136875179}
+--- !u!114 &1136875181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1136875176}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc186e7eadb639547ab2609c7db8019c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1137079560
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11692,8 +11741,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 59329605}
   - {fileID: 253038945}
+  - {fileID: 59329605}
   - {fileID: 106680}
   m_Father: {fileID: 1448595305}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

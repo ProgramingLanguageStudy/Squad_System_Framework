@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6bfb51a6792633b418706756853c58c4, type: 3}
-  m_Name: Chief_Affection_50
+  m_Name: Chief_Affection50_1
   m_EditorClassIdentifier: 
-  id: Chief_Affection_50
+  id: Chief_Affection50_1
   npcId: Chief
   dialogueType: 4
   conditionValue: 50
   lines:
-  - "\uC790\uB124\uB77C\uBA74 \uC6B0\uB9AC \uB9C8\uC744\uC758 \uC911\uC694\uD55C \uC77C\uC744 \uB9E1\uAE38 \uC218\uB3C4 \uC788\uACA0\uC5B4."
+  - "\uCD0C\uC7A5\uC758 \uD638\uAC10\uB3C4 50 \uB300\uC0AC"
