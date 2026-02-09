@@ -4,16 +4,17 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent))]
 public class PlayerMover : MonoBehaviour
 {
-    [SerializeField] private float _moveSpeed = 6f;
     [SerializeField] private float _rotationSpeed = 15f;
 
     private NavMeshAgent _agent;
     private Transform _mainCameraTransform;
+    private PlayerModel _model;
 
-    public void Initialize(NavMeshAgent agent, Transform mainCameraTransform)
+    public void Initialize(NavMeshAgent agent, Transform mainCameraTransform, PlayerModel model)
     {
         _agent = agent;
         _mainCameraTransform = mainCameraTransform;
+        _model = model;
         if (_agent != null)
             _agent.updateRotation = false; // 회전은 직접 제어
     }
@@ -45,8 +46,9 @@ public class PlayerMover : MonoBehaviour
         Quaternion targetRotation = Quaternion.LookRotation(moveDir);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
 
-        // 이동 처리
-        _agent.velocity = moveDir * _moveSpeed;
+        // 이동 처리 (속도는 PlayerModel.MoveSpeed 사용)
+        float speed = _model != null ? _model.MoveSpeed : 6f;
+        _agent.velocity = moveDir * speed;
     }
 
     /// <summary>Animator에 속도를 넘겨줄 때 쓸 값의 Getter 용도</summary>
