@@ -9,7 +9,7 @@ public class PlayerStateMachine : MonoBehaviour
 {
     private Player _player;
 
-    private PlayerStateBase _currentState;
+    [SerializeField] private PlayerStateBase _currentState; // 읽기 전용
     private IdleState _idleState;
     private AttackState _attackState;
 
@@ -18,10 +18,6 @@ public class PlayerStateMachine : MonoBehaviour
     /// <summary>Idle(자유)인지. 이동/공격 입력 허용 여부에 사용.</summary>
     public bool IsIdle => _currentState == _idleState;
 
-    /// <summary>기존 코드 호환. Idle이면 Free와 동일.</summary>
-    public bool IsFree => IsIdle;
-
-    /// <summary>상태 변경 시 (이전 상태, 새 상태)</summary>
     public event Action<PlayerStateBase, PlayerStateBase> OnStateChanged;
 
     public void Initialize(Player player)

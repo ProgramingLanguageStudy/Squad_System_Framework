@@ -3,15 +3,32 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// 생성된 InputSystem_Actions 사용. IPlayerActions를 구현해서 "입력 하나당 메서드 하나"로만 처리.
-/// 람다/Subscribe 없이, Input이 OnInteract(), OnAttack() 같은 메서드를 불러주는 방식.
+/// PlayerInput이 참조하는 Input Action Asset을 사용. Cinemachine과 같은 인스턴스 공유 시 UI 모드에서 Look도 함께 꺼짐.
+/// GameEvents OnCursorShowRequested/HideRequested로 blocking UI 개수 카운트 후, 1개 이상이면 Player 맵 비활성화(UI 모드).
 /// </summary>
-public class InputHandler : MonoBehaviour, InputSystem_Actions.IPlayerActions
+public class InputHandler : MonoBehaviour
 {
-    private InputSystem_Actions _actions;
+    [Tooltip("PlayerInput 할당 필수. 같은 GameObject에 두거나, 에셋을 공유하는 PlayerInput을 넣으면 됨.")]
+    [SerializeField] private PlayerInput _playerInput;
+
+    private InputActionAsset _asset;
+    private InputActionMap _playerMap;
+    private InputActionMap _uiMap;
+    private InputAction _moveAction;
+    private InputAction _lookAction;
+    private InputAction _uiInventoryAction;
+    private int _blockingUICount;
+
+    private Action<InputAction.CallbackContext> _interactCallback;
+    private Action<InputAction.CallbackContext> _attackCallback;
+    private Action<InputAction.CallbackContext> _inventoryCallback;
+    private Action<InputAction.CallbackContext> _questCallback;
 
     public Vector2 MoveInput { get; private set; }
     public Vector2 LookInput { get; private set; }
+
+    /// <summary>true면 Player 액션 맵 비활성화(대화/인벤토리 등 UI 모드).</summary>
+    public bool IsUIMode => _blockingUICount > 0;
 
     public event Action OnInteractPerformed;
     public event Action OnAttackPerformed;
@@ -20,61 +37,126 @@ public class InputHandler : MonoBehaviour, InputSystem_Actions.IPlayerActions
 
     private void OnEnable()
     {
-        _actions = new InputSystem_Actions();
-        _actions.Player.AddCallbacks(this);  // "this의 OnInteract, OnAttack ... 를 입력될 때마다 불러줘"
-        _actions.Player.Enable();
-    }
-
-    private void Update()
-    {
-        if (_actions == null) return;
-        if (_actions.Player.enabled)
+        if (_playerInput == null)
         {
-            MoveInput = _actions.Player.Move.ReadValue<Vector2>();
-            LookInput = _actions.Player.Look.ReadValue<Vector2>();
+            Debug.LogWarning("[InputHandler] PlayerInput이 할당되지 않았습니다. 인스펙터에서 PlayerInput을 할당해 주세요.");
+            return;
         }
+
+        _asset = _playerInput.actions;
+        if (_asset == null)
+        {
+            Debug.LogWarning("[InputHandler] PlayerInput.actions가 없습니다.");
+            return;
+        }
+
+        _playerMap = _asset.FindActionMap("Player");
+        if (_playerMap == null)
+        {
+            Debug.LogWarning("[InputHandler] Player 액션 맵을 찾을 수 없습니다.");
+            return;
+        }
+
+        _moveAction = _playerMap.FindAction("Move");
+        _lookAction = _playerMap.FindAction("Look");
+
+        _interactCallback = _ => OnInteractPerformed?.Invoke();
+        _attackCallback = _ => OnAttackPerformed?.Invoke();
+        _inventoryCallback = _ => OnInventoryPerformed?.Invoke();
+        _questCallback = _ => OnQuestPerformed?.Invoke();
+
+        var interact = _playerMap.FindAction("Interact");
+        var attack = _playerMap.FindAction("Attack");
+        var inventory = _playerMap.FindAction("Inventory");
+        var quest = _playerMap.FindAction("Quest");
+        if (interact != null) interact.performed += _interactCallback;
+        if (attack != null) attack.performed += _attackCallback;
+        if (inventory != null) inventory.performed += _inventoryCallback;
+        if (quest != null) quest.performed += _questCallback;
+
+        _playerMap.Enable();
+
+        _uiMap = _asset.FindActionMap("UI");
+        if (_uiMap != null)
+        {
+            _uiInventoryAction = _uiMap.FindAction("Inventory");
+            if (_uiInventoryAction != null)
+                _uiInventoryAction.performed += _inventoryCallback;
+        }
+
+        GameEvents.OnCursorShowRequested += OnBlockingUIOpened;
+        GameEvents.OnCursorHideRequested += OnBlockingUIClosed;
     }
 
     private void OnDisable()
     {
-        _actions?.Player.RemoveCallbacks(this);
-        _actions?.Player.Disable();
-        _actions?.Dispose();
-        _actions = null;
+        GameEvents.OnCursorShowRequested -= OnBlockingUIOpened;
+        GameEvents.OnCursorHideRequested -= OnBlockingUIClosed;
+
+        if (_uiMap != null && _uiInventoryAction != null && _inventoryCallback != null)
+            _uiInventoryAction.performed -= _inventoryCallback;
+
+        if (_playerMap != null)
+        {
+            _playerMap.Disable();
+            var interact = _playerMap.FindAction("Interact");
+            var attack = _playerMap.FindAction("Attack");
+            var inventory = _playerMap.FindAction("Inventory");
+            var quest = _playerMap.FindAction("Quest");
+            if (interact != null && _interactCallback != null) interact.performed -= _interactCallback;
+            if (attack != null && _attackCallback != null) attack.performed -= _attackCallback;
+            if (inventory != null && _inventoryCallback != null) inventory.performed -= _inventoryCallback;
+            if (quest != null && _questCallback != null) quest.performed -= _questCallback;
+        }
+
+        _uiMap?.Disable();
+        _asset = null;
+        _playerMap = null;
+        _uiMap = null;
+        _moveAction = null;
+        _lookAction = null;
+        _uiInventoryAction = null;
     }
 
-    // ----- 아래는 Input이 "이 버튼 눌렸다" 할 때마다 불러주는 메서드들. 그냥 우리 이벤트만 발행하면 됨. -----
-
-    public void OnMove(InputAction.CallbackContext context) { }   // Move는 Update에서 ReadValue로 처리
-    public void OnLook(InputAction.CallbackContext context) { }   // Look도 Update에서 처리
-
-    public void OnInteract(InputAction.CallbackContext context)
+    private void OnBlockingUIOpened()
     {
-        if (context.performed)
-            OnInteractPerformed?.Invoke();
+        _blockingUICount++;
+        if (_blockingUICount == 1)
+            SwitchToUIMode();
     }
 
-    public void OnAttack(InputAction.CallbackContext context)
+    private void OnBlockingUIClosed()
     {
-        if (context.performed)
-            OnAttackPerformed?.Invoke();
+        if (_blockingUICount > 0)
+            _blockingUICount--;
+        if (_blockingUICount == 0)
+            SwitchToPlayMode();
     }
 
-    public void OnInventory(InputAction.CallbackContext context)
+    private void SwitchToUIMode()
     {
-        if (context.performed)
-            OnInventoryPerformed?.Invoke();
+        _playerMap?.Disable();
+        _uiMap?.Enable();
+        MoveInput = Vector2.zero;
+        LookInput = Vector2.zero;
     }
 
-    public void OnQuest(InputAction.CallbackContext context)
+    private void SwitchToPlayMode()
     {
-        if (context.performed)
-            OnQuestPerformed?.Invoke();
+        _uiMap?.Disable();
+        _playerMap?.Enable();
     }
 
-    public void OnCrouch(InputAction.CallbackContext context) { }
-    public void OnJump(InputAction.CallbackContext context) { }
-    public void OnPrevious(InputAction.CallbackContext context) { }
-    public void OnNext(InputAction.CallbackContext context) { }
-    public void OnSprint(InputAction.CallbackContext context) { }
+    private void Update()
+    {
+        if (_playerMap == null || !_playerMap.enabled)
+        {
+            MoveInput = Vector2.zero;
+            LookInput = Vector2.zero;
+            return;
+        }
+
+        MoveInput = _moveAction?.ReadValue<Vector2>() ?? Vector2.zero;
+        LookInput = _lookAction?.ReadValue<Vector2>() ?? Vector2.zero;
+    }
 }

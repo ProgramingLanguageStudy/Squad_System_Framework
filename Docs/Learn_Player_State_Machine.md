@@ -195,7 +195,7 @@ public abstract class PlayerStateBase {
 - **전환 규칙** (어떤 상태에서 RequestAttack / RequestIdle / … 을 받으면 어떤 상태로 바꿀지).
 - **상태 인스턴스** (IdleState, AttackState 등)를 만들고 보관하고, Enter/Update/Exit를 호출할 대상.
 
-### 5.2 상태머신이 몰라도 되는 것 (선택)
+### 6.2 상태머신이 몰라도 되는 것 (선택)
 
 - **입력이 어디서 왔는지** (키보드, 네트워크, AI …).  
   → “RequestAttack()이 호출됐다”만 알면 됨.
@@ -208,7 +208,7 @@ public abstract class PlayerStateBase {
 
 ---
 
-## 6. 흐름 한번에 그리기
+## 7. 흐름 한번에 그리기
 
 두 방식을 같은 다이어그램으로 보면 이렇게 대응된다.
 
@@ -240,7 +240,7 @@ public abstract class PlayerStateBase {
 
 ---
 
-## 7. 더 공부해 보면 좋은 것들
+## 8. 더 공부해 보면 좋은 것들
 
 - **Hierarchical State Machine (HSM)**: 상태 안에 다시 하위 상태가 있는 구조. (예: Movement 안에 Idle / Walk / Run.)
 - **State + Behavior 분리**: 상태는 “지금 뭘 할 수 있나”만 정하고, 실제 이동/공격 연산은 별도 컴포넌트(Mover, Animator)에 두는 패턴. (지금 우리가 쓰는 방식과 비슷.)
@@ -249,7 +249,7 @@ public abstract class PlayerStateBase {
 
 ---
 
-## 8. 이 문서를 읽은 뒤 스스로 정리해 볼 질문
+## 9. 이 문서를 읽은 뒤 스스로 정리해 볼 질문
 
 1. 우리 프로젝트에서 “전환 허용”은 어디에 두는 게 좋을까? (상태머신 vs 호출자)
 2. 공격 말고 “구르기”를 추가한다면, 입력은 PlayScene에서 어디로 보낼까? (Player.RequestRoll() vs Roller.TryRoll())
