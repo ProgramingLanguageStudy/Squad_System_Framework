@@ -11,7 +11,7 @@ public class PlayerData : ScriptableObject
     public int maxHp = 100;
 
     [Header("이동")]
-    [Tooltip("이동 속도 (NavMeshAgent 등에 사용)")]
+    [Tooltip("이동 속도 (CharacterController 이동에 사용)")]
     public float moveSpeed = 6f;
 
     [Header("공격")]

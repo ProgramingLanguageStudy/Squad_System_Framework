@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.AI;
 
 /// <summary>
 /// 플레이어 = 컴포넌트 조합부. 필요한 컴포넌트는 [SerializeField]로 인스펙터에서 참조하고,
@@ -17,7 +16,7 @@ public class Player : MonoBehaviour
     [SerializeField] private PlayerStateMachine _stateMachine;
 
     [Header("----- 주입용 참조 (비어 있으면 같은 GameObject에서 자동 탐색) -----")]
-    [SerializeField] private NavMeshAgent _navMeshAgent;
+    [SerializeField] private CharacterController _characterController;
     [SerializeField] private Animator _animator;
     [SerializeField] private Transform _mainCameraTransform;
 
@@ -45,12 +44,12 @@ public class Player : MonoBehaviour
         if (_interactor == null) _interactor = GetComponent<PlayerInteractor>();
         if (_attacker == null) _attacker = GetComponent<PlayerAttacker>();
         if (_stateMachine == null) _stateMachine = GetComponent<PlayerStateMachine>();
-        if (_navMeshAgent == null) _navMeshAgent = GetComponent<NavMeshAgent>();
+        if (_characterController == null) _characterController = GetComponent<CharacterController>();
         if (_animator == null) _animator = GetComponent<Animator>();
         if (_mainCameraTransform == null && Camera.main != null) _mainCameraTransform = Camera.main.transform;
 
         _model?.Initialize();
-        _mover.Initialize(_navMeshAgent, _mainCameraTransform, _model);
+        _mover.Initialize(_characterController, _mainCameraTransform, _model);
         _playerAnimator.Initialize(_animator, _mover);
         _interactor.Initialize(this);
         _stateMachine.Initialize(this);

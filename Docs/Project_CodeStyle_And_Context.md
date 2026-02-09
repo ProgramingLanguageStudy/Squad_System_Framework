@@ -10,7 +10,7 @@
 - **프로젝트명**: Squad_System_Framework
 - **역할**: 대화·퀘스트·인벤토리·NPC 상호작용이 있는 프레임워크형 게임
 - **주요 시스템**
-  - **Player**: 이동(PlayerMover, NavMeshAgent), 애니메이션(PlayerAnimator), 상호작용 감지(PlayerInteractor), 입력(InputHandler)
+  - **Player**: 이동(PlayerMover, CharacterController), 애니메이션(PlayerAnimator), 상호작용 감지(PlayerInteractor), 입력(InputHandler)
   - **Dialogue**: DialogueSystem(데이터 로드·선택·재생), DialogueModel·Presenter·View, DialogueData(한 SO에 npcId·타입·조건·lines)
   - **Quest**: QuestSystem, QuestModel(QuestData 필드·생성자), QuestPresenter·View, QuestData(수집·처치·방문)
   - **Interaction**: IInteractable 구현체(Npc, ItemObject 등), PlayerInteractor(SphereCast 감지)

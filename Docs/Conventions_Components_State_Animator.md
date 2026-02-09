@@ -15,8 +15,8 @@
 
 **예시**
 
-- **Player**: `[SerializeField]`로 _mover, _playerAnimator, _interactor, _attacker, _stateMachine, _navMeshAgent, _animator, _mainCameraTransform 보유. Initialize()에서 위 참조들을 각각 Mover.Initialize(agent, cam), PlayerAnimator.Initialize(animator, mover) 등으로 전달.
-- `PlayerMover.Initialize(NavMeshAgent agent, Transform mainCameraTransform)` — 내부에서 GetComponent 하지 않음.
+- **Player**: `[SerializeField]`로 _mover, _playerAnimator, _interactor, _attacker, _stateMachine, _characterController, _animator, _mainCameraTransform 보유. Initialize()에서 위 참조들을 각각 Mover.Initialize(controller, cam), PlayerAnimator.Initialize(animator, mover) 등으로 전달.
+- `PlayerMover.Initialize(CharacterController controller, Transform mainCameraTransform)` — 내부에서 GetComponent 하지 않음.
 - `PlayerAnimator.Initialize(Animator animator, PlayerMover mover)` — Animator·Mover를 Player가 넘김.
 - `PlayerStateMachine.Initialize(Player player)` — 상태 생성·초기 상태 Enter까지 여기서 수행.
 - `PlayerAttacker.Initialize(PlayerStateMachine stateMachine)` — 참조는 주입만 사용.
@@ -58,7 +58,7 @@
 
 - **참조 확보**: Player는 부품·주입용 참조를 **인스펙터 [SerializeField]로 보유**. (비어 있으면 같은 GameObject에서 한 번만 보충 가능)
 - **Initialize() 호출 시**: 보유한 참조만 사용해 아래 순서로 주입.
-  1. `Mover.Initialize(navMeshAgent, mainCameraTransform)`  
+  1. `Mover.Initialize(characterController, mainCameraTransform)`  
   2. `PlayerAnimator.Initialize(animator, Mover)`  
   3. `Interactor.Initialize(this)`  
   4. `StateMachine.Initialize(this)`  

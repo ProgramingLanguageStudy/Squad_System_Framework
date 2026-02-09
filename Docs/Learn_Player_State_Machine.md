@@ -201,7 +201,7 @@ public abstract class PlayerStateBase {
   → “RequestAttack()이 호출됐다”만 알면 됨.
 - **애니메이션 세부** (어떤 클립인지, 블렌드 트리 구조).  
   → 상태는 “Player.Animator.Attack() 호출” 수준만 알면 되고, Animator 내부는 몰라도 됨.
-- **이동 구현 세부** (NavMeshAgent인지, Rigidbody인지).  
+- **이동 구현 세부** (CharacterController 사용).  
   → “CanMove = false” 같은 플래그만 건드리고, 실제 이동 코드는 Mover가 담당.
 
 이렇게 **상태머신은 “상태와 전환”에만 집중**하게 두면, 테스트와 확장이 쉬워진다.

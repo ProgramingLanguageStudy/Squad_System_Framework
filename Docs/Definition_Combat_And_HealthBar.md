@@ -22,7 +22,7 @@
 - **Monster**: Model 보유. `Start`에서 `Model.Initialize()` 호출.
 
 몬스터 프리팹 예시: Monster + MonsterModel + (선택) Collider. MonsterData 에셋 할당 후, 체력바용으로 **WorldHealthBarView**에 `_damageableHolder = MonsterModel` 연결.  
-**플레이어가 통과하지 못하게 하려면** 몬스터 오브젝트에 **Nav Mesh Obstacle** 추가 (플레이어가 NavMeshAgent이므로, Npc처럼 Obstacle이 있어야 우회/막힘).
+**플레이어가 통과하지 못하게 하려면** 몬스터에 **일반 Collider**(Capsule/Box, Is Trigger 해제)를 두면 됨. 플레이어는 CharacterController 사용으로 Collider와 충돌함.
 
 ---
 

@@ -12,7 +12,7 @@
 | 컴포넌트 | 역할 | 의존성 |
 |----------|------|--------|
 | **Player** | **컴포넌트 조합부.** 필요한 부품을 [SerializeField]로 인스펙터에서 참조하고, Initialize() 시 그 참조를 각 컴포넌트에 주입. 입력은 읽지 않음. CanMove, Mover, Animator, Interactor, StateMachine 등 노출. | [SerializeField]로 보유 후 주입 |
-| **PlayerMover** | 이동·회전. Camera 기준 moveDir 계산, NavMeshAgent 속도 설정, 캐릭터는 moveDir 방향으로 Slerp 회전. | Initialize(NavMeshAgent, Transform)로 주입 |
+| **PlayerMover** | 이동·회전. Camera 기준 moveDir 계산, CharacterController.Move로 이동, 캐릭터는 moveDir 방향으로 Slerp 회전. | Initialize(CharacterController, Transform)로 주입 |
 | **PlayerAnimator** | Animator 래퍼. Move(speed), Attack() 등으로만 애니 실행. 파라미터는 AnimatorParams 사용. Update에서 Mover.GetCurrentSpeed() → Move() 호출. | Initialize(Animator, PlayerMover)로 주입 |
 | **PlayerInteractor** | SphereCast로 IInteractable 감지, CurrentTarget 갱신. TryInteract() 시 CurrentTarget.Interact(player) 호출. | Initialize(Player)로 주입 |
 | **PlayerStateMachine** | 클래스 기반 상태(IdleState, AttackState 등). RequestIdle(), RequestAttack() 등으로 전환. | Initialize(Player)로 주입 |
@@ -55,7 +55,7 @@
 
 ## 4. 초기화·연결 순서
 
-1. **Player**: 인스펙터에서 부품(Mover, PlayerAnimator, Interactor, Attacker, StateMachine) 및 주입용(NavMeshAgent, Animator, MainCamera Transform) 참조 연결 후, `Player.Initialize()` 한 번 호출. 내부에서 위 참조만 사용해 `Mover.Initialize(...)` → `PlayerAnimator.Initialize(...)` → `Interactor.Initialize(this)` → `StateMachine.Initialize(this)` → `Attacker.Initialize(StateMachine)` 순으로 주입. (규칙: 조합부는 [SerializeField], 하위는 Initialize 주입만. `Conventions_Components_State_Animator.md` 참고.)
+1. **Player**: 인스펙터에서 부품(Mover, PlayerAnimator, Interactor, Attacker, StateMachine) 및 주입용(CharacterController, Animator, MainCamera Transform) 참조 연결 후, `Player.Initialize()` 한 번 호출. 내부에서 위 참조만 사용해 `Mover.Initialize(...)` → `PlayerAnimator.Initialize(...)` → `Interactor.Initialize(this)` → `StateMachine.Initialize(this)` → `Attacker.Initialize(StateMachine)` 순으로 주입. (규칙: 조합부는 [SerializeField], 하위는 Initialize 주입만. `Conventions_Components_State_Animator.md` 참고.)
 2. **PlayScene**: InputHandler·Player 참조 보유, OnEnable에서 이벤트 구독. Attack 시 `Player.RequestAttack()` 호출.
 
 ---
