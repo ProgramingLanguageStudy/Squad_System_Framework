@@ -22,6 +22,21 @@ public class Inventory : MonoBehaviour
             _slots[i] = new ItemSlotModel(null, 0, i);
     }
 
+    private void OnEnable()
+    {
+        GameEvents.OnItemPickedUp += HandleItemPickedUp;
+    }
+
+    private void OnDisable()
+    {
+        GameEvents.OnItemPickedUp -= HandleItemPickedUp;
+    }
+
+    private void HandleItemPickedUp(ItemData itemData, int amount)
+    {
+        AddItem(itemData, amount);
+    }
+
     public void AddItem(ItemData itemData, int amount = 1)
     {
         if (itemData == null) return;

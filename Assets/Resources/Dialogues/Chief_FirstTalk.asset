@@ -10,11 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6bfb51a6792633b418706756853c58c4, type: 3}
-  m_Name: Chief_FirstMeet
+  m_Name: Chief_FirstTalk
   m_EditorClassIdentifier: 
-  id: Chief_FirstMeet
+  id: Chief_FirstTalk
   npcId: Chief
   dialogueType: 0
+  questId: 
   conditionValue: 0
   lines:
   - "\uBC18\uAC11\uB124. \uB098\uB294 \uC774 \uB9C8\uC744\uC758 \uCD0C\uC7A5\uC77C\uC138."
+  - "\uD639\uC2DC\uB77C\uB3C4 \uB3C4\uC6C0\uC774 \uD544\uC694\uD558\uB2E4\uBA74 \uB098\uC5D0\uAC8C
+    \uCC3E\uC544\uC640\uC11C \uB9D0\uC744 \uAC78\uC5B4\uC8FC\uAC8C."

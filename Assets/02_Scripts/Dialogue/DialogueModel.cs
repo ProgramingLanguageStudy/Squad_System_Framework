@@ -15,6 +15,8 @@ public class DialogueModel
     public string CurrentNpcId => _data?.npcId ?? "";
     public string CurrentSpeakerName => _data?.npcId ?? "";
     public DialogueType CurrentDialogueType => _data != null ? _data.dialogueType : DialogueType.Common;
+    /// <summary>Quest/QuestComplete일 때 퀘스트 ID. 버튼(수락/완료) 연동용.</summary>
+    public string CurrentQuestId => _data != null ? _data.questId : null;
 
     public event Action OnDialogueStateChanged;
     public event Action OnDialogueEnd;

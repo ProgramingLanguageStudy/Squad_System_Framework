@@ -44,7 +44,7 @@
 |------|------|------|
 | **클래스·구조체** | `PascalCase` | `Player`, `DialogueManager`, `QuestData`, `GameStateKeys` |
 | **인터페이스** | `I` + `PascalCase` | `IInteractable` |
-| **enum** | `PascalCase` (값도 PascalCase) | `DialogueType.FirstMeet`, `QuestState.InProgress` |
+| **enum** | `PascalCase` (값도 PascalCase) | `DialogueType.FirstTalk`, `QuestState.InProgress` |
 | **private const** | `PascalCase` | `FirstTalkPrefix`, `QuestPrefix` |
 | **static 클래스(유틸/키/이벤트)** | `PascalCase` | `GameStateKeys`, `GameEvents` |
 
@@ -70,6 +70,7 @@
 - **매니저/진입점**
   - 필요한 곳만 `Singleton<T>` 사용. **DialogueSystem**은 싱글톤 없이 씬에 한 개 두거나 조율층에서 주입.
   - 필요 시 `Initialize()` 패턴·`[SerializeField]` 로 의존성 주입(예: Npc에 DialogueSystem 주입).
+- **플레이어·컴포넌트·애니메이터 규칙** (Awake 지양, Initialize 주입, State 패턴, AnimatorParams/래퍼)은 **`Docs/Conventions_Components_State_Animator.md`** 에 정리됨.
 
 ---
 

@@ -15,6 +15,10 @@ MonoBehaviour:
   id: Chief_QuestComplete_MushroomGather
   npcId: Chief
   dialogueType: 2
+  questId: 
   conditionValue: 0
   lines:
-  - "\uC624\uC624 \uBC84\uC12F\uC744 \uB2E4 \uAD6C\uD574\uC654\uAD70! \uC815\uB9D0 \uACE0\uB9D9\uB124."
+  - "\uC624\uC624 \uBC84\uC12F\uC744 \uB2E4 \uAD6C\uD574\uC654\uAD70! \uC815\uB9D0
+    \uACE0\uB9D9\uB124."
+  - "\uC774\uAC78\uB85C \uC544\uB0B4\uC5D0\uAC8C \uB9DB\uC788\uB294 \uC694\uB9AC\uB97C
+    \uD574\uC904 \uC218 \uC788\uACA0\uC5B4!"

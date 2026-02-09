@@ -25,11 +25,13 @@ public class InventoryPresenter : MonoBehaviour
             _view.OnSwapRequested += HandleSwapRequested;
             _view.OnRefreshRequested += RefreshView;
         }
+        GameEvents.OnInventoryKeyPressed += HandleInventoryKeyPressed;
         RefreshView();
     }
 
     private void OnDisable()
     {
+        GameEvents.OnInventoryKeyPressed -= HandleInventoryKeyPressed;
         if (_model != null)
             _model.OnSlotChanged -= OnSlotChanged;
         if (_view != null)
@@ -37,6 +39,12 @@ public class InventoryPresenter : MonoBehaviour
             _view.OnSwapRequested -= HandleSwapRequested;
             _view.OnRefreshRequested -= RefreshView;
         }
+    }
+
+    private void HandleInventoryKeyPressed()
+    {
+        if (_view != null)
+            _view.ToggleInventory();
     }
 
     private void OnSlotChanged(ItemSlotModel slot)

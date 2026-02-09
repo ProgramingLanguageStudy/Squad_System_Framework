@@ -1,25 +1,40 @@
-﻿using UnityEngine;
+using UnityEngine;
 
+/// <summary>
+/// 플레이어 Animator 래퍼. 파라미터는 AnimatorParams 사용.
+/// 이동 속도·공격 등 애니 실행은 이 클래스의 메서드로만 수행 (의존성은 Initialize로 주입).
+/// </summary>
 [RequireComponent(typeof(Animator))]
 public class PlayerAnimator : MonoBehaviour
 {
     private Animator _animator;
-    private PlayerMover _mover; // 속도 값을 가져오기 위해 참조
+    private PlayerMover _mover;
 
-    private static readonly int SpeedHash = Animator.StringToHash("MoveSpeed");
+    private const float DampTime = 0.1f;
 
-    public void Initialize(PlayerMover mover)
+    public void Initialize(Animator animator, PlayerMover mover)
     {
-        _animator = GetComponent<Animator>();
+        _animator = animator;
         _mover = mover;
     }
 
     private void Update()
     {
-        // Mover에게 물어봐서 속도 값을 받아옵니다.
-        float speed = _mover.GetCurrentSpeed();
+        if (_mover != null)
+            Move(_mover.GetCurrentSpeed());
+    }
 
-        // 블렌드 트리 파라미터 업데이트
-        _animator.SetFloat(SpeedHash, speed, 0.1f, Time.deltaTime);
+    /// <summary>이동 속도 파라미터 설정. (블렌드 트리 등)</summary>
+    public void Move(float moveSpeed)
+    {
+        if (_animator != null)
+            _animator.SetFloat(AnimatorParams.MoveSpeed, moveSpeed, DampTime, Time.deltaTime);
+    }
+
+    /// <summary>공격 트리거 1회 발동.</summary>
+    public void Attack()
+    {
+        if (_animator != null)
+            _animator.SetTrigger(AnimatorParams.Attack);
     }
 }

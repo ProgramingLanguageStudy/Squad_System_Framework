@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
@@ -10,15 +10,16 @@ public class PlayerMover : MonoBehaviour
     private NavMeshAgent _agent;
     private Transform _mainCameraTransform;
 
-    public void Initialize()
+    public void Initialize(NavMeshAgent agent, Transform mainCameraTransform)
     {
-        _agent = GetComponent<NavMeshAgent>();
-        _mainCameraTransform = Camera.main.transform;
-        _agent.updateRotation = false; // ȸ���� ���� ����
+        _agent = agent;
+        _mainCameraTransform = mainCameraTransform;
+        if (_agent != null)
+            _agent.updateRotation = false; // 회전은 직접 제어
     }
 
     /// <summary>
-    /// Player�� Update���� ȣ���Ͽ� �̵��� �����ϴ� �Լ�
+    /// Player의 Update에서 호출해서 이동을 처리하는 함수
     /// </summary>
     /// <param name="input"></param>
     public void Move(Vector2 input)
@@ -40,14 +41,14 @@ public class PlayerMover : MonoBehaviour
         Vector3 moveDir = (forward * input.y) + (right * input.x);
         moveDir.Normalize();
 
-        // ȸ�� ó��
+        // 회전 처리
         Quaternion targetRotation = Quaternion.LookRotation(moveDir);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
 
-        // �̵� ó��
+        // 이동 처리
         _agent.velocity = moveDir * _moveSpeed;
     }
 
-    // Animator�� �ӵ��� ������ �� �ֵ��� Getter ����
+    /// <summary>Animator에 속도를 넘겨줄 때 쓸 값의 Getter 용도</summary>
     public float GetCurrentSpeed() => _agent.velocity.magnitude;
 }

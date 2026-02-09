@@ -1,4 +1,4 @@
-﻿NpcId,DialogueType,ConditionKey,ConditionValue,Sentence,AfterActionEvent
+NpcId,DialogueType,ConditionKey,ConditionValue,Sentence,AfterActionEvent
 Chief,Quest,Mushroom,0,"이보게, 숲에 가서 버섯 5개만 좀 구해다 주게나.",Start_Mushroom
 Chief,Quest,Mushroom,1,버섯은 아직인가? 숲 서쪽으로 가면 많다네.,
 Chief,Quest,Mushroom,2,오! 정말 싱싱한 버섯이군. 여기 보상이라네.,Complete_Mushroom
@@ -6,4 +6,4 @@ Chief,Common,None,0,"허허, 우리 마을은 오늘도 평화롭구먼.",
 Chief,Common,None,0,마을에서 지내는건 좀 어떤가?,
 Chief,Affection,Affection,50,자네라면 우리 마을의 중요한 일을 맡길 수도 있겠어.,
 Chief,Affection,Affection,100,자네는 우리마을의 자랑이야!,
-Chief,FirstMeet,,,"안녕, 처음 보는 얼굴이구나. 나는 이 마을 촌장이야.",
+Chief,FirstTalk,,,"안녕, 처음 보는 얼굴이구나. 나는 이 마을 촌장이야.",

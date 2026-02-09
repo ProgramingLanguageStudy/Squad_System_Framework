@@ -53,13 +53,13 @@ public class DialogueDataLoader : MonoBehaviour
         return IsLoaded && _byId.TryGetValue(id, out var data) ? data : null;
     }
 
-    /// <summary>FirstMeet 우선, 없으면 Common 중 랜덤, 없으면 첫 번째.</summary>
+    /// <summary>FirstTalk 우선, 없으면 Common 중 랜덤, 없으면 첫 번째.</summary>
     public DialogueData GetBestForNpc(string npcId)
     {
         if (!IsLoaded || !_byNpcId.TryGetValue(npcId, out var list) || list.Count == 0)
             return null;
         for (int i = 0; i < list.Count; i++)
-            if (list[i].dialogueType == DialogueType.FirstMeet) return list[i];
+            if (list[i].dialogueType == DialogueType.FirstTalk) return list[i];
         int commonCount = 0;
         for (int i = 0; i < list.Count; i++)
             if (list[i].dialogueType == DialogueType.Common) commonCount++;

@@ -32,8 +32,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 7332296260761197749}
   - {fileID: 3974582588213637515}
+  - {fileID: 7332296260761197749}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
@@ -135,9 +135,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2751695afe142f469953ec6982a6b68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _button: {fileID: 0}
-  _buttonIcon: {fileID: 0}
-  _buttonText: {fileID: 0}
+  _button: {fileID: 1920046653058157166}
+  _buttonIcon: {fileID: 8468164705063067836}
+  _buttonText: {fileID: 855840762439652958}
 --- !u!1 &5103158947135050017
 GameObject:
   m_ObjectHideFlags: 0

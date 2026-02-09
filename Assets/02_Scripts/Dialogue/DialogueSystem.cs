@@ -42,6 +42,7 @@ public class DialogueSystem : MonoBehaviour
         if (data == null) return;
         _onComplete = onComplete;
         _model.SetDialogue(data);
+        GameEvents.OnCursorShowRequested?.Invoke();
     }
 
     /// <summary>다음 문장. 끝이면 자동 종료.</summary>
@@ -52,6 +53,7 @@ public class DialogueSystem : MonoBehaviour
         if (next >= _model.LineCount)
         {
             _model.Clear();
+            GameEvents.OnCursorHideRequested?.Invoke();
             _onComplete?.Invoke();
             _onComplete = null;
         }
@@ -66,6 +68,7 @@ public class DialogueSystem : MonoBehaviour
     {
         if (!_model.IsTalking) return;
         _model.Clear();
+        GameEvents.OnCursorHideRequested?.Invoke();
         _onComplete?.Invoke();
         _onComplete = null;
     }

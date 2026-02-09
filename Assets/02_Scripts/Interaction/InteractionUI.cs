@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+using UnityEngine;
 using TMPro;
 
+/// <summary>상호작용 안내 문구만 표시. GameEvents.OnInteractTargetChanged 구독해 자동 갱신.</summary>
 public class InteractionUI : MonoBehaviour
 {
     [SerializeField] private GameObject _uiPanel;
@@ -13,6 +14,21 @@ public class InteractionUI : MonoBehaviour
     }
 
     // �ܺ�(PlayScene)���� "�̰� ������"��� �θ� �Լ�
+    private void OnEnable()
+    {
+        GameEvents.OnInteractTargetChanged += HandleTargetChanged;
+    }
+
+    private void OnDisable()
+    {
+        GameEvents.OnInteractTargetChanged -= HandleTargetChanged;
+    }
+
+    private void HandleTargetChanged(IInteractable target)
+    {
+        Refresh(target != null ? target.GetInteractText() : "");
+    }
+
     public void Refresh(string message)
     {
         if (string.IsNullOrEmpty(message))

@@ -48,6 +48,7 @@ public class PlayerInteractor : MonoBehaviour
             _lastTarget = found;
             CurrentTarget = found;
             OnTargetChanged?.Invoke(found);
+            GameEvents.OnInteractTargetChanged?.Invoke(found);
         }
     }
 

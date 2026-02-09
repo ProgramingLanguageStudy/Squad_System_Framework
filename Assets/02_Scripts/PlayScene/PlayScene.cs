@@ -1,13 +1,73 @@
 using UnityEngine;
 
 /// <summary>
-/// 플레이 씬 진입점. 나중에 조율자 역할로 입력·인벤토리·대화·퀘스트 등을 연결할 예정.
-/// 현재는 연결 없음.
+/// 플레이 씬 조율. InputHandler·Player 참조 보유, 입력 이벤트/값을 플레이어·GameEvents로 연결.
+/// 이동, Interact, 인벤토리 키만 연결. 퀘스트는 트래커형이라 키 연결 없음.
 /// </summary>
 public class PlayScene : MonoBehaviour
 {
+    [SerializeField] private InputHandler _inputHandler;
+    [SerializeField] private Player _player;
+
     private void Awake()
     {
-        Debug.Log("PlayScene: 로드됨. (시스템 연결은 조율자 구현 시 추가)");
+        if (_inputHandler == null)
+        {
+            Debug.LogWarning("[PlayScene] InputHandler가 할당되지 않았습니다. 인스펙터에서 할당해 주세요.");
+            return;
+        }
+        if (_player == null)
+        {
+            Debug.LogWarning("[PlayScene] Player가 할당되지 않았습니다. 인스펙터에서 할당해 주세요.");
+            return;
+        }
+
+        _player.Initialize();
+    }
+
+    private void OnEnable()
+    {
+        if (_inputHandler == null || _player == null) return;
+
+        _inputHandler.OnInteractPerformed += HandleInteract;
+        _inputHandler.OnInventoryPerformed += HandleInventoryKey;
+        _inputHandler.OnAttackPerformed += HandleAttack;
+    }
+
+    private void OnDisable()
+    {
+        if (_inputHandler == null) return;
+
+        _inputHandler.OnInteractPerformed -= HandleInteract;
+        _inputHandler.OnInventoryPerformed -= HandleInventoryKey;
+        _inputHandler.OnAttackPerformed -= HandleAttack;
+    }
+
+    private void Update()
+    {
+        if (_inputHandler == null || _player == null) return;
+
+        if (!_player.CanMove)
+        {
+            _player.Mover.Move(Vector2.zero);
+            return;
+        }
+
+        _player.Mover.Move(_inputHandler.MoveInput);
+    }
+
+    private void HandleInteract()
+    {
+        _player?.Interactor?.TryInteract();
+    }
+
+    private void HandleInventoryKey()
+    {
+        GameEvents.OnInventoryKeyPressed?.Invoke();
+    }
+
+    private void HandleAttack()
+    {
+        _player?.RequestAttack();
     }
 }

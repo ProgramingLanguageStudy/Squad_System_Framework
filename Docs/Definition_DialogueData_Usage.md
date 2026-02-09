@@ -10,9 +10,10 @@
 | 필드 | 설명 |
 |------|------|
 | **id** | 대화 블록 구분. Loader.GetById(id)에서 사용. |
-| **npcId** | 화자 표시명. Loader가 npcId로 묶어서 선택 시 사용. |
-| **dialogueType** | Common, FirstMeet 등. Loader 선택 로직에서 사용. |
-| **conditionValue** | 선택 로직에서 미사용. 연동 시 활용 가능. |
+| **npcId** | 이 대화를 쓰는 NPC ID. Loader가 npcId로 묶어 선택. |
+| **dialogueType** | FirstTalk, Quest, QuestComplete, Common, Affection. Loader·버튼 로직에서 사용. |
+| **questId** | Quest/QuestComplete일 때 퀘스트 ID. 그 외는 비움. 버튼(수락/완료) 연동용. |
+| **conditionValue** | Affection일 때 최소 호감도. 그 외는 0. |
 | **lines** | 한 문장씩 순서대로 재생. |
 
 ---
@@ -37,7 +38,7 @@
 var loader = FindFirstObjectByType<DialogueDataLoader>();
 if (loader != null && loader.IsLoaded)
 {
-    var data = loader.GetBestForNpc(npcId); // 또는 loader.GetById("Chief_FirstMeet");
+    var data = loader.GetBestForNpc(npcId); // 또는 loader.GetById("Chief_FirstTalk");
     if (data != null)
         GameEvents.OnPlayDialogueRequested?.Invoke(data);
 }

@@ -63,8 +63,15 @@ public class InventoryView : MonoBehaviour
         bool isActive = !target.activeSelf;
         target.SetActive(isActive);
         if (isActive)
+        {
             OnRefreshRequested?.Invoke();
-        else if (TooltipUI.Instance != null)
-            TooltipUI.Instance.Hide();
+            GameEvents.OnCursorShowRequested?.Invoke();
+        }
+        else
+        {
+            if (TooltipUI.Instance != null)
+                TooltipUI.Instance.Hide();
+            GameEvents.OnCursorHideRequested?.Invoke();
+        }
     }
 }
