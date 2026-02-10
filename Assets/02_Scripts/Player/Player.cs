@@ -14,6 +14,8 @@ public class Player : MonoBehaviour
     [SerializeField] private PlayerInteractor _interactor;
     [SerializeField] private PlayerAttacker _attacker;
     [SerializeField] private PlayerStateMachine _stateMachine;
+    [SerializeField] [Tooltip("체력바 UI. 있으면 Initialize 시 Model 주입")]
+    private PlayerHealthBarView _healthBarView;
 
     [Header("----- 주입용 참조 (비어 있으면 같은 GameObject에서 자동 탐색) -----")]
     [SerializeField] private CharacterController _characterController;
@@ -44,6 +46,7 @@ public class Player : MonoBehaviour
         if (_interactor == null) _interactor = GetComponent<PlayerInteractor>();
         if (_attacker == null) _attacker = GetComponent<PlayerAttacker>();
         if (_stateMachine == null) _stateMachine = GetComponent<PlayerStateMachine>();
+        if (_healthBarView == null) _healthBarView = GetComponentInChildren<PlayerHealthBarView>(true);
         if (_characterController == null) _characterController = GetComponent<CharacterController>();
         if (_animator == null) _animator = GetComponent<Animator>();
         if (_mainCameraTransform == null && Camera.main != null) _mainCameraTransform = Camera.main.transform;
@@ -53,6 +56,7 @@ public class Player : MonoBehaviour
         _playerAnimator.Initialize(_animator, _mover);
         _interactor.Initialize(this);
         _stateMachine.Initialize(this);
-        _attacker.Initialize(_stateMachine);
+        _attacker.Initialize(_stateMachine, _model);
+        _healthBarView?.Initialize(_model);
     }
 }

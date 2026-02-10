@@ -8,6 +8,8 @@ public class PlayScene : MonoBehaviour
 {
     [SerializeField] private InputHandler _inputHandler;
     [SerializeField] private Player _player;
+    [SerializeField] [Tooltip("비면 주입 안 함. 있으면 Player를 chase target으로 주입")]
+    private EnemySpawner _enemySpawner;
 
     private void Awake()
     {
@@ -23,6 +25,7 @@ public class PlayScene : MonoBehaviour
         }
 
         _player.Initialize();
+        _enemySpawner?.Initialize(_player.transform);
     }
 
     private void OnEnable()

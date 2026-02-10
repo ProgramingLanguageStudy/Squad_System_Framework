@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85280704d59e1904882f101fa00ebc65, type: 3}
+  m_Name: EnemyData
+  m_EditorClassIdentifier: 
+  maxHp: 50
+  attackPower: 5
+  defense: 0
+  patrolSpeed: 1.5
+  patrolRadius: 5
+  arriveThreshold: 0.5
+  patrolWalkDurationMin: 5
+  patrolWalkDurationMax: 6
+  patrolIdleDuration: 3
+  chaseSpeed: 4
+  detectionRadius: 5
+  attackRadius: 2
+  chaseLoseRadius: 8
+  attackDuration: 2

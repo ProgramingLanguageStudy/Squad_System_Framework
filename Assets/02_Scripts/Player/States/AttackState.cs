@@ -13,6 +13,7 @@ public class AttackState : PlayerStateBase
             Player.CanMove = false;
 
         Player?.Animator?.Attack();
+        Player?.Attacker?.OnAttackStarted();
     }
 
     public override void Update()
@@ -22,6 +23,7 @@ public class AttackState : PlayerStateBase
 
     public override void Exit()
     {
-        // 정리할 것 없음. Idle 진입 시 CanMove는 IdleState.Enter에서 true
+        Machine.RequestIdle();
+        Player?.Attacker?.OnAttackEnded();
     }
 }
