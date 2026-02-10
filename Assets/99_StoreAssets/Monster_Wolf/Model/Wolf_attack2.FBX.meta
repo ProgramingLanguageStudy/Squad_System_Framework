@@ -315,7 +315,7 @@ ModelImporter:
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.6891887
+      - time: 0.5679766
         functionName: Animation_EndHitWindow
         data: 
         objectReferenceParameter: {instanceID: 0}

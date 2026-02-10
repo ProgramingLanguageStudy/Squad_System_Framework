@@ -44,6 +44,7 @@ public class EnemyAttacker : MonoBehaviour
     /// <summary>공격 시작. 상태 Enter에서 호출. 이펙트·사운드용. 히트박스는 Animation_BeginHitWindow에서.</summary>
     public void OnAttackStarted()
     {
+        _hitThisAttack.Clear();
         // TODO: 이펙트, 사운드
     }
 
