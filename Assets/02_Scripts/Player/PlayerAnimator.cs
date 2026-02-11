@@ -37,4 +37,18 @@ public class PlayerAnimator : MonoBehaviour
         if (_animator != null)
             _animator.SetTrigger(AnimatorParams.Attack);
     }
+
+    /// <summary>사망 트리거 1회 발동. Dead 상태 진입 시 호출.</summary>
+    public void Dead()
+    {
+        if (_animator != null)
+            _animator.SetTrigger(AnimatorParams.Dead);
+    }
+
+    /// <summary>애니메이터를 Idle로 강제 전환. 부활 시 누운 상태 해제용. 상태 이름이 다르면 이 메서드에서 변경.</summary>
+    public void ResetToIdle()
+    {
+        if (_animator != null)
+            _animator.Play("Idle", 0, 0f);
+    }
 }

@@ -19,6 +19,8 @@ public class PlayerModel : MonoBehaviour, IDamageable, IAttackPowerSource
     public int CurrentHp => _currentHp;
     /// <summary>최대 체력. Data가 있으면 Data.maxHp, 없으면 100.</summary>
     public int MaxHp => _data != null ? _data.maxHp : 100;
+    /// <summary>사망 여부. 체력 0 이하.</summary>
+    public bool IsDead => _currentHp <= 0;
 
     /// <summary>이동 속도. Data가 있으면 Data.moveSpeed, 없으면 6.</summary>
     public float MoveSpeed => _data != null ? _data.moveSpeed : 6f;
@@ -52,6 +54,13 @@ public class PlayerModel : MonoBehaviour, IDamageable, IAttackPowerSource
     {
         if (amount <= 0) return;
         _currentHp = Mathf.Min(MaxHp, _currentHp + amount);
+        OnHpChanged?.Invoke(_currentHp, MaxHp);
+    }
+
+    /// <summary>세이브 로드 시 체력 복원용. 0~MaxHp로 클램프 후 적용.</summary>
+    public void SetCurrentHpForLoad(int value)
+    {
+        _currentHp = Mathf.Clamp(value, 0, MaxHp);
         OnHpChanged?.Invoke(_currentHp, MaxHp);
     }
 }

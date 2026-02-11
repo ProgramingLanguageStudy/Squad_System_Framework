@@ -24,10 +24,17 @@ public class PlayerMover : MonoBehaviour
     }
 
     /// <summary>
-    /// Player의 Update에서 호출해서 이동을 처리하는 함수
+    /// Player의 Update에서 호출해서 이동을 처리하는 함수.
+    /// 컨트롤러가 꺼져 있으면(Dead 등) 아무것도 하지 않음. 제약은 상태에서 설정하고, 실행 쪽에서는 여기서 한 번만 방어.
     /// </summary>
     public void Move(Vector2 input)
     {
+        if (_controller == null || !_controller.enabled)
+        {
+            _lastSpeed = 0f;
+            return;
+        }
+
         float speed = _model != null ? _model.MoveSpeed : 6f;
         Vector3 motion;
 

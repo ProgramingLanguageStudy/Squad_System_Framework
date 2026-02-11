@@ -12,11 +12,14 @@ public class PlayerStateMachine : MonoBehaviour
     [SerializeField] private PlayerStateBase _currentState; // 읽기 전용
     private IdleState _idleState;
     private AttackState _attackState;
+    private DeadState _deadState;
 
     public PlayerStateBase CurrentState => _currentState;
 
     /// <summary>Idle(자유)인지. 이동/공격 입력 허용 여부에 사용.</summary>
     public bool IsIdle => _currentState == _idleState;
+    /// <summary>사망 상태인지.</summary>
+    public bool IsDead => _currentState == _deadState;
 
     public event Action<PlayerStateBase, PlayerStateBase> OnStateChanged;
 
@@ -25,12 +28,18 @@ public class PlayerStateMachine : MonoBehaviour
         _player = player;
         _idleState = new IdleState(this, _player);
         _attackState = new AttackState(this, _player);
+        _deadState = new DeadState(this, _player);
         _currentState = _idleState;
         _currentState.Enter();
     }
 
     private void Update()
     {
+        if (_currentState != _deadState && _player != null && _player.Model != null && _player.Model.IsDead)
+        {
+            ChangeState(_deadState);
+            return;
+        }
         _currentState?.Update();
     }
 

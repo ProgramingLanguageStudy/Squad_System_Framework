@@ -51,10 +51,7 @@ public class PlayScene : MonoBehaviour
         if (_inputHandler == null || _player == null) return;
 
         if (!_player.CanMove)
-        {
-            _player.Mover.Move(Vector2.zero);
             return;
-        }
 
         _player.Mover.Move(_inputHandler.MoveInput);
     }

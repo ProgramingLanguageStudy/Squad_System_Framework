@@ -37,6 +37,33 @@ public class Player : MonoBehaviour
         _stateMachine?.RequestAttack();
     }
 
+    /// <summary>지정 위치로 순간이동. Portal·부활 등에서 호출. CharacterController 안전 처리 포함.</summary>
+    public void Teleport(Vector3 worldPosition)
+    {
+        if (_characterController == null)
+        {
+            transform.position = worldPosition;
+            return;
+        }
+        _characterController.enabled = false;
+        transform.position = worldPosition;
+        _characterController.enabled = true;
+    }
+
+    /// <summary>지정 Transform 위치로 순간이동. (회전은 적용하지 않음)</summary>
+    public void Teleport(Transform destination)
+    {
+        if (destination == null) return;
+        Teleport(destination.position);
+    }
+
+    /// <summary>CharacterController 켜기/끄기. Dead 시 끄면 몬스터 감지·공격 대상에서 제외.</summary>
+    public void SetCharacterControllerEnabled(bool enabled)
+    {
+        if (_characterController != null)
+            _characterController.enabled = enabled;
+    }
+
     public void Initialize()
     {
         // 인스펙터 미연결 시 같은 GameObject에서 한 번만 보충 (선택)
