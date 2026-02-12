@@ -54,6 +54,7 @@ public class ItemSlot : MonoBehaviour,
         _icon.sprite = null;
         _icon.enabled = false;
         _countText.text = string.Empty;
+        SetSlotRaycast(false);
     }
 
     /// <summary>자기 SlotModel을 설정하고 그 내용으로 표시 갱신.</summary>
@@ -68,6 +69,16 @@ public class ItemSlot : MonoBehaviour,
         _icon.sprite = _model.Item.Icon;
         _icon.enabled = true;
         _countText.text = _model.Count > 1 ? _model.Count.ToString() : string.Empty;
+        SetSlotRaycast(true);
+    }
+
+    /// <summary>빈 슬롯이면 레이캐스트 끄고(스크롤 통과), 아이템 있으면 켜서 클릭/드래그 받음.</summary>
+    private void SetSlotRaycast(bool hasItem)
+    {
+        _icon.raycastTarget = hasItem;
+        var slotBg = GetComponent<Image>();
+        if (slotBg != null)
+            slotBg.raycastTarget = hasItem;
     }
 
     public void OnPointerClick(PointerEventData eventData)

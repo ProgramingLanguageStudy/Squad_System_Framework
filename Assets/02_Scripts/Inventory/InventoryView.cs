@@ -9,6 +9,8 @@ using UnityEngine.UI;
 public class InventoryView : MonoBehaviour
 {
     [SerializeField] private GameObject _inventoryUIPanel;
+    [SerializeField] [Tooltip("인벤토리 열 때 맨 위로 보이게 할 ScrollRect. 비면 동작 안 함")]
+    private ScrollRect _scrollRect;
     [SerializeField] private Image _dragIcon;
     [SerializeField] private GameObject _itemSlotPrefab;
     [SerializeField] private Transform _slotGroup;
@@ -67,6 +69,8 @@ public class InventoryView : MonoBehaviour
         target.SetActive(isActive);
         if (isActive)
         {
+            if (_scrollRect != null)
+                _scrollRect.verticalNormalizedPosition = 1f;
             OnRefreshRequested?.Invoke();
             GameEvents.OnCursorShowRequested?.Invoke();
         }
