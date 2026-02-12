@@ -1,16 +1,22 @@
+using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>인벤토리 디버그/치트용. Hierarchy의 Debuggers 등에 붙이고, 인스펙터에서 Inventory 할당 (비면 플레이 시 Find 시도).</summary>
+/// <summary>인벤토리 디버그/치트용. Hierarchy의 Debuggers 등에 붙이고, 인스펙터에서 반드시 Inventory 참조를 할당하세요.</summary>
 public class InventoryDebugger : MonoBehaviour
 {
-    [SerializeField] [Tooltip("비워두면 플레이 모드에서 FindFirstObjectByType으로 찾음")]
+    [SerializeField] [Tooltip("반드시 인스펙터에서 할당하세요. 참조 없으면 버튼 동작하지 않음.")]
     private Inventory _inventory;
 
-    [Header("테스트 아이템 추가용 (버튼에서 사용)")]
-    [SerializeField] private ItemData _testItemData;
-    [SerializeField] private int _testAmount = 1;
+    [System.Serializable]
+    public class AddItemEntry
+    {
+        public ItemData itemData;
+        public int amount = 1;
+    }
+
+    [Header("아이템 추가 리스트 (각 항목별 '추가' 버튼으로 등록)")]
+    [SerializeField] private List<AddItemEntry> _addItemEntries = new List<AddItemEntry>();
 
     public Inventory InventoryRef => _inventory;
-    public ItemData TestItemData => _testItemData;
-    public int TestAmount => _testAmount;
+    public IReadOnlyList<AddItemEntry> AddItemEntries => _addItemEntries;
 }
