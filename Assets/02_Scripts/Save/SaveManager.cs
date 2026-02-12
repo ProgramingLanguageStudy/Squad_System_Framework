@@ -4,15 +4,18 @@ using UnityEditor;
 #endif
 
 /// <summary>
-/// 세이브/로드 시점 제어 및 API 제공. DataManager에서 데이터 수집·적용, SaveLoadSystem에서 I/O.
+/// 세이브 시점 제어 및 API 제공. DataManager에서 데이터 수집·적용, SaveSystem에서 I/O.
 /// - Play 진입 시: 로드 후 DataManager.ApplySaveData.
 /// - Play 종료 시(에디터): 저장.
 /// - 앱/에디터 종료 시: 저장.
-/// GameManager와 연결되어 있으며, GameManager가 보유.
+/// GameManager가 보유. SaveSystem은 new로 생성해 보유.
 /// </summary>
 public class SaveManager : MonoBehaviour
 {
     [SerializeField] private int _defaultSlot = 0;
+
+    private SaveSystem _saveSystem;
+    private SaveSystem SaveSystem => _saveSystem ??= new SaveSystem();
 
     private void Start()
     {
@@ -53,16 +56,12 @@ public class SaveManager : MonoBehaviour
     public void Save()
     {
         var gm = GameManager.Instance;
-        if (gm == null) return;
+        if (gm?.DataManager == null) return;
 
-        var dataManager = gm.DataManager;
-        var saveLoadSystem = gm.SaveLoadSystem;
-        if (dataManager == null || saveLoadSystem == null) return;
-
-        var data = dataManager.GatherSaveData();
+        var data = gm.DataManager.GatherSaveData();
         if (data == null) return;
 
-        if (saveLoadSystem.Save(_defaultSlot, data))
+        if (SaveSystem.Save(_defaultSlot, data))
             Debug.Log("[SaveManager] Saved to slot " + _defaultSlot);
         else
             Debug.LogWarning("[SaveManager] Save failed.");
@@ -72,20 +71,16 @@ public class SaveManager : MonoBehaviour
     public void LoadAndApply()
     {
         var gm = GameManager.Instance;
-        if (gm == null) return;
+        if (gm?.DataManager == null) return;
 
-        var dataManager = gm.DataManager;
-        var saveLoadSystem = gm.SaveLoadSystem;
-        if (dataManager == null || saveLoadSystem == null) return;
-
-        var data = saveLoadSystem.Load(_defaultSlot);
+        var data = SaveSystem.Load(_defaultSlot);
         if (data == null)
         {
             Debug.Log("[SaveManager] No save in slot " + _defaultSlot + ", skip load.");
             return;
         }
 
-        dataManager.ApplySaveData(data);
+        gm.DataManager.ApplySaveData(data);
         Debug.Log("[SaveManager] Loaded from slot " + _defaultSlot);
     }
 }

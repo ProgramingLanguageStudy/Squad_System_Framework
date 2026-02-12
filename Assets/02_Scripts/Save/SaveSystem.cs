@@ -2,10 +2,10 @@ using System.IO;
 using UnityEngine;
 
 /// <summary>
-/// 세이브/로드 I/O 담당. GameManager가 보유. JSON 파일로 저장. Save(slot, data) / Load(slot) → SaveData.
-/// 접근: GameManager.Instance.SaveLoadSystem
+/// 세이브 I/O 담당. 일반 C# 클래스. SaveManager가 new로 생성해 보유.
+/// JSON 파일로 저장. Save(slot, data) / Load(slot) → SaveData.
 /// </summary>
-public class SaveLoadSystem : MonoBehaviour
+public class SaveSystem
 {
     private const string FilePrefix = "save_";
     private const string FileSuffix = ".json";
@@ -39,7 +39,7 @@ public class SaveLoadSystem : MonoBehaviour
         }
         catch (System.Exception e)
         {
-            Debug.LogError("[SaveLoadSystem] Save failed: " + e.Message);
+            Debug.LogError("[SaveSystem] Save failed: " + e.Message);
             return false;
         }
     }
@@ -56,7 +56,7 @@ public class SaveLoadSystem : MonoBehaviour
         }
         catch (System.Exception e)
         {
-            Debug.LogError("[SaveLoadSystem] Load failed: " + e.Message);
+            Debug.LogError("[SaveSystem] Load failed: " + e.Message);
             return null;
         }
     }

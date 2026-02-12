@@ -1,17 +1,18 @@
 using UnityEngine;
 
 /// <summary>
-/// 플레이어 세이브/로드 담당. ISaveHandler 구현. OnEnable에서 DataManager에 등록, OnDisable에서 해제.
-/// Player와 같은 GameObject에 두고, Player·PlayerModel 참조로 data.player만 채우고 적용.
+/// 플레이어 세이브/로드 담당. ISaveHandler 구현. Player가 보유하고 SetPlayer(this)로 주입.
+/// Gather/Apply는 Player.GetSaveData / ApplySaveData 직접 호출.
 /// </summary>
 [RequireComponent(typeof(Player))]
 public class PlayerSaveHandler : MonoBehaviour, ISaveHandler
 {
     private Player _player;
 
-    private void Awake()
+    /// <summary>Player가 Initialize 시 호출. 주입 전에는 Gather/Apply 동작 안 함.</summary>
+    public void SetPlayer(Player player)
     {
-        _player = GetComponent<Player>();
+        _player = player;
     }
 
     private void OnEnable()
@@ -29,19 +30,12 @@ public class PlayerSaveHandler : MonoBehaviour, ISaveHandler
     public void Gather(SaveData data)
     {
         if (data?.player == null || _player == null) return;
-
-        var t = _player.transform;
-        data.player.position = t.position;
-        data.player.rotationY = t.eulerAngles.y;
-        data.player.currentHp = _player.Model != null ? _player.Model.CurrentHp : 0;
+        data.player = _player.GetSaveData();
     }
 
     public void Apply(SaveData data)
     {
         if (data?.player == null || _player == null) return;
-
-        _player.Teleport(data.player.position);
-        _player.transform.eulerAngles = new Vector3(0f, data.player.rotationY, 0f);
-        _player.Model?.SetCurrentHpForLoad(data.player.currentHp);
+        _player.ApplySaveData(data.player);
     }
 }

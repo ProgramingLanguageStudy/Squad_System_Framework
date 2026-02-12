@@ -16,6 +16,8 @@ public class Player : MonoBehaviour
     [SerializeField] private PlayerStateMachine _stateMachine;
     [SerializeField] [Tooltip("체력바 UI. 있으면 Initialize 시 Model 주입")]
     private PlayerHealthBarView _healthBarView;
+    [SerializeField] [Tooltip("세이브/로드 시 DataManager에 등록. 있으면 Initialize 시 Player 주입")]
+    private PlayerSaveHandler _saveHandler;
 
     [Header("----- 주입용 참조 (비어 있으면 같은 GameObject에서 자동 탐색) -----")]
     [SerializeField] private CharacterController _characterController;
@@ -77,6 +79,8 @@ public class Player : MonoBehaviour
         if (_characterController == null) _characterController = GetComponent<CharacterController>();
         if (_animator == null) _animator = GetComponent<Animator>();
         if (_mainCameraTransform == null && Camera.main != null) _mainCameraTransform = Camera.main.transform;
+        if (_saveHandler == null) _saveHandler = GetComponent<PlayerSaveHandler>();
+        if (_saveHandler != null) _saveHandler.SetPlayer(this);
 
         _model?.Initialize();
         _mover.Initialize(_characterController, _mainCameraTransform, _model);
@@ -85,5 +89,24 @@ public class Player : MonoBehaviour
         _stateMachine.Initialize(this);
         _attacker.Initialize(_stateMachine, _model);
         _healthBarView?.Initialize(_model);
+    }
+
+    /// <summary>현재 위치·회전·체력을 PlayerSaveData로 반환. PlayerSaveHandler의 Gather에서 사용.</summary>
+    public PlayerSaveData GetSaveData()
+    {
+        var d = new PlayerSaveData();
+        d.position = transform.position;
+        d.rotationY = transform.eulerAngles.y;
+        d.currentHp = _model != null ? _model.CurrentHp : 0;
+        return d;
+    }
+
+    /// <summary>로드한 PlayerSaveData를 실제 파츠에 적용. PlayerSaveHandler의 Apply에서 사용.</summary>
+    public void ApplySaveData(PlayerSaveData data)
+    {
+        if (data == null) return;
+        Teleport(data.position);
+        transform.eulerAngles = new Vector3(0f, data.rotationY, 0f);
+        _model?.SetCurrentHpForLoad(data.currentHp);
     }
 }
