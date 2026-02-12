@@ -21,15 +21,16 @@ public class InventoryView : MonoBehaviour
     /// <summary>인벤토리 패널이 켜져 있는지. PlayScene 등에서 커서/이동 제어용.</summary>
     public bool IsPanelActive => _inventoryUIPanel != null && _inventoryUIPanel.activeSelf;
 
-    /// <summary>슬롯 스왑 요청 시 (indexA, indexB). Presenter가 구독해 Model.SwapItems 호출.</summary>
-    public event Action<int, int> OnSwapRequested;
+    /// <summary>드롭 끝났을 때 (fromIndex, 스크린 좌표). Presenter가 GetSlotIndexAtPosition으로 목표 찾아 스왑.</summary>
+    public event Action<int, Vector2> OnDropEnded;
     /// <summary>슬롯 더블클릭(사용) 요청 시. Presenter가 구독해 Model.TryUseItem 호출.</summary>
     public event Action<int> OnUseRequested;
 
     /// <summary>토글 시 Presenter가 구독해 Refresh 호출 유도.</summary>
     public event Action OnRefreshRequested;
 
-    private void Start()
+    /// <summary>슬롯 생성·패널 초기 상태. Presenter가 호출.</summary>
+    public void Initialize()
     {
         CreateSlots();
         if (_inventoryUIPanel != null)
@@ -44,7 +45,7 @@ public class InventoryView : MonoBehaviour
             var slotGo = Instantiate(_itemSlotPrefab, _slotGroup);
             var slot = slotGo.GetComponent<ItemSlot>();
             slot.SetIndex(i);
-            slot.OnSwapRequested += RequestSwap;
+            slot.OnDropEnded += (from, pos) => OnDropEnded?.Invoke(from, pos);
             slot.OnUseRequested += (idx) => OnUseRequested?.Invoke(idx);
             slot.SetDragIcon(_dragIcon);
             slot.ClearSlot();
@@ -59,8 +60,21 @@ public class InventoryView : MonoBehaviour
         _slots[slotModel.Index].SetModel(slotModel);
     }
 
-    /// <summary>슬롯에서 드롭 시 호출. Presenter가 구독해 Model에 전달.</summary>
-    public void RequestSwap(int indexA, int indexB) => OnSwapRequested?.Invoke(indexA, indexB);
+    /// <summary>스크린 좌표가 속한 슬롯 인덱스. 없으면 -1. 스크롤 반영됨.</summary>
+    public int GetSlotIndexAtPosition(Vector2 screenPos)
+    {
+        for (int i = 0; i < _slots.Count; i++)
+        {
+            var rt = _slots[i].transform as RectTransform;
+            if (rt == null) continue;
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rt, screenPos, null, out var local))
+            {
+                if (rt.rect.Contains(local))
+                    return i;
+            }
+        }
+        return -1;
+    }
 
     public void ToggleInventory()
     {

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -29,8 +28,8 @@ public class ItemSlot : MonoBehaviour,
     /// <summary>이 슬롯이 표시하는 데이터. Presenter가 RefreshSlot 시 설정.</summary>
     public ItemSlotModel Model => _model;
 
-    /// <summary>드롭으로 스왑 요청 시 (fromIndex, toIndex). InventoryView 등이 구독해 처리.</summary>
-    public event Action<int, int> OnSwapRequested;
+    /// <summary>드롭 끝났을 때 (fromIndex, 스크린 좌표). View가 위치로 목표 슬롯을 찾아 스왑 처리.</summary>
+    public event Action<int, Vector2> OnDropEnded;
     /// <summary>더블클릭으로 사용 요청 시 (slotIndex). 소모품 등.</summary>
     public event Action<int> OnUseRequested;
 
@@ -131,23 +130,7 @@ public class ItemSlot : MonoBehaviour,
         if (_dragIcon != null)
             _dragIcon.gameObject.SetActive(false);
 
-        ItemSlot target = GetSlotAtPosition(eventData.position);
-        if (target != null && target != this)
-            OnSwapRequested?.Invoke(Index, target.Index);
-    }
-
-    private static ItemSlot GetSlotAtPosition(Vector2 screenPos)
-    {
-        if (EventSystem.current == null) return null;
-        var eventData = new PointerEventData(EventSystem.current) { position = screenPos };
-        var results = new List<RaycastResult>();
-        EventSystem.current.RaycastAll(eventData, results);
-        foreach (var result in results)
-        {
-            var slot = result.gameObject.GetComponentInParent<ItemSlot>();
-            if (slot != null) return slot;
-        }
-        return null;
+        OnDropEnded?.Invoke(Index, eventData.position);
     }
 
     #endregion

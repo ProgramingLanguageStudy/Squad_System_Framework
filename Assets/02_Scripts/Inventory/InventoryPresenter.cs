@@ -18,6 +18,8 @@ public class InventoryPresenter : MonoBehaviour
             Debug.LogWarning($"[InventoryPresenter] {gameObject.name}: View(InventoryView)가 할당되지 않았습니다. 인스펙터에서 할당해 주세요.");
         if (_model != null && _player != null)
             _model.SetItemUser(_player.Model);
+        _model?.Initialize();
+        _view?.Initialize();
     }
 
     private void OnEnable()
@@ -26,7 +28,7 @@ public class InventoryPresenter : MonoBehaviour
             _model.OnSlotChanged += OnSlotChanged;
         if (_view != null)
         {
-            _view.OnSwapRequested += HandleSwapRequested;
+            _view.OnDropEnded += HandleDropEnded;
             _view.OnUseRequested += HandleUseRequested;
             _view.OnRefreshRequested += RefreshView;
         }
@@ -41,7 +43,7 @@ public class InventoryPresenter : MonoBehaviour
             _model.OnSlotChanged -= OnSlotChanged;
         if (_view != null)
         {
-            _view.OnSwapRequested -= HandleSwapRequested;
+            _view.OnDropEnded -= HandleDropEnded;
             _view.OnUseRequested -= HandleUseRequested;
             _view.OnRefreshRequested -= RefreshView;
         }
@@ -67,10 +69,12 @@ public class InventoryPresenter : MonoBehaviour
             _view.RefreshSlot(slots[i]);
     }
 
-    private void HandleSwapRequested(int indexA, int indexB)
+    private void HandleDropEnded(int fromIndex, Vector2 screenPosition)
     {
-        if (_model != null)
-            _model.SwapItems(indexA, indexB);
+        if (_view == null || _model == null) return;
+        int toIndex = _view.GetSlotIndexAtPosition(screenPosition);
+        if (toIndex >= 0 && toIndex != fromIndex)
+            _model.SwapItems(fromIndex, toIndex);
     }
 
     private void HandleUseRequested(int slotIndex)

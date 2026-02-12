@@ -19,7 +19,8 @@ public class Inventory : MonoBehaviour
     /// <summary>아이템별 총 수량 변경 시 (itemId, 새 총 수량). 퀘스트 등에서 사용.</summary>
     public event Action<string, int> OnItemChangedWithId;
 
-    private void Awake()
+    /// <summary>슬롯 배열 생성. Presenter가 호출.</summary>
+    public void Initialize()
     {
         _slots = new ItemSlotModel[_inventorySize];
         for (int i = 0; i < _inventorySize; i++)
