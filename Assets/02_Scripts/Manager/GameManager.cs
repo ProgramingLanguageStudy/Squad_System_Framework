@@ -9,7 +9,6 @@ public class GameManager : Singleton<GameManager>
     [Header("Managers & Systems (선택: 인스펙터 할당. 없으면 런타임 생성)")]
     [SerializeField] private SaveManager _saveManager;
     [SerializeField] private DataManager _dataManager;
-    [SerializeField] private SaveLoadSystem _saveLoadSystem;
 
     /// <summary>세이브/로드 시점·API. GameManager와 연결된 진입점.</summary>
     public SaveManager SaveManager => GetOrCreate(ref _saveManager, "SaveManager");
