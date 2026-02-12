@@ -29,13 +29,17 @@ public class PlayerSaveHandler : MonoBehaviour, ISaveHandler
 
     public void Gather(SaveData data)
     {
-        if (data?.player == null || _player == null) return;
+        if (data?.player == null) return;
+        if (_player == null) _player = GetComponent<Player>();
+        if (_player == null) return;
         data.player = _player.GetSaveData();
     }
 
     public void Apply(SaveData data)
     {
-        if (data?.player == null || _player == null) return;
+        if (data?.player == null) return;
+        if (_player == null) _player = GetComponent<Player>();
+        if (_player == null) return;
         _player.ApplySaveData(data.player);
     }
 }

@@ -19,6 +19,9 @@ public class GameManager : Singleton<GameManager>
     {
         base.Awake();
         DontDestroyOnLoad(gameObject);
+        // SaveManager/DataManager를 즉시 생성해 두어 Start에서 로드가 동작하도록 함
+        var _ = SaveManager;
+        var __ = DataManager;
     }
 
     /// <summary>매니저가 없으면 자식 오브젝트에서 찾거나, 없으면 생성해서 붙임.</summary>
