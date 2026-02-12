@@ -8,8 +8,11 @@ using UnityEngine.UI;
 /// <summary>아이템 슬롯 한 칸의 UI. MVP의 슬롯 View. 스왑 시 이벤트만 발행하며 상위 View를 알지 않음.</summary>
 public class ItemSlot : MonoBehaviour,
     IPointerEnterHandler, IPointerExitHandler,
-    IBeginDragHandler, IDragHandler, IEndDragHandler
+    IBeginDragHandler, IDragHandler, IEndDragHandler,
+    IPointerClickHandler
 {
+    private const float DoubleClickTime = 0.3f;
+
     [Header("----- UI 참조 -----")]
     [SerializeField] private Image _icon;
     [SerializeField] private TextMeshProUGUI _countText;
@@ -19,6 +22,7 @@ public class ItemSlot : MonoBehaviour,
 
     private ItemSlotModel _model;
     private Image _dragIcon;
+    private float _lastClickTime;
 
     public int Index => _index;
 
@@ -27,6 +31,8 @@ public class ItemSlot : MonoBehaviour,
 
     /// <summary>드롭으로 스왑 요청 시 (fromIndex, toIndex). InventoryView 등이 구독해 처리.</summary>
     public event Action<int, int> OnSwapRequested;
+    /// <summary>더블클릭으로 사용 요청 시 (slotIndex). 소모품 등.</summary>
+    public event Action<int> OnUseRequested;
 
     /// <summary>InventoryView에서 주입. 드래그 시 따라다니는 공용 아이콘.</summary>
     public void SetDragIcon(Image dragIcon)
@@ -62,6 +68,18 @@ public class ItemSlot : MonoBehaviour,
         _icon.sprite = _model.Item.Icon;
         _icon.enabled = true;
         _countText.text = _model.Count > 1 ? _model.Count.ToString() : string.Empty;
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (_model == null || _model.Item == null) return;
+        if (Time.unscaledTime - _lastClickTime < DoubleClickTime)
+        {
+            _lastClickTime = 0f;
+            OnUseRequested?.Invoke(Index);
+        }
+        else
+            _lastClickTime = Time.unscaledTime;
     }
 
     #region 마우스 호버 이벤트 (툴팁)

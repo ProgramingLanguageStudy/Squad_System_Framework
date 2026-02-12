@@ -21,6 +21,8 @@ public class InventoryView : MonoBehaviour
 
     /// <summary>슬롯 스왑 요청 시 (indexA, indexB). Presenter가 구독해 Model.SwapItems 호출.</summary>
     public event Action<int, int> OnSwapRequested;
+    /// <summary>슬롯 더블클릭(사용) 요청 시. Presenter가 구독해 Model.TryUseItem 호출.</summary>
+    public event Action<int> OnUseRequested;
 
     /// <summary>토글 시 Presenter가 구독해 Refresh 호출 유도.</summary>
     public event Action OnRefreshRequested;
@@ -41,6 +43,7 @@ public class InventoryView : MonoBehaviour
             var slot = slotGo.GetComponent<ItemSlot>();
             slot.SetIndex(i);
             slot.OnSwapRequested += RequestSwap;
+            slot.OnUseRequested += (idx) => OnUseRequested?.Invoke(idx);
             slot.SetDragIcon(_dragIcon);
             slot.ClearSlot();
             _slots.Add(slot);

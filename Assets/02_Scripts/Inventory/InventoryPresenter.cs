@@ -7,6 +7,8 @@ public class InventoryPresenter : MonoBehaviour
 {
     [SerializeField] private Inventory _model;
     [SerializeField] private InventoryView _view;
+    [SerializeField] [Tooltip("소모품 사용 시 효과 적용 대상. 인벤토리에 IItemUser로 주입됩니다.")]
+    private Player _player;
 
     private void Awake()
     {
@@ -14,6 +16,8 @@ public class InventoryPresenter : MonoBehaviour
             Debug.LogWarning($"[InventoryPresenter] {gameObject.name}: Model(Inventory)이 할당되지 않았습니다. 인스펙터에서 할당해 주세요.");
         if (_view == null)
             Debug.LogWarning($"[InventoryPresenter] {gameObject.name}: View(InventoryView)가 할당되지 않았습니다. 인스펙터에서 할당해 주세요.");
+        if (_model != null && _player != null)
+            _model.SetItemUser(_player.Model);
     }
 
     private void OnEnable()
@@ -23,6 +27,7 @@ public class InventoryPresenter : MonoBehaviour
         if (_view != null)
         {
             _view.OnSwapRequested += HandleSwapRequested;
+            _view.OnUseRequested += HandleUseRequested;
             _view.OnRefreshRequested += RefreshView;
         }
         GameEvents.OnInventoryKeyPressed += HandleInventoryKeyPressed;
@@ -37,6 +42,7 @@ public class InventoryPresenter : MonoBehaviour
         if (_view != null)
         {
             _view.OnSwapRequested -= HandleSwapRequested;
+            _view.OnUseRequested -= HandleUseRequested;
             _view.OnRefreshRequested -= RefreshView;
         }
     }
@@ -65,5 +71,11 @@ public class InventoryPresenter : MonoBehaviour
     {
         if (_model != null)
             _model.SwapItems(indexA, indexB);
+    }
+
+    private void HandleUseRequested(int slotIndex)
+    {
+        if (_model != null)
+            _model.TryUseItem(slotIndex);
     }
 }

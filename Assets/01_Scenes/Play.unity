@@ -2513,6 +2513,8 @@ GameObject:
   m_Component:
   - component: {fileID: 241714261}
   - component: {fileID: 241714260}
+  - component: {fileID: 241714263}
+  - component: {fileID: 241714262}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -2532,8 +2534,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d9095a8ee4490b4784cfe38a3824389, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _saveManager: {fileID: 0}
-  _dataManager: {fileID: 0}
+  _saveManager: {fileID: 241714263}
+  _dataManager: {fileID: 241714262}
 --- !u!4 &241714261
 Transform:
   m_ObjectHideFlags: 0
@@ -2549,6 +2551,31 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &241714262
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 241714259}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03fe5427b5f192c409ca5f2f938cc99c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &241714263
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 241714259}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf247ceda99ec4b43b6e60527854baaf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _defaultSlot: 0
 --- !u!1001 &243596509
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4173,7 +4200,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab7d782e6d2dcea4db2554ca48295325, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _itemData: {fileID: 11400000, guid: 6066d58cb5aa68d49ad884e2cf3f5303, type: 2}
+  _itemData: {fileID: 0}
   _amount: 1
 --- !u!54 &360191652
 Rigidbody:
@@ -11567,7 +11594,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab7d782e6d2dcea4db2554ca48295325, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _itemData: {fileID: 11400000, guid: 0cbbe57045585084e82e83e4dfd8eeae, type: 2}
+  _itemData: {fileID: 0}
   _amount: 1
 --- !u!65 &1087741038
 BoxCollider:
@@ -12132,6 +12159,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _model: {fileID: 1144396954}
   _view: {fileID: 1144396953}
+  _player: {fileID: 0}
 --- !u!1001 &1149718566
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15125,7 +15153,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab7d782e6d2dcea4db2554ca48295325, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _itemData: {fileID: 11400000, guid: 6066d58cb5aa68d49ad884e2cf3f5303, type: 2}
+  _itemData: {fileID: 0}
   _amount: 1
 --- !u!54 &1416626284
 Rigidbody:
@@ -15325,7 +15353,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab7d782e6d2dcea4db2554ca48295325, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _itemData: {fileID: 11400000, guid: 0cbbe57045585084e82e83e4dfd8eeae, type: 2}
+  _itemData: {fileID: 0}
   _amount: 3
 --- !u!65 &1422168397
 BoxCollider:
@@ -15473,7 +15501,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab7d782e6d2dcea4db2554ca48295325, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _itemData: {fileID: 11400000, guid: 0cbbe57045585084e82e83e4dfd8eeae, type: 2}
+  _itemData: {fileID: 0}
   _amount: 1
 --- !u!1001 &1429299311
 PrefabInstance:
@@ -16486,7 +16514,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab7d782e6d2dcea4db2554ca48295325, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _itemData: {fileID: 11400000, guid: 6066d58cb5aa68d49ad884e2cf3f5303, type: 2}
+  _itemData: {fileID: 0}
   _amount: 1
 --- !u!54 &1523718189
 Rigidbody:
@@ -18072,7 +18100,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab7d782e6d2dcea4db2554ca48295325, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _itemData: {fileID: 11400000, guid: 6066d58cb5aa68d49ad884e2cf3f5303, type: 2}
+  _itemData: {fileID: 0}
   _amount: 1
 --- !u!54 &1627061583
 Rigidbody:
@@ -20575,7 +20603,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab7d782e6d2dcea4db2554ca48295325, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _itemData: {fileID: 11400000, guid: 0cbbe57045585084e82e83e4dfd8eeae, type: 2}
+  _itemData: {fileID: 0}
   _amount: 1
 --- !u!65 &1917040261
 BoxCollider:
@@ -22016,7 +22044,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab7d782e6d2dcea4db2554ca48295325, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _itemData: {fileID: 11400000, guid: 6066d58cb5aa68d49ad884e2cf3f5303, type: 2}
+  _itemData: {fileID: 0}
   _amount: 1
 --- !u!54 &2079941241
 Rigidbody:

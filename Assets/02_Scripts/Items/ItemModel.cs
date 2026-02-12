@@ -9,6 +9,7 @@ public class ItemModel
     public string ItemName => Data != null ? Data.ItemName : string.Empty;
     public Sprite Icon => Data != null ? Data.Icon : null;
     public string Description => Data != null ? Data.Description : string.Empty;
+    public ItemType ItemType => Data != null ? Data.ItemType : ItemType.Material;
     public bool IsStackable => Data != null && Data.IsStackable;
     public int MaxStack => Data != null ? Data.MaxStack : 0;
 

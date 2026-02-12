@@ -1,5 +1,8 @@
 public enum QuestType { Gather, Kill, Visit } // 수집, 처치, 방문
 
+/// <summary>아이템 종류. 일반 인벤토리에는 Consumable, Material만. 장비는 장비 인벤토리로.</summary>
+public enum ItemType { Consumable, Material, Equipment }
+
 /// <summary>플레이어 상태머신용. 캐릭터 동작만. Free에서만 이동/공격/구르기 가능.</summary>
 public enum PlayerState
 {

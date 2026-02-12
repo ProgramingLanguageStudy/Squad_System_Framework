@@ -8,7 +8,11 @@ using UnityEngine;
 public class Inventory : MonoBehaviour
 {
     [SerializeField] private int _inventorySize = 30;
+    private IItemUser _itemUser;
     private ItemSlotModel[] _slots;
+
+    /// <summary>아이템 사용 시 효과를 받을 대상. Presenter 등에서 주입.</summary>
+    public void SetItemUser(IItemUser itemUser) => _itemUser = itemUser;
 
     /// <summary>슬롯 하나 변경 시. UI는 해당 슬롯만 갱신하면 됨.</summary>
     public event Action<ItemSlotModel> OnSlotChanged;
@@ -156,6 +160,21 @@ public class Inventory : MonoBehaviour
                 total += slot.Count;
         }
         return total;
+    }
+
+    /// <summary>해당 슬롯의 아이템 사용 시도. 소모품이면 ApplyTo 적용 후 1개 차감. 성공 시 true.</summary>
+    public bool TryUseItem(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= _inventorySize) return false;
+        var slot = _slots[slotIndex];
+        if (slot.Item == null || slot.Count <= 0) return false;
+        if (slot.Item.ItemType != ItemType.Consumable) return false;
+        if (_itemUser == null) return false;
+
+        if (slot.Item.Data is ConsumableItemData consumable)
+            consumable.ApplyTo(_itemUser);
+        RemoveItem(slot.Item.ItemId, 1);
+        return true;
     }
 
     private void NotifyItemChangedWithId(string itemId)
