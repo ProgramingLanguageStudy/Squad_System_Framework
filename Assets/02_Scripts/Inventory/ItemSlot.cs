@@ -4,24 +4,29 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-/// <summary>아이템 슬롯 한 칸의 UI. MVP의 슬롯 View. 스왑 시 이벤트만 발행하며 상위 View를 알지 않음.</summary>
+/// <summary>아이템 슬롯 한 칸의 UI. MVP의 슬롯 View. 호버/선택은 스프라이트 교체, 클릭 시 상세 패널 표시. 사용은 USE 버튼만.</summary>
 public class ItemSlot : MonoBehaviour,
-    IPointerEnterHandler, IPointerExitHandler,
     IBeginDragHandler, IDragHandler, IEndDragHandler,
-    IPointerClickHandler
+    IPointerDownHandler, IPointerEnterHandler, IPointerExitHandler
 {
-    private const float DoubleClickTime = 0.3f;
-
     [Header("----- UI 참조 -----")]
     [SerializeField] private Image _icon;
     [SerializeField] private TextMeshProUGUI _countText;
+    [SerializeField] [Tooltip("테두리 바꿔끼우는 대상. 비면 이 오브젝트의 Image 사용")]
+    private Image _slotImage;
+
+    [Header("----- 슬롯 스프라이트 (프레임 없음/호버/선택) -----")]
+    [SerializeField] private Sprite _normalSprite;
+    [SerializeField] private Sprite _hoverSprite;
+    [SerializeField] private Sprite _selectedSprite;
 
     [Header("----- 슬롯 -----")]
     [SerializeField] private int _index;
 
     private ItemSlotModel _model;
     private Image _dragIcon;
-    private float _lastClickTime;
+    private bool _isSelected;
+    private bool _isHovered;
 
     public int Index => _index;
 
@@ -30,8 +35,31 @@ public class ItemSlot : MonoBehaviour,
 
     /// <summary>드롭 끝났을 때 (fromIndex, 스크린 좌표). View가 위치로 목표 슬롯을 찾아 스왑 처리.</summary>
     public event Action<int, Vector2> OnDropEnded;
-    /// <summary>더블클릭으로 사용 요청 시 (slotIndex). 소모품 등.</summary>
-    public event Action<int> OnUseRequested;
+    /// <summary>한 번 클릭으로 슬롯 선택 시 (선택된 슬롯 모델). View가 구독해 상세 패널 표시.</summary>
+    public event Action<ItemSlotModel> OnSlotSelected;
+    /// <summary>드래그 시작 시. View가 구독해 상세 패널 숨김.</summary>
+    public event Action OnDragStarted;
+
+    private Image SlotImage => _slotImage != null ? _slotImage : GetComponent<Image>();
+
+    /// <summary>선택 상태 설정. View가 슬롯 선택/패널 닫을 때 호출.</summary>
+    public void SetSelected(bool selected)
+    {
+        _isSelected = selected;
+        RefreshSlotSprite();
+    }
+
+    private void RefreshSlotSprite()
+    {
+        var img = SlotImage;
+        if (img == null) return;
+        if (_isSelected && _selectedSprite != null)
+            img.sprite = _selectedSprite;
+        else if (_isHovered && _hoverSprite != null)
+            img.sprite = _hoverSprite;
+        else if (_normalSprite != null)
+            img.sprite = _normalSprite;
+    }
 
     /// <summary>InventoryView에서 주입. 드래그 시 따라다니는 공용 아이콘.</summary>
     public void SetDragIcon(Image dragIcon)
@@ -53,6 +81,9 @@ public class ItemSlot : MonoBehaviour,
         _icon.sprite = null;
         _icon.enabled = false;
         _countText.text = string.Empty;
+        _isSelected = false;
+        _isHovered = false;
+        RefreshSlotSprite();
         SetSlotRaycast(false);
     }
 
@@ -71,42 +102,37 @@ public class ItemSlot : MonoBehaviour,
         SetSlotRaycast(true);
     }
 
-    /// <summary>빈 슬롯이면 레이캐스트 끄고(스크롤 통과), 아이템 있으면 켜서 클릭/드래그 받음.</summary>
+    /// <summary>빈 슬롯이면 레이캐스트 끄고(스크롤 통과), 아이템 있으면 슬롯 이미지에서만 받음. 아이콘은 raycast 끔.</summary>
     private void SetSlotRaycast(bool hasItem)
     {
-        _icon.raycastTarget = hasItem;
-        var slotBg = GetComponent<Image>();
+        _icon.raycastTarget = false;
+        var slotBg = SlotImage;
         if (slotBg != null)
             slotBg.raycastTarget = hasItem;
     }
 
-    public void OnPointerClick(PointerEventData eventData)
+    /// <summary>한 번 클릭 → 패널 표시. 사용은 상세 패널 USE 버튼만.</summary>
+    private void HandleSlotClick()
     {
         if (_model == null || _model.Item == null) return;
-        if (Time.unscaledTime - _lastClickTime < DoubleClickTime)
-        {
-            _lastClickTime = 0f;
-            OnUseRequested?.Invoke(Index);
-        }
-        else
-            _lastClickTime = Time.unscaledTime;
+        OnSlotSelected?.Invoke(_model);
     }
 
-    #region 마우스 호버 이벤트 (툴팁)
+    public void OnPointerDown(PointerEventData eventData) => HandleSlotClick();
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (_model != null && _model.Item != null && TooltipUI.Instance != null)
-            TooltipUI.Instance.Show(_model.Item.ItemName, _model.Item.Description);
+        Debug.Log("마우스 포인터 들어옴");
+        if (_model == null || _model.Item == null) return;
+        _isHovered = true;
+        RefreshSlotSprite();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (TooltipUI.Instance != null)
-            TooltipUI.Instance.Hide();
+        _isHovered = false;
+        RefreshSlotSprite();
     }
-
-    #endregion
 
     #region 드래그 이벤트 (슬롯 교환)
 
@@ -116,7 +142,7 @@ public class ItemSlot : MonoBehaviour,
         _dragIcon.sprite = _model.Item.Icon;
         _dragIcon.gameObject.SetActive(true);
         _dragIcon.transform.position = eventData.position;
-        if (TooltipUI.Instance != null) TooltipUI.Instance.Hide();
+        OnDragStarted?.Invoke();
     }
 
     public void OnDrag(PointerEventData eventData)
