@@ -29,7 +29,7 @@ public class InventoryPresenter : MonoBehaviour
         if (_view != null)
         {
             _view.OnDropEnded += HandleDropEnded;
-            _view.OnUseRequested += HandleUseRequested;
+            _view.OnUseItemRequested += HandleUseItemRequested;
             _view.OnRefreshRequested += RefreshView;
         }
         GameEvents.OnInventoryKeyPressed += HandleInventoryKeyPressed;
@@ -44,9 +44,15 @@ public class InventoryPresenter : MonoBehaviour
         if (_view != null)
         {
             _view.OnDropEnded -= HandleDropEnded;
-            _view.OnUseRequested -= HandleUseRequested;
+            _view.OnUseItemRequested -= HandleUseItemRequested;
             _view.OnRefreshRequested -= RefreshView;
         }
+    }
+
+    private void HandleUseItemRequested(int slotIndex)
+    {
+        if (_model != null)
+            _model.TryUseItem(slotIndex);
     }
 
     private void HandleInventoryKeyPressed()
@@ -75,11 +81,5 @@ public class InventoryPresenter : MonoBehaviour
         int toIndex = _view.GetSlotIndexAtPosition(screenPosition);
         if (toIndex >= 0 && toIndex != fromIndex)
             _model.SwapItems(fromIndex, toIndex);
-    }
-
-    private void HandleUseRequested(int slotIndex)
-    {
-        if (_model != null)
-            _model.TryUseItem(slotIndex);
     }
 }
