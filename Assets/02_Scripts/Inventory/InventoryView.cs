@@ -15,6 +15,8 @@ public class InventoryView : MonoBehaviour
     [SerializeField] private GameObject _itemSlotPrefab;
     [SerializeField] private Transform _slotGroup;
     [SerializeField] private int _maxSlotCount = 30;
+    [SerializeField] [Tooltip("오른쪽 상세 패널(아이템 설명 + USE 버튼). 인스펙터에서 할당.")]
+    private InventoryTooltipView _tooltipView;
 
     private List<ItemSlot> _slots = new List<ItemSlot>();
 
@@ -23,19 +25,30 @@ public class InventoryView : MonoBehaviour
 
     /// <summary>드롭 끝났을 때 (fromIndex, 스크린 좌표). Presenter가 GetSlotIndexAtPosition으로 목표 찾아 스왑.</summary>
     public event Action<int, Vector2> OnDropEnded;
-    /// <summary>슬롯 더블클릭(사용) 요청 시. Presenter가 구독해 Model.TryUseItem 호출.</summary>
-    public event Action<int> OnUseRequested;
+    /// <summary>상세 패널 USE 버튼으로 아이템 사용 요청 시 (slotIndex). Presenter가 구독해 Model.TryUseItem 호출.</summary>
+    public event Action<int> OnUseItemRequested;
 
     /// <summary>토글 시 Presenter가 구독해 Refresh 호출 유도.</summary>
     public event Action OnRefreshRequested;
 
-    /// <summary>슬롯 생성·패널 초기 상태. Presenter가 호출.</summary>
+    /// <summary>슬롯 생성·패널·툴팁 초기 상태. Presenter가 호출.</summary>
     public void Initialize()
     {
         CreateSlots();
         if (_inventoryUIPanel != null)
             _inventoryUIPanel.SetActive(false);
+        _tooltipView?.Initialize();
+        if (_tooltipView != null)
+            _tooltipView.OnUseRequested += ForwardUseItemRequested;
     }
+
+    private void OnDestroy()
+    {
+        if (_tooltipView != null)
+            _tooltipView.OnUseRequested -= ForwardUseItemRequested;
+    }
+
+    private void ForwardUseItemRequested(int slotIndex) => OnUseItemRequested?.Invoke(slotIndex);
 
     /// <summary>슬롯을 한 번에 생성. 코루틴으로 나누면 패널이 먼저 꺼질 때 중단돼 30개 미만이 될 수 있음.</summary>
     private void CreateSlots()
@@ -46,18 +59,31 @@ public class InventoryView : MonoBehaviour
             var slot = slotGo.GetComponent<ItemSlot>();
             slot.SetIndex(i);
             slot.OnDropEnded += (from, pos) => OnDropEnded?.Invoke(from, pos);
-            slot.OnUseRequested += (idx) => OnUseRequested?.Invoke(idx);
+            slot.OnSlotSelected += (slotModel) =>
+            {
+                for (int i = 0; i < _slots.Count; i++)
+                    _slots[i].SetSelected(i == slotModel.Index);
+                _tooltipView?.Show(slotModel);
+            };
+            slot.OnDragStarted += () =>
+            {
+                if (_tooltipView != null)
+                    _tooltipView.Hide();
+            };
             slot.SetDragIcon(_dragIcon);
             slot.ClearSlot();
             _slots.Add(slot);
         }
     }
 
-    /// <summary>Presenter에서 호출. 해당 슬롯에 Model을 넣고 갱신.</summary>
+    /// <summary>Presenter에서 호출. 해당 슬롯에 Model을 넣고 갱신. 해당 슬롯이 비면 툴팁이 그 슬롯을 보여주고 있을 때 툴팁 닫음.</summary>
     public void RefreshSlot(ItemSlotModel slotModel)
     {
         if (slotModel == null || slotModel.Index < 0 || slotModel.Index >= _slots.Count) return;
         _slots[slotModel.Index].SetModel(slotModel);
+        bool slotNowEmpty = slotModel.Item == null || slotModel.Count <= 0;
+        if (slotNowEmpty && _tooltipView != null && _tooltipView.ShownSlotIndex == slotModel.Index)
+            _tooltipView.Hide();
     }
 
     /// <summary>스크린 좌표가 속한 슬롯 인덱스. 없으면 -1. 스크롤 반영됨.</summary>
@@ -83,6 +109,7 @@ public class InventoryView : MonoBehaviour
         target.SetActive(isActive);
         if (isActive)
         {
+            _tooltipView?.Hide();
             if (_scrollRect != null)
                 _scrollRect.verticalNormalizedPosition = 1f;
             OnRefreshRequested?.Invoke();
@@ -90,8 +117,9 @@ public class InventoryView : MonoBehaviour
         }
         else
         {
-            if (TooltipUI.Instance != null)
-                TooltipUI.Instance.Hide();
+            _tooltipView?.Hide();
+            for (int i = 0; i < _slots.Count; i++)
+                _slots[i].SetSelected(false);
             GameEvents.OnCursorHideRequested?.Invoke();
         }
     }
