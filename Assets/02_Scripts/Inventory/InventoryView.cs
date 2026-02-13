@@ -17,6 +17,8 @@ public class InventoryView : MonoBehaviour
     [SerializeField] private int _maxSlotCount = 30;
     [SerializeField] [Tooltip("오른쪽 상세 패널(아이템 설명 + USE 버튼). 인스펙터에서 할당.")]
     private InventoryTooltipView _tooltipView;
+    [SerializeField] [Tooltip("인벤토리 닫기(X) 버튼. 누르면 패널 닫힘.")]
+    private Button _closeButton;
 
     private List<ItemSlot> _slots = new List<ItemSlot>();
 
@@ -40,12 +42,23 @@ public class InventoryView : MonoBehaviour
         _tooltipView?.Initialize();
         if (_tooltipView != null)
             _tooltipView.OnUseRequested += ForwardUseItemRequested;
+        if (_closeButton != null)
+            _closeButton.onClick.AddListener(CloseInventory);
     }
 
     private void OnDestroy()
     {
         if (_tooltipView != null)
             _tooltipView.OnUseRequested -= ForwardUseItemRequested;
+        if (_closeButton != null)
+            _closeButton.onClick.RemoveListener(CloseInventory);
+    }
+
+    /// <summary>닫기(X) 버튼용. 패널이 켜져 있을 때만 닫음.</summary>
+    private void CloseInventory()
+    {
+        if (!IsPanelActive) return;
+        ToggleInventory();
     }
 
     private void ForwardUseItemRequested(int slotIndex) => OnUseItemRequested?.Invoke(slotIndex);
