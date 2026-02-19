@@ -10,7 +10,7 @@ public class ItemObject : MonoBehaviour, IInteractable
 
     public string GetInteractText() => _itemData.ItemName;
 
-    public void Interact(Player player)
+    public void Interact(IInteractReceiver receiver)
     {
         if (_itemData == null) return;
 

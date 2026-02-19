@@ -4,7 +4,7 @@ using UnityEngine;
 public class BuffItemData : ConsumableItemData
 {
     [Tooltip("일시 적용될 스탯 보정")]
-    public PlayerStatModifier Modifier;
+    public StatModifier Modifier;
     [Tooltip("지속 시간(초)")]
     public float DurationSeconds = 30f;
 

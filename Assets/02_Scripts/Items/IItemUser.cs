@@ -2,5 +2,5 @@
 public interface IItemUser
 {
     void Heal(int amount);
-    void ApplyBuff(PlayerStatModifier modifier, float durationSeconds);
+    void ApplyBuff(StatModifier modifier, float durationSeconds);
 }
