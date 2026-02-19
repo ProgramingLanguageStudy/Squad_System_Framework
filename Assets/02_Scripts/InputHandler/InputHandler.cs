@@ -22,7 +22,7 @@ public class InputHandler : MonoBehaviour
     private Action<InputAction.CallbackContext> _interactCallback;
     private Action<InputAction.CallbackContext> _attackCallback;
     private Action<InputAction.CallbackContext> _inventoryCallback;
-    private Action<InputAction.CallbackContext> _questCallback;
+    private Action<InputAction.CallbackContext> _squadSwapCallback;
 
     public Vector2 MoveInput { get; private set; }
     public Vector2 LookInput { get; private set; }
@@ -33,7 +33,7 @@ public class InputHandler : MonoBehaviour
     public event Action OnInteractPerformed;
     public event Action OnAttackPerformed;
     public event Action OnInventoryPerformed;
-    public event Action OnQuestPerformed;
+    public event Action OnSquadSwapPerformed;
 
     private void OnEnable()
     {
@@ -63,16 +63,16 @@ public class InputHandler : MonoBehaviour
         _interactCallback = _ => OnInteractPerformed?.Invoke();
         _attackCallback = _ => OnAttackPerformed?.Invoke();
         _inventoryCallback = _ => OnInventoryPerformed?.Invoke();
-        _questCallback = _ => OnQuestPerformed?.Invoke();
+        _squadSwapCallback = _ => OnSquadSwapPerformed?.Invoke();
 
         var interact = _playerMap.FindAction("Interact");
         var attack = _playerMap.FindAction("Attack");
         var inventory = _playerMap.FindAction("Inventory");
-        var quest = _playerMap.FindAction("Quest");
+        var squadSwap = _playerMap.FindAction("SquadSwap");
         if (interact != null) interact.performed += _interactCallback;
         if (attack != null) attack.performed += _attackCallback;
         if (inventory != null) inventory.performed += _inventoryCallback;
-        if (quest != null) quest.performed += _questCallback;
+        if (squadSwap != null) squadSwap.performed += _squadSwapCallback;
 
         _playerMap.Enable();
 
@@ -102,11 +102,11 @@ public class InputHandler : MonoBehaviour
             var interact = _playerMap.FindAction("Interact");
             var attack = _playerMap.FindAction("Attack");
             var inventory = _playerMap.FindAction("Inventory");
-            var quest = _playerMap.FindAction("Quest");
+            var squadSwap = _playerMap.FindAction("SquadSwap");
             if (interact != null && _interactCallback != null) interact.performed -= _interactCallback;
             if (attack != null && _attackCallback != null) attack.performed -= _attackCallback;
             if (inventory != null && _inventoryCallback != null) inventory.performed -= _inventoryCallback;
-            if (quest != null && _questCallback != null) quest.performed -= _questCallback;
+            if (squadSwap != null && _squadSwapCallback != null) squadSwap.performed -= _squadSwapCallback;
         }
 
         _uiMap?.Disable();
