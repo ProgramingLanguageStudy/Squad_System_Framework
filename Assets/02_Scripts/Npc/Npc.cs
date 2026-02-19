@@ -4,7 +4,7 @@ public class Npc : MonoBehaviour, IInteractable
 {
     [SerializeField] private string _npcId;
 
-    public void Interact(Player player)
+    public void Interact(IInteractReceiver receiver)
     {
         if (!string.IsNullOrEmpty(_npcId))
             GameEvents.OnNpcInteracted?.Invoke(_npcId);

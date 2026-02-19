@@ -24,9 +24,9 @@ public class PortalMenuView : PanelViewBase
     /// <summary>
     /// 포탈 목록으로 패널을 띄우고, 슬롯 생성해 이름 표시. 슬롯 클릭 시 해당 포탈로 Teleport 후 패널 닫음.
     /// </summary>
-    public void Show(IReadOnlyList<Portal> portals, Player player)
+    public void Show(IReadOnlyList<Portal> portals, IInteractReceiver receiver)
     {
-        if (_panel == null || _slotContainer == null || _slotPrefab == null || player == null)
+        if (_panel == null || _slotContainer == null || _slotPrefab == null || receiver == null)
             return;
 
         ClearSlots();
@@ -40,7 +40,7 @@ public class PortalMenuView : PanelViewBase
             PortalSlot slot = Instantiate(_slotPrefab, _slotContainer);
             slot.Set(portal.DisplayName, () =>
             {
-                player.Teleport(captured.ArrivalPosition);
+                receiver.Teleport(captured.ArrivalPosition);
                 Hide();
             });
         }

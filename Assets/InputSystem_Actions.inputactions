@@ -96,7 +96,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Quest",
+                    "name": "SquadSwap",
                     "type": "Button",
                     "id": "2bc6e03f-28d0-431c-8c96-a1a0f3a7dcd9",
                     "expectedControlType": "",
@@ -509,7 +509,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Quest",
+                    "action": "SquadSwap",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
