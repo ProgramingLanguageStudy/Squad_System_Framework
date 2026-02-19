@@ -31,12 +31,12 @@ public class PortalController : MonoBehaviour
         }
     }
 
-    private void HandlePortalInteracted(Player player, Portal interactedPortal)
+    private void HandlePortalInteracted(IInteractReceiver receiver, Portal interactedPortal)
     {
-        if (player == null || interactedPortal == null) return;
+        if (receiver == null || interactedPortal == null) return;
 
         var reachable = GetReachablePortals(interactedPortal);
-        _menuView?.Show(reachable, player);
+        _menuView?.Show(reachable, receiver);
     }
 
     /// <summary>

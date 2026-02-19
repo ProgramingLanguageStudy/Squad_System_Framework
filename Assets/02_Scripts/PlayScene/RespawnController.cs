@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// 부활 요청 시 마을 포탈 위치로 이동·체력 회복·Idle 전환. Player는 포탈을 모름.
+/// 부활 요청 시 마을 포탈 위치로 이동·체력 회복·Idle 전환. PlayerController는 포탈을 모름.
 /// </summary>
 public class RespawnController : MonoBehaviour
 {
@@ -10,22 +10,22 @@ public class RespawnController : MonoBehaviour
 
     private void OnEnable()
     {
-        GameEvents.OnRespawnRequested += HandleRespawnRequested;
+        GameEvents.OnCharacterRespawnRequested += HandleCharacterRespawnRequested;
     }
 
     private void OnDisable()
     {
-        GameEvents.OnRespawnRequested -= HandleRespawnRequested;
+        GameEvents.OnCharacterRespawnRequested -= HandleCharacterRespawnRequested;
     }
 
-    private void HandleRespawnRequested(Player player)
+    private void HandleCharacterRespawnRequested(Character character)
     {
-        if (player == null) return;
+        if (character == null) return;
 
         if (_respawnPortal != null)
-            player.Teleport(_respawnPortal.ArrivalPosition);
-        player.Model?.Heal(player.Model.MaxHp);
-        player.Animator?.ResetToIdle(); // 누운 상태 해제
-        player.StateMachine?.RequestIdle();
+            character.Teleport(_respawnPortal.ArrivalPosition);
+        character.Model?.Heal(character.Model.MaxHp);
+        character.Animator?.ResetToIdle();
+        character.StateMachine?.RequestIdle();
     }
 }

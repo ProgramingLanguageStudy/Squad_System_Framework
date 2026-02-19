@@ -1,14 +1,28 @@
 using UnityEngine;
 
 /// <summary>
-/// Inventory(Model)와 InventoryView(View)를 연결. Model·View는 인스펙터에서 할당. Model 변경 시 View 갱신, View에서 스왑 요청 시 Model 호출.
+/// Inventory(Model)와 InventoryView(View)를 연결. Model·View는 인스펙터에서 할당.
+/// PlayScene이 SetPlayerController로 주입하고, 조종 캐릭터 변경 시 RefreshItemUser 호출.
 /// </summary>
 public class InventoryPresenter : MonoBehaviour
 {
     [SerializeField] private Inventory _model;
     [SerializeField] private InventoryView _view;
-    [SerializeField] [Tooltip("소모품 사용 시 효과 적용 대상. 인벤토리에 IItemUser로 주입됩니다.")]
-    private Player _player;
+
+    private PlayerController _playerController;
+
+    /// <summary>PlayScene에서 주입. 조종 캐릭터 변경 시 RefreshItemUser 호출 필요.</summary>
+    public void SetPlayerController(PlayerController controller)
+    {
+        _playerController = controller;
+    }
+
+    /// <summary>소모품 효과 적용 대상을 현재 조종 캐릭터로 갱신. 스쿼드 교체 후 호출.</summary>
+    public void RefreshItemUser()
+    {
+        if (_model != null && _playerController != null)
+            _model.SetItemUser(_playerController.Model);
+    }
 
     private void Awake()
     {
@@ -16,8 +30,6 @@ public class InventoryPresenter : MonoBehaviour
             Debug.LogWarning($"[InventoryPresenter] {gameObject.name}: Model(Inventory)이 할당되지 않았습니다. 인스펙터에서 할당해 주세요.");
         if (_view == null)
             Debug.LogWarning($"[InventoryPresenter] {gameObject.name}: View(InventoryView)가 할당되지 않았습니다. 인스펙터에서 할당해 주세요.");
-        if (_model != null && _player != null)
-            _model.SetItemUser(_player.Model);
         _model?.Initialize();
         _view?.Initialize();
     }

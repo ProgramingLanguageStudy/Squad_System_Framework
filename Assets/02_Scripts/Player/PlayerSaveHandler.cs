@@ -1,18 +1,17 @@
 using UnityEngine;
 
 /// <summary>
-/// 플레이어 세이브/로드 담당. ISaveHandler 구현. Player가 보유하고 SetPlayer(this)로 주입.
-/// Gather/Apply는 Player.GetSaveData / ApplySaveData 직접 호출.
+/// 플레이어 세이브/로드 담당. ISaveHandler 구현. PlayerController가 보유하고 SetPlayerController(this)로 주입.
+/// Gather/Apply는 PlayerController.GetSaveData / ApplySaveData 직접 호출.
 /// </summary>
-[RequireComponent(typeof(Player))]
 public class PlayerSaveHandler : MonoBehaviour, ISaveHandler
 {
-    private Player _player;
+    private PlayerController _playerController;
 
-    /// <summary>Player가 Initialize 시 호출. 주입 전에는 Gather/Apply 동작 안 함.</summary>
-    public void SetPlayer(Player player)
+    /// <summary>PlayerController가 Initialize 시 호출. 주입 전에는 Gather/Apply 동작 안 함.</summary>
+    public void SetPlayerController(PlayerController controller)
     {
-        _player = player;
+        _playerController = controller;
     }
 
     private void OnEnable()
@@ -30,16 +29,16 @@ public class PlayerSaveHandler : MonoBehaviour, ISaveHandler
     public void Gather(SaveData data)
     {
         if (data?.player == null) return;
-        if (_player == null) _player = GetComponent<Player>();
-        if (_player == null) return;
-        data.player = _player.GetSaveData();
+        if (_playerController == null) _playerController = GetComponent<PlayerController>();
+        if (_playerController == null) return;
+        data.player = _playerController.GetSaveData();
     }
 
     public void Apply(SaveData data)
     {
         if (data?.player == null) return;
-        if (_player == null) _player = GetComponent<Player>();
-        if (_player == null) return;
-        _player.ApplySaveData(data.player);
+        if (_playerController == null) _playerController = GetComponent<PlayerController>();
+        if (_playerController == null) return;
+        _playerController.ApplySaveData(data.player);
     }
 }

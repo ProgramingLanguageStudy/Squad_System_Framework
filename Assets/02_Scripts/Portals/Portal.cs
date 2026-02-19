@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 /// <summary>
-/// 순간이동 포탈/돌. 상호작용 시 자기 이벤트만 발행(Player, 자기자신). Controller가 구독해 목록 UI → 선택 시 여기로 워프. IInteractable 구현.
+/// 순간이동 포탈/돌. 상호작용 시 자기 이벤트만 발행(IInteractReceiver, 자기자신). Controller가 구독해 목록 UI → 선택 시 여기로 워프. IInteractable 구현.
 /// </summary>
 public class Portal : MonoBehaviour, IInteractable
 {
@@ -15,8 +15,8 @@ public class Portal : MonoBehaviour, IInteractable
     [SerializeField] [Tooltip("선택) 이 포탈만 도착 위치를 따로 쓰고 싶을 때만 할당. 비면 포탈 앞 _arrivalDistance만큼")]
     private Transform _arrivalPointOverride;
 
-    /// <summary> 상호작용 시 발행. (Player, 이 포탈). Controller가 구독해 목록/UI 처리. </summary>
-    public event Action<Player, Portal> OnInteracted;
+    /// <summary> 상호작용 시 발행. (IInteractReceiver, 이 포탈). Controller가 구독해 목록/UI 처리. </summary>
+    public event Action<IInteractReceiver, Portal> OnInteracted;
 
     /// <summary> 순간이동 목록 등에 쓸 이름. Data 없으면 오브젝트 이름. </summary>
     public string DisplayName => _data != null && !string.IsNullOrEmpty(_data.displayName)
@@ -33,9 +33,9 @@ public class Portal : MonoBehaviour, IInteractable
 
     public string GetInteractText() => "순간이동";
 
-    public void Interact(Player player)
+    public void Interact(IInteractReceiver receiver)
     {
-        if (player == null) return;
-        OnInteracted?.Invoke(player, this);
+        if (receiver == null) return;
+        OnInteracted?.Invoke(receiver, this);
     }
 }

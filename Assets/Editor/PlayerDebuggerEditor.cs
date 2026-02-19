@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -6,6 +7,8 @@ public class PlayerDebuggerEditor : Editor
 {
     private const double RepaintInterval = 0.1;
     private double _lastRepaintTime;
+    private List<string> _lastValidationIssues = new List<string>();
+    private bool _hasValidated;
 
     private void OnEnable()
     {
@@ -30,15 +33,55 @@ public class PlayerDebuggerEditor : Editor
 
     public override void OnInspectorGUI()
     {
-        DrawDefaultInspector();
+        var debugger = (PlayerDebugger)target;
+        var so = new SerializedObject(debugger);
+        var playerProp = so.FindProperty("_playerController");
+
+        EditorGUILayout.PropertyField(playerProp);
+
+        if (playerProp.objectReferenceValue == null && GUILayout.Button("씬에서 PlayerController 찾기"))
+        {
+            var found = FindAnyObjectByType<PlayerController>();
+            if (found != null)
+            {
+                playerProp.objectReferenceValue = found;
+                so.ApplyModifiedProperties();
+            }
+            else
+            {
+                EditorGUILayout.HelpBox("씬에 PlayerController가 없습니다.", MessageType.Warning);
+            }
+        }
 
         EditorGUILayout.Space(4);
-        var debugger = (PlayerDebugger)target;
-        Player player = debugger.PlayerRef;
 
-        if (Application.isPlaying && player != null && player.Model != null)
+        if (GUILayout.Button("설정 검증 (Validate Setup)"))
         {
-            var model = player.Model;
+            _hasValidated = true;
+            debugger.ValidateSetup(out _lastValidationIssues);
+            Repaint();
+        }
+
+        if (_hasValidated)
+        {
+            EditorGUILayout.Space(2);
+            if (_lastValidationIssues.Count > 0)
+                EditorGUILayout.HelpBox(string.Join("\n", _lastValidationIssues), MessageType.Warning);
+            else
+                EditorGUILayout.HelpBox("검증 통과: 부품 구성 정상", MessageType.Info);
+        }
+
+        so.ApplyModifiedProperties();
+        EditorGUILayout.Space(8);
+
+        DrawDefaultInspector();
+        EditorGUILayout.Space(4);
+
+        var pc = debugger.PlayerRef;
+
+        if (Application.isPlaying && pc != null && pc.Model != null)
+        {
+            var model = pc.Model;
             EditorGUILayout.LabelField("현재 스탯", EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
             EditorGUILayout.LabelField("체력", $"{model.CurrentHp} / {model.MaxHp}");
@@ -54,18 +97,21 @@ public class PlayerDebuggerEditor : Editor
         EditorGUI.BeginDisabledGroup(!Application.isPlaying);
         if (GUILayout.Button("체력 풀회복"))
         {
-            if (player == null)
+            if (pc == null)
             {
-                Debug.LogWarning("[PlayerDebugger] Player 참조가 없습니다. 인스펙터에서 반드시 할당하세요.");
+                Debug.LogWarning("[PlayerDebugger] PlayerController 참조가 없습니다. 인스펙터에서 할당하세요.");
                 return;
             }
-            int need = player.Model.MaxHp - player.Model.CurrentHp;
-            if (need > 0)
-                player.Model.Heal(need);
+            if (pc.Model != null)
+            {
+                int need = pc.Model.MaxHp - pc.Model.CurrentHp;
+                if (need > 0)
+                    pc.Model.Heal(need);
+            }
         }
         EditorGUI.EndDisabledGroup();
 
         if (!Application.isPlaying)
-            EditorGUILayout.HelpBox("플레이 모드에서만 버튼이 동작합니다.", MessageType.Info);
+            EditorGUILayout.HelpBox("플레이 모드에서만 스탯 표시·체력 회복이 동작합니다.", MessageType.Info);
     }
 }

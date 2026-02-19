@@ -1,5 +1,14 @@
-﻿public interface IInteractable
+/// <summary>상호작용 시 필요한 API. PlayerController·Character 모두 구현.</summary>
+using UnityEngine;
+
+public interface IInteractReceiver
 {
-    string GetInteractText(); // 화면에 띄울 메시지 (예: "말 걸기", "아이템 줍기")
-    void Interact(Player player);           // 실제 상호작용 로직
+    void Teleport(Vector3 position);
+    void Teleport(Transform destination);
+}
+
+public interface IInteractable
+{
+    string GetInteractText();
+    void Interact(IInteractReceiver receiver);
 }
