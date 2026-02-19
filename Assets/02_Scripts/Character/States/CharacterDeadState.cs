@@ -1,0 +1,38 @@
+using UnityEngine;
+
+public class CharacterDeadState : CharacterStateBase
+{
+    private float _deadTimer;
+    private const float RespawnDelay = 2f;
+
+    public CharacterDeadState(CharacterStateMachine machine, Character character) : base(machine, character) { }
+
+    public override void Enter()
+    {
+        if (Character != null)
+        {
+            Character.CanMove = false;
+            Character.SetCharacterControllerEnabled(false);
+        }
+        Character?.Animator?.Dead();
+        _deadTimer = 0f;
+    }
+
+    public override void Update()
+    {
+        _deadTimer += Time.deltaTime;
+        if (_deadTimer >= RespawnDelay && Character != null)
+        {
+            GameEvents.OnCharacterRespawnRequested?.Invoke(Character);
+        }
+    }
+
+    public override void Exit()
+    {
+        if (Character != null)
+        {
+            Character.CanMove = true;
+            Character.SetCharacterControllerEnabled(true);
+        }
+    }
+}
