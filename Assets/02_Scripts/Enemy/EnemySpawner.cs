@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// Enemy 프리팹 생성. PlayScene이 chase target(Player 등)을 주입하고, SpawnEnemy 시 해당 target을 각 Enemy에 주입.
+/// Enemy 프리팹 생성. PlayScene이 chase target(조종 캐릭터 등)을 주입하고, SpawnEnemy 시 해당 target을 각 Enemy에 주입.
 /// </summary>
 public class EnemySpawner : MonoBehaviour
 {
@@ -12,11 +12,17 @@ public class EnemySpawner : MonoBehaviour
 
     private Transform _chaseTarget;
 
-    /// <summary>PlayScene 등이 추적 목표(Player.transform) 주입 시 호출. 임시로 적 한 마리 생성.</summary>
+    /// <summary>PlayScene 등이 추적 목표(조종 캐릭터 transform) 주입 시 호출. 임시로 적 한 마리 생성.</summary>
     public void Initialize(Transform chaseTarget)
     {
         _chaseTarget = chaseTarget;
         SpawnEnemy();
+    }
+
+    /// <summary>chase 목표 갱신 (분대 교체 시 호출).</summary>
+    public void SetChaseTarget(Transform chaseTarget)
+    {
+        _chaseTarget = chaseTarget;
     }
 
     /// <summary>Enemy 한 마리 생성. _spawnPoint 또는 Spawner 위치에 생성 후 chase target 주입.</summary>

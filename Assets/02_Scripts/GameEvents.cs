@@ -26,6 +26,6 @@ public static class GameEvents
     /// <summary>NPC와 상호작용됨. Npc가 발행(npcId만 전달). NpcDialogueTrigger 등이 구독해 대화 재생 요청.</summary>
     public static Action<string> OnNpcInteracted;
 
-    /// <summary>플레이어 부활 요청. DeadState가 발행. RespawnController가 구독해 마을 포탈 위치로 이동·체력 회복·Idle 전환.</summary>
-    public static Action<Player> OnRespawnRequested;
+    /// <summary>캐릭터 부활 요청. CharacterDeadState가 발행. RespawnController가 구독.</summary>
+    public static Action<Character> OnCharacterRespawnRequested;
 }
