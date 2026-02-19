@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: SapphiChanAnimator
+  m_Controller: {fileID: 9100000, guid: dfa042bb38ff2624d837a0a630742522, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 3094330708855449807, guid: 40786e67f3ceb094b9c00543f295cb5f, type: 3}
+    m_OverrideClip: {fileID: 7400000, guid: 18792968afecf074cbf7733e929c8d87, type: 2}
+  - m_OriginalClip: {fileID: 3094330708855449807, guid: 0f69fd4f4ad106447896fb775199ed37, type: 3}
+    m_OverrideClip: {fileID: 7400000, guid: a99b8f7e0c57202408b7b68daacb5180, type: 2}
+  - m_OriginalClip: {fileID: 5957932628511814003, guid: b09be4f98e05fa7489d148a376fc0f1c, type: 3}
+    m_OverrideClip: {fileID: 7400000, guid: 57f8ce92feec6d047bfb7e7f2f03e049, type: 2}
+  - m_OriginalClip: {fileID: 3094330708855449807, guid: 408142c06e2d48c4db8065d1fbbcc8eb, type: 3}
+    m_OverrideClip: {fileID: 7400000, guid: d15ae1ad3a8e3ab44928640298ce295e, type: 2}
