@@ -38,26 +38,44 @@ public class CharacterAttacker : MonoBehaviour
 
     private void ApplyDamage(IDamageable target)
     {
-        if (target == null || _ownerModel == null) return;
-        if (ReferenceEquals(target, _ownerModel)) return;
-        if (_hitThisAttack.Contains(target)) return;
+        if (target == null || _ownerModel == null)
+        {
+            if (target == null) Debug.Log($"[CharacterAttacker] {gameObject.name} ApplyDamage 스킵: target==null");
+            else if (_ownerModel == null) Debug.Log($"[CharacterAttacker] {gameObject.name} ApplyDamage 스킵: _ownerModel==null");
+            return;
+        }
+        if (ReferenceEquals(target, _ownerModel))
+        {
+            Debug.Log($"[CharacterAttacker] {gameObject.name} ApplyDamage 스킵: 자기 자신");
+            return;
+        }
+        if (_hitThisAttack.Contains(target))
+        {
+            Debug.Log($"[CharacterAttacker] {gameObject.name} ApplyDamage 스킵: 이미 타격함 (target={target})");
+            return;
+        }
 
         _hitThisAttack.Add(target);
-        target.TakeDamage(_ownerModel.AttackPower);
+        int damage = _ownerModel.AttackPower;
+        Debug.Log($"[CharacterAttacker] {gameObject.name} → {target} 데미지 {damage} 적용");
+        target.TakeDamage(damage);
     }
 
     public void OnAttackStarted()
     {
+        Debug.Log($"[CharacterAttacker] {gameObject.name} OnAttackStarted");
         _hitThisAttack.Clear();
     }
 
     public void Animation_BeginHitWindow()
     {
+        Debug.Log($"[CharacterAttacker] {gameObject.name} HitWindow Begin (히트박스 활성화)");
         _hitboxController?.EnableHit();
     }
 
     public void Animation_EndHitWindow()
     {
+        Debug.Log($"[CharacterAttacker] {gameObject.name} HitWindow End");
         _hitboxController?.DisableHit();
     }
 

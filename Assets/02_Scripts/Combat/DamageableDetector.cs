@@ -14,6 +14,9 @@ public class DamageableDetector : MonoBehaviour
     {
         var damageable = other.GetComponentInParent<IDamageable>();
         if (damageable != null)
+        {
+            Debug.Log($"[DamageableDetector] {gameObject.name} 감지: {other.gameObject.name} (IDamageable={damageable})");
             OnDamageableDetected?.Invoke(damageable);
+        }
     }
 }

@@ -34,7 +34,13 @@ public class HitboxController : MonoBehaviour
     /// <summary>히트 활성 구간 시작 시 호출 (애니 이벤트 등).</summary>
     public void EnableHit()
     {
-        if (_hitbox != null) _hitbox.enabled = true;
+        if (_hitbox != null)
+        {
+            _hitbox.enabled = true;
+            Debug.Log($"[HitboxController] {gameObject.name} EnableHit (히트박스 켜짐)");
+        }
+        else
+            Debug.LogWarning($"[HitboxController] {gameObject.name} EnableHit 실패: _hitbox 없음");
     }
 
     /// <summary>히트 활성 구간 끝 시 호출.</summary>

@@ -30,6 +30,7 @@ public class EnemyModel : MonoBehaviour, IDamageable, IAttackPowerSource
         if (amount <= 0) return;
         int reduced = Mathf.Max(0, amount - Defense);
         _currentHp = Mathf.Max(0, _currentHp - reduced);
+        Debug.Log($"[EnemyModel] {gameObject.name} TakeDamage {amount} (방어후 {reduced}) → HP {_currentHp}/{MaxHp}");
         OnHpChanged?.Invoke(_currentHp, MaxHp);
     }
 
