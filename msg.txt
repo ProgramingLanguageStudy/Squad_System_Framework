@@ -1,3 +1,0 @@
-chore: git-commit-by-parts 규칙 추가
-
-- 논리적 단위로 파트별 커밋 안내

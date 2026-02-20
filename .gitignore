@@ -68,6 +68,9 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
+# Git commit message working file (한글 커밋용)
+msg.txt
+
 # Packed Addressables
 /[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
 
