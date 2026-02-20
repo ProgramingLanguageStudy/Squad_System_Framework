@@ -12988,6 +12988,7 @@ MonoBehaviour:
   _inventoryPresenter: {fileID: 1144396955}
   _playSceneView: {fileID: 682849675}
   _cinemachineCamera: {fileID: 1025071409}
+  _saveCoordinator: {fileID: 1242282674}
 --- !u!4 &947011742 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 409632, guid: 471c1eb32c770a54ea8a1c3ffbda1de6, type: 3}
@@ -17405,7 +17406,7 @@ GameObject:
   - component: {fileID: 1242282673}
   - component: {fileID: 1242282674}
   m_Layer: 0
-  m_Name: SquadSaveHandler
+  m_Name: SaveCoordinator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -17435,11 +17436,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1242282672}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 99af997aa02f118469a4b7226f83d1bd, type: 3}
+  m_Script: {fileID: 11500000, guid: 3256d5368b182af49b807fae9bdf5de2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _squadController: {fileID: 98329703}
-  _playerController: {fileID: 683735605}
 --- !u!1 &1244301782
 GameObject:
   m_ObjectHideFlags: 0
