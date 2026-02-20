@@ -65,7 +65,11 @@ public class Character : MonoBehaviour, IInteractReceiver
     private void Update()
     {
         if (_characterAnimator == null) return;
-        float speed = _mover != null ? _mover.GetCurrentSpeed() : (_followMover != null ? _followMover.GetCurrentSpeed() : 0f);
+        // 동료 모드(NavMeshAgent 사용)일 때는 FollowMover 속도 사용, 플레이어 모드일 때는 Mover 속도 사용
+        bool useFollowMover = _navMeshAgent != null && _navMeshAgent.enabled;
+        float speed = useFollowMover && _followMover != null
+            ? _followMover.GetCurrentSpeed()
+            : (_mover != null ? _mover.GetCurrentSpeed() : 0f);
         _characterAnimator.Move(speed);
     }
 
@@ -142,7 +146,10 @@ public class Character : MonoBehaviour, IInteractReceiver
             _animatorEventBridge.OnBeginHitWindow += _attacker.Animation_BeginHitWindow;
             _animatorEventBridge.OnEndHitWindow += _attacker.Animation_EndHitWindow;
             _animatorEventBridge.OnAttackEnded += _attacker.Animation_OnAttackEnded;
+            Debug.Log($"[Character] {gameObject.name} AnimatorEventBridge 연결 완료");
         }
+        else if (_animatorEventBridge == null)
+            Debug.LogWarning($"[Character] {gameObject.name} AnimatorEventBridge 없음 (애니 이벤트 동작 안 함)");
     }
 
     private void OnDisable()

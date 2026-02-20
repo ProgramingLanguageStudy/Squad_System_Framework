@@ -1,4 +1,5 @@
 using UnityEngine;
+using Unity.Cinemachine;
 
 /// <summary>
 /// 플레이 씬 조율. InputHandler·PlayerController 참조 보유, 입력 이벤트/값을 플레이어·GameEvents로 연결.
@@ -18,6 +19,8 @@ public class PlayScene : MonoBehaviour
     private InventoryPresenter _inventoryPresenter;
     [SerializeField] [Tooltip("비면 주입 안 함. 플레이 화면 UI(체력바 등). 조종 캐릭터 Model.OnHpChanged 구독")]
     private PlaySceneView _playSceneView;
+    [SerializeField] [Tooltip("비면 갱신 안 함. 있으면 SquadSwap 시 Follow 타겟을 현재 조종 캐릭터로 변경")]
+    private CinemachineCamera _cinemachineCamera;
 
     private CharacterModel _hpModelSubscribed;
 
@@ -133,7 +136,7 @@ public class PlayScene : MonoBehaviour
         // OnCurrentControlledChanged가 SetCurrentControlled에서 발행되어 HandleCurrentControlledChanged 호출
     }
 
-    /// <summary>조종 캐릭터 변경 시 chase/follow/인벤토리/체력바 등 갱신. 새로 추가할 시스템은 여기에 한 줄 추가.</summary>
+    /// <summary>조종 캐릭터 변경 시 chase/follow/인벤토리/체력바/카메라 등 갱신. 새로 추가할 시스템은 여기에 한 줄 추가.</summary>
     private void HandleCurrentControlledChanged(Character newControlled)
     {
         var chaseTarget = newControlled != null ? newControlled.transform : _playerController?.transform;
@@ -141,6 +144,8 @@ public class PlayScene : MonoBehaviour
         {
             _enemySpawner?.SetChaseTarget(chaseTarget);
             _squadController?.SetFollowTarget(chaseTarget);
+            if (_cinemachineCamera != null)
+                _cinemachineCamera.Follow = chaseTarget;
         }
         _inventoryPresenter?.RefreshItemUser();
 
