@@ -1,11 +1,12 @@
 {
-    "player": {
-        "position": {
-            "x": 47.37105178833008,
-            "y": 3.083112955093384,
-            "z": 67.67304229736328
+    "squad": {
+        "currentPlayerId": "",
+        "playerPosition": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
         },
-        "rotationY": 160.4490203857422,
-        "currentHp": 90
+        "playerRotationY": 0.0,
+        "members": []
     }
 }

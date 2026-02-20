@@ -6,5 +6,5 @@ using UnityEngine;
 [System.Serializable]
 public class SaveData
 {
-    public PlayerSaveData player = new PlayerSaveData();
+    public SquadSaveData squad = new SquadSaveData();
 }
