@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: Sapphi
   characterId: sapphi
-  prefab: {fileID: 0}
+  prefab: {fileID: 4408625566701680635, guid: 470322ebae7807c40a5fed250990385c, type: 3}
   maxHp: 100
   moveSpeed: 6
   attackPower: 10
