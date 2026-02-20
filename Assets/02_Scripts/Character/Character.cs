@@ -101,6 +101,8 @@ public class Character : MonoBehaviour, IInteractReceiver
     public PlayerSaveData GetSaveData()
     {
         var d = new PlayerSaveData();
+        var id = _model?.Data?.characterId;
+        d.playerCharacterId = !string.IsNullOrEmpty(id) ? id : (_model?.Data?.displayName ?? "");
         d.position = transform.position;
         d.rotationY = transform.eulerAngles.y;
         d.currentHp = _model != null ? _model.CurrentHp : 0;

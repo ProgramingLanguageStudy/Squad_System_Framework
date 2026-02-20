@@ -17,18 +17,6 @@ public class SaveManager : MonoBehaviour
     private SaveSystem _saveSystem;
     private SaveSystem SaveSystem => _saveSystem ??= new SaveSystem();
 
-    private void Start()
-    {
-        // OnEnable에서 핸들러 등록이 끝난 뒤 로드하도록 한 프레임 지연
-        StartCoroutine(LoadAndApplyNextFrame());
-    }
-
-    private System.Collections.IEnumerator LoadAndApplyNextFrame()
-    {
-        yield return null;
-        LoadAndApply();
-    }
-
     private void OnApplicationQuit()
     {
         Save();
@@ -67,7 +55,13 @@ public class SaveManager : MonoBehaviour
             Debug.LogWarning("[SaveManager] Save failed.");
     }
 
-    /// <summary>슬롯에서 로드 후 DataManager로 적용. 외부 API.</summary>
+    /// <summary>슬롯에서 로드. 적용 없이 SaveData만 반환. PlayScene에서 스폰 위치 등에 사용.</summary>
+    public SaveData Load()
+    {
+        return SaveSystem.Load(_defaultSlot);
+    }
+
+    /// <summary>슬롯에서 로드 후 DataManager로 적용. 외부 API. PlayScene.Awake에서 호출.</summary>
     public void LoadAndApply()
     {
         var gm = GameManager.Instance;

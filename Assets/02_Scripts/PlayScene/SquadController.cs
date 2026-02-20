@@ -3,50 +3,55 @@ using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
-/// 분대 제어. CharacterData 기반으로 동료 스폰·플레이어 따라가기 설정.
-/// 씬에 하나 배치 후 인스펙터에서 followTarget·초기 동료 데이터 할당.
+/// 분대 제어. CharacterData 기반으로 플레이어+동료 전체 스폰, 따라가기 설정.
+/// _initialSquad[0]이 기본 플레이어, 나머지가 동료. 씬에 플레이어 캐릭터 배치 불필요.
 /// </summary>
 public class SquadController : MonoBehaviour
 {
     [Header("참조")]
-    [SerializeField] [Tooltip("따라갈 대상(플레이어 캐릭터)")]
-    private Transform _followTarget;
-    [SerializeField] [Tooltip("스폰된 동료 부모(비어 있으면 this)")]
+    [SerializeField] [Tooltip("스폰된 분대 부모(비어 있으면 this)")]
     private Transform _squadRoot;
+    [SerializeField] [Tooltip("세이브 없을 때만 사용(방어코드). 마을 한가운데 등 유효한 NavMesh 위치에 배치 권장. 비면 this.position")]
+    private Transform _spawnPoint;
 
     [Header("초기 분대")]
-    [SerializeField] [Tooltip("스폰할 캐릭터 데이터 목록. prefab은 각 Data에 있어야 함")]
+    [SerializeField] [Tooltip("전체 분대. [0]=기본 플레이어, [1~]=동료. prefab은 각 Data에 있어야 함")]
     private List<CharacterData> _initialSquad = new List<CharacterData>();
 
     [Header("스폰")]
-    [SerializeField] [Tooltip("대상 기준 스폰 반경. NavMesh 샘플링에 사용")]
+    [SerializeField] [Tooltip("플레이어 기준 동료 스폰 반경. NavMesh 샘플링에 사용")]
     private float _spawnRadius = 2f;
 
     private readonly List<Character> _characters = new List<Character>();
 
     public IReadOnlyList<Character> Characters => _characters;
 
-    /// <summary>따라갈 대상 설정. PlayScene 등에서 플레이어 Character.transform 전달. 대상 본인은 제외.</summary>
+    /// <summary>기본 플레이어(스폰 리스트 첫 번째). 세이브 없을 때 조종 대상.</summary>
+    public Character DefaultPlayer => _characters.Count > 0 ? _characters[0] : null;
+
+    /// <summary>따라갈 대상 설정. PlayScene 등에서 현재 조종 캐릭터.transform 전달.</summary>
     public void SetFollowTarget(Transform target)
     {
-        _followTarget = target;
         foreach (var c in _characters)
         {
             if (c == null) continue;
-            if (c.transform == target) continue; // 자기 자신은 제외
+            if (c.transform == target) continue;
             c.SetFollowTarget(target);
         }
     }
 
-    public void Initialize()
+    /// <summary>분대 스폰. spawnPositionOverride가 있으면 그 위치(세이브 기준), 없으면 _spawnPoint(방어코드).</summary>
+    public void Initialize(Vector3? spawnPositionOverride = null)
     {
-        SpawnInitialSquad();
+        SpawnInitialSquad(spawnPositionOverride);
     }
 
-    private void SpawnInitialSquad()
+    private void SpawnInitialSquad(Vector3? spawnPositionOverride)
     {
+        _characters.Clear();
         var root = _squadRoot != null ? _squadRoot : transform;
-        var basePos = _followTarget != null ? _followTarget.position : transform.position;
+        var basePos = spawnPositionOverride ?? (_spawnPoint != null ? _spawnPoint.position : transform.position);
+        Character firstCharacter = null;
         int index = 0;
 
         foreach (var data in _initialSquad)
@@ -58,7 +63,20 @@ public class SquadController : MonoBehaviour
             }
 
             var offset = GetSpawnOffset(index);
-            SpawnCharacter(data, basePos + offset, root);
+            var character = SpawnCharacterInternal(data, basePos + offset, root);
+            if (character == null) continue;
+
+            _characters.Add(character);
+
+            if (index == 0)
+            {
+                firstCharacter = character;
+                character.SetAsPlayer();
+            }
+            else
+            {
+                character.SetAsCompanion(firstCharacter != null ? firstCharacter.transform : transform);
+            }
             index++;
         }
     }
@@ -70,8 +88,8 @@ public class SquadController : MonoBehaviour
         return new Vector3(Mathf.Cos(angle) * _spawnRadius, 0f, Mathf.Sin(angle) * _spawnRadius);
     }
 
-    /// <summary>캐릭터 1명 스폰. NavMesh 유효 위치에 배치 후 follow target 설정.</summary>
-    public Character SpawnCharacter(CharacterData data, Vector3 nearPosition, Transform parent = null)
+    /// <summary>캐릭터 1명 스폰. NavMesh 유효 위치에 배치. Player/Companion 설정은 호출부에서.</summary>
+    private Character SpawnCharacterInternal(CharacterData data, Vector3 nearPosition, Transform parent)
     {
         if (data == null || data.prefab == null) return null;
 
@@ -81,8 +99,7 @@ public class SquadController : MonoBehaviour
             hit.position = nearPosition;
         }
 
-        var root = parent != null ? parent : transform;
-        var instance = Instantiate(data.prefab, hit.position, Quaternion.identity, root);
+        var instance = Instantiate(data.prefab, hit.position, Quaternion.identity, parent);
         var character = instance.GetComponent<Character>();
 
         if (character == null)
@@ -96,9 +113,20 @@ public class SquadController : MonoBehaviour
             model.Initialize(data);
 
         character.Initialize();
-        character.SetAsCompanion(_followTarget);
-        _characters.Add(character);
         return character;
+    }
+
+    /// <summary>캐릭터 1명 스폰 (런타임 추가용). followTarget 지정 필요.</summary>
+    public Character SpawnCharacter(CharacterData data, Vector3 nearPosition, Transform followTarget, Transform parent = null)
+    {
+        var root = parent != null ? parent : (_squadRoot != null ? _squadRoot : transform);
+        var c = SpawnCharacterInternal(data, nearPosition, root);
+        if (c != null)
+        {
+            c.SetAsCompanion(followTarget);
+            _characters.Add(c);
+        }
+        return c;
     }
 
     public void RemoveCharacter(Character character)
@@ -107,5 +135,24 @@ public class SquadController : MonoBehaviour
         _characters.Remove(character);
         character.SetFollowTarget(null);
         Destroy(character.gameObject);
+    }
+
+    /// <summary>동료들을 center 주위에 재배치. center(플레이어)는 제외. NavMesh 샘플링 사용.</summary>
+    public void RepositionCompanionsAround(Transform center)
+    {
+        if (center == null) return;
+        var basePos = center.position;
+        int companionIndex = 0;
+        foreach (var c in _characters)
+        {
+            if (c == null || c.transform == center) continue;
+            companionIndex++;
+            var offset = GetSpawnOffset(companionIndex);
+            var nearPos = basePos + offset;
+            if (NavMesh.SamplePosition(nearPos, out var hit, _spawnRadius * 2f, NavMesh.AllAreas))
+                c.Teleport(hit.position);
+            else
+                c.Teleport(nearPos);
+        }
     }
 }

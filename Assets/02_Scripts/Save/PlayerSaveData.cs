@@ -6,6 +6,8 @@ using UnityEngine;
 [System.Serializable]
 public class PlayerSaveData
 {
+    /// <summary>마지막 조종 캐릭터 식별. CharacterData.characterId 또는 displayName</summary>
+    public string playerCharacterId = "";
     public Vector3 position;
     public float rotationY;
     public int currentHp;
