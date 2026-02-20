@@ -30,11 +30,8 @@ public class CharacterFollowMover : MonoBehaviour
 
     private void Update()
     {
-        if (_agent == null || !_agent.isOnNavMesh || _model == null || _model.IsDead)
-        {
-            if (_agent != null) _agent.isStopped = true;
+        if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh || _model == null || _model.IsDead)
             return;
-        }
 
         if (_followTarget == null)
         {
