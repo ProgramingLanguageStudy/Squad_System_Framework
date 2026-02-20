@@ -860,7 +860,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _detectPoint: {fileID: 8933832372822534551}
-  _radius: 3
+  _radius: 1
   _maxAngle: 180
   _targetLayerMask:
     serializedVersion: 2
