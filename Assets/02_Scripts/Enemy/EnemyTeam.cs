@@ -2,12 +2,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 적 팀. 한 명이 전투 진입 시 전원이 Chase. CombatController에 등록.
+/// 적 팀. 멤버의 OnEnteringCombat 구독 → 전원 Chase, Combat 등록.
 /// </summary>
 public class EnemyTeam : MonoBehaviour
 {
-    [SerializeField] private CombatController _combatController;
-
+    private CombatController _combatController;
     private readonly List<Enemy> _members = new List<Enemy>();
 
     public IReadOnlyList<Enemy> Members => _members;
@@ -19,19 +18,27 @@ public class EnemyTeam : MonoBehaviour
 
     public void AddMember(Enemy enemy)
     {
-        if (enemy != null && !_members.Contains(enemy))
-            _members.Add(enemy);
+        if (enemy == null || _members.Contains(enemy)) return;
+        _members.Add(enemy);
+        enemy.OnEnteringCombat += HandleMemberEnteringCombat;
+        enemy.OnDestroyed += RemoveMember;
     }
 
-    /// <summary>멤버가 전투 진입 시 호출. 전원 Chase, Combat 등록.</summary>
-    public void OnMemberEnteredCombat(Enemy who, Transform chaseTarget)
+    public void RemoveMember(Enemy enemy)
+    {
+        if (enemy == null) return;
+        enemy.OnEnteringCombat -= HandleMemberEnteringCombat;
+        enemy.OnDestroyed -= RemoveMember;
+        _members.Remove(enemy);
+    }
+
+    private void HandleMemberEnteringCombat(Transform chaseTarget)
     {
         foreach (var m in _members)
         {
             if (m == null || m.Model == null || m.Model.IsDead) continue;
             m.SetChaseTarget(chaseTarget);
             m.StateMachine.RequestChase();
-            _combatController?.RegisterInCombat(m);
         }
     }
 }
