@@ -76,7 +76,7 @@ public class CharacterModel : MonoBehaviour, IDamageable, IAttackPowerSource, II
         OnHpChanged?.Invoke(_currentHp, MaxHp);
     }
 
-    public void TakeDamage(int amount)
+    public void TakeDamage(int amount, Transform attacker = null)
     {
         if (amount <= 0) return;
         bool wasAlive = _currentHp > 0;

@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 /// <summary>
 /// 데미지를 받을 수 있는 엔티티 (플레이어, 몬스터 등).
@@ -8,7 +9,7 @@ public interface IDamageable
 {
     int CurrentHp { get; }
     int MaxHp { get; }
-    void TakeDamage(int amount);
+    void TakeDamage(int amount, Transform attacker = null);
     /// <summary>체력 변경 시. (currentHp, maxHp)</summary>
     event Action<int, int> OnHpChanged;
 }

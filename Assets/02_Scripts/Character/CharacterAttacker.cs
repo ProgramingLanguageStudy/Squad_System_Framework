@@ -59,12 +59,9 @@ public class CharacterAttacker : MonoBehaviour
 
         _hitThisAttack.Add(target);
         int damage = _ownerModel.AttackPower;
+        var attacker = _ownerCharacter != null ? _ownerCharacter.transform : null;
         Debug.Log($"[CharacterAttacker] {gameObject.name} → {target} 데미지 {damage} 적용");
-        target.TakeDamage(damage);
-
-        var enemy = (target as MonoBehaviour)?.GetComponentInParent<Enemy>();
-        if (enemy != null && _ownerCharacter != null)
-            enemy.OnDamagedBy(_ownerCharacter);
+        target.TakeDamage(damage, attacker);
     }
 
     public void OnAttackStarted()

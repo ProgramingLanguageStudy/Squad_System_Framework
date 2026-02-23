@@ -38,7 +38,7 @@ public class EnemyAttacker : MonoBehaviour
         if (_hitThisAttack.Contains(target)) return;
 
         _hitThisAttack.Add(target);
-        target.TakeDamage(_ownerModel.AttackPower);
+        target.TakeDamage(_ownerModel.AttackPower, transform);
     }
 
     /// <summary>공격 시작. 상태 Enter에서 호출. 이펙트·사운드용. 히트박스는 Animation_BeginHitWindow에서.</summary>

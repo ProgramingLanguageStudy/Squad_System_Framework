@@ -18,6 +18,10 @@ public class EnemyModel : MonoBehaviour, IDamageable, IAttackPowerSource
     public int Defense => _data != null ? _data.defense : 0;
 
     public event Action<int, int> OnHpChanged;
+    /// <summary>사망 시 (HP 0 이하로 떨어질 때) 한 번 발행.</summary>
+    public event Action OnDeath;
+    /// <summary>데미지 입었을 때. (공격자 Transform, null 가능). 구독자가 전투 진입 등 판단.</summary>
+    public event Action<Transform> OnDamaged;
 
     public void Initialize()
     {
@@ -25,13 +29,17 @@ public class EnemyModel : MonoBehaviour, IDamageable, IAttackPowerSource
         OnHpChanged?.Invoke(_currentHp, MaxHp);
     }
 
-    public void TakeDamage(int amount)
+    public void TakeDamage(int amount, Transform attacker = null)
     {
         if (amount <= 0) return;
+        bool wasAlive = _currentHp > 0;
         int reduced = Mathf.Max(0, amount - Defense);
         _currentHp = Mathf.Max(0, _currentHp - reduced);
         Debug.Log($"[EnemyModel] {gameObject.name} TakeDamage {amount} (방어후 {reduced}) → HP {_currentHp}/{MaxHp}");
         OnHpChanged?.Invoke(_currentHp, MaxHp);
+        OnDamaged?.Invoke(attacker);
+        if (wasAlive && _currentHp <= 0)
+            OnDeath?.Invoke();
     }
 
     public void Heal(int amount)
@@ -53,6 +61,12 @@ public class EnemyModel : MonoBehaviour, IDamageable, IAttackPowerSource
     public float PatrolIdleDuration => _data != null ? _data.patrolIdleDuration : 1f;
     public float ChaseSpeed => _data != null ? _data.chaseSpeed : 4f;
     public float DetectionRadius => _data != null ? _data.detectionRadius : 10f;
+    public float AggroThreshold => _data != null ? _data.aggroThreshold : 100f;
+    public float AggroLoseDistance => _data != null ? _data.aggroLoseDistance : 10f;
+    public float AggroAt1m => _data != null ? _data.aggroAt1m : 50f;
+    public float AggroAt3m => _data != null ? _data.aggroAt3m : 30f;
+    public float DetectInterval => _data != null ? _data.detectInterval : 0.5f;
+    public float TargetReevalInterval => _data != null ? _data.targetReevalInterval : 1.5f;
     public float AttackRadius => _data != null ? _data.attackRadius : 2f;
     public float ChaseLoseRadius => _data != null ? _data.chaseLoseRadius : 15f;
     public float AttackDuration => _data != null ? _data.attackDuration : 0.6f;
