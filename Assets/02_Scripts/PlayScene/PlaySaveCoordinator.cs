@@ -4,17 +4,14 @@ using UnityEngine;
 
 /// <summary>
 /// Play 씬 세이브/로드 조율. ISaveHandler 구현, DataManager에 등록.
-/// PlayScene.Initialize에서 FindObjectsOfType으로 수집한 Contributor들을 주입받아 Gather/Apply 시 분배.
-/// PlayScene에 있을 필요 없음. 씬 어디든 둬도 됨.
+/// 인스펙터에서 Contributor 할당. Gather/Apply 시 분배.
 /// </summary>
 public class PlaySaveCoordinator : MonoBehaviour, ISaveHandler
 {
-    private List<ISaveContributor> _contributors = new List<ISaveContributor>();
+    [SerializeField] [Tooltip("세이브/로드에 참여할 Contributor. SaveOrder 순으로 처리")]
+    private List<SaveContributorBehaviour> _contributors = new List<SaveContributorBehaviour>();
 
-    public void Initialize(IEnumerable<ISaveContributor> contributors)
-    {
-        _contributors = contributors != null ? contributors.ToList() : new List<ISaveContributor>();
-    }
+    public void Initialize() { }
 
     private void OnEnable()
     {
@@ -30,15 +27,15 @@ public class PlaySaveCoordinator : MonoBehaviour, ISaveHandler
 
     public void Gather(SaveData data)
     {
-        if (data == null) return;
-        foreach (var c in _contributors.OrderBy(x => x.SaveOrder))
+        if (data == null || _contributors == null) return;
+        foreach (var c in _contributors.Where(x => x != null).OrderBy(x => x.SaveOrder))
             c.Gather(data);
     }
 
     public void Apply(SaveData data)
     {
-        if (data == null) return;
-        foreach (var c in _contributors.OrderBy(x => x.SaveOrder))
+        if (data == null || _contributors == null) return;
+        foreach (var c in _contributors.Where(x => x != null).OrderBy(x => x.SaveOrder))
             c.Apply(data);
     }
 }
