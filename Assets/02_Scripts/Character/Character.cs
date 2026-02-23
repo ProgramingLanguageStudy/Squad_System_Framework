@@ -23,8 +23,8 @@ public class Character : MonoBehaviour, IInteractReceiver
     [SerializeField] private CharacterController _characterController;
     [SerializeField] private NavMeshAgent _navMeshAgent;
     [SerializeField] private Animator _animator;
-    [SerializeField] [Tooltip("동료 전용. 인스펙터에서 CompanionAI 할당")]
-    private CompanionAI _companionAI;
+    [SerializeField] [Tooltip("동료 전용. 인스펙터에서 CompanionStateMachine 할당")]
+    private CompanionStateMachine _companionStateMachine;
 
     public CharacterModel Model => _model;
     public CharacterMover Mover => _mover;
@@ -101,7 +101,7 @@ public class Character : MonoBehaviour, IInteractReceiver
         if (_interactor != null) _interactor.enabled = true;
         SetFollowTarget(null);
         ClearCombatTarget();
-        if (_companionAI != null) _companionAI.enabled = false;
+        if (_companionStateMachine != null) _companionStateMachine.enabled = false;
     }
 
     /// <summary>동료 모드로 전환 (NavMeshAgent+FollowMover로 대상 따라감, Interactor 비활성화).</summary>
@@ -112,7 +112,7 @@ public class Character : MonoBehaviour, IInteractReceiver
         if (_interactor != null) _interactor.enabled = false;
         SetFollowTarget(followTarget);
         ClearCombatTarget();
-        if (_companionAI != null) _companionAI.enabled = true;
+        if (_companionStateMachine != null) _companionStateMachine.enabled = true;
     }
 
     /// <summary>현재 위치·회전·체력을 저장용 데이터로 반환.</summary>
@@ -149,6 +149,7 @@ public class Character : MonoBehaviour, IInteractReceiver
         if (_characterController == null) _characterController = GetComponent<CharacterController>();
         if (_navMeshAgent == null) _navMeshAgent = GetComponent<NavMeshAgent>();
         if (_animator == null) _animator = GetComponentInChildren<Animator>();
+        if (_companionStateMachine == null) _companionStateMachine = GetComponent<CompanionStateMachine>();
 
         _model?.Initialize();
         if (_mover != null)

@@ -3044,6 +3044,7 @@ GameObject:
   - component: {fileID: 1611935028299444258}
   - component: {fileID: 7551934365029109946}
   - component: {fileID: 8086142719733709537}
+  - component: {fileID: -4142826479235704624}
   m_Layer: 6
   m_Name: PicoChan
   m_TagString: Untagged
@@ -3232,6 +3233,7 @@ MonoBehaviour:
   _characterController: {fileID: 7175813939179906239}
   _navMeshAgent: {fileID: 4447608014213124372}
   _animator: {fileID: 4073835241147514954}
+  _companionStateMachine: {fileID: -4142826479235704624}
 --- !u!136 &7551934365029109946
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -3282,6 +3284,20 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &-4142826479235704624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2584634390335461423}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f8e9d0c1b2a3f4e5d6c7b8a9e0f1d2c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _attackRange: 2
+  _targetUpdateInterval: 0.5
 --- !u!1 &2694873351450634535
 GameObject:
   m_ObjectHideFlags: 0
