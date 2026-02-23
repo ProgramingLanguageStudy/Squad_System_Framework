@@ -13,14 +13,14 @@ public class EnemySpawnerDebuggerEditor : Editor
         EnemySpawner spawner = debugger.SpawnerRef;
 
         EditorGUI.BeginDisabledGroup(!Application.isPlaying);
-        if (GUILayout.Button("적 생성 (SpawnEnemy)"))
+        if (GUILayout.Button("적 팀 생성 (SpawnTeam)"))
         {
             if (spawner == null)
             {
                 Debug.LogWarning("[EnemySpawnerDebugger] EnemySpawner 참조가 없습니다. 인스펙터에서 반드시 할당하세요.");
                 return;
             }
-            spawner.SpawnEnemy();
+            spawner.SpawnTeam();
         }
         EditorGUI.EndDisabledGroup();
 

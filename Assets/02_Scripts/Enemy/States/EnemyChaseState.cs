@@ -34,7 +34,7 @@ public class EnemyChaseState : EnemyStateBase
             Machine.ChangeState(EnemyStateMachine.EnemyState.Attack);
             return;
         }
-        if (dist > Machine.ChaseLoseRadius)
+        if (dist > Machine.Enemy.Aggro.LoseDistance)
         {
             Machine.ChangeState(EnemyStateMachine.EnemyState.Patrol);
             return;

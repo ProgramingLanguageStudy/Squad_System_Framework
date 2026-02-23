@@ -19,6 +19,7 @@ public class EnemyStateMachine : MonoBehaviour
     private Enemy _enemy;
     private Vector3 _patrolCenter;
     private Transform _chaseTarget;
+    private CombatController _combatController;
 
     private Dictionary<EnemyState, EnemyStateBase> _states;
     private EnemyState _currentStateKey;
@@ -80,7 +81,7 @@ public class EnemyStateMachine : MonoBehaviour
         _currentState?.Update();
     }
 
-    /// <summary>상태 전환. Exit → 교체 → Enter. enum으로 딕셔너리에서 상태 인스턴스 재활용.</summary>
+    /// <summary>상태 전환. Exit → 교체 → Enter. Chase/Attack 진입 시 CombatController에 등록.</summary>
     public void ChangeState(EnemyState key)
     {
         if (!_states.TryGetValue(key, out EnemyStateBase newState) || newState == null) return;
@@ -90,6 +91,20 @@ public class EnemyStateMachine : MonoBehaviour
         _currentStateKey = key;
         _currentState = newState;
         _currentState.Enter();
+
+        UpdateCombatRegistration(key);
+    }
+
+    private void UpdateCombatRegistration(EnemyState newState)
+    {
+        if (_enemy == null) return;
+        if (_combatController == null) _combatController = Object.FindFirstObjectByType<CombatController>();
+
+        bool inCombat = newState == EnemyState.Chase || newState == EnemyState.Attack;
+        if (inCombat)
+            _combatController?.RegisterInCombat(_enemy);
+        else
+            _combatController?.UnregisterFromCombat(_enemy);
     }
 
     /// <summary>현재 상태 키로 상태 인스턴스 반환.</summary>

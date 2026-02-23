@@ -9,12 +9,14 @@ public class CharacterAttacker : MonoBehaviour
 {
     [SerializeField] private HitboxController _hitboxController;
 
+    private Character _ownerCharacter;
     private CharacterModel _ownerModel;
     private CharacterStateMachine _stateMachine;
     private readonly HashSet<IDamageable> _hitThisAttack = new HashSet<IDamageable>();
 
-    public void Initialize(CharacterStateMachine stateMachine, CharacterModel ownerModel)
+    public void Initialize(Character owner, CharacterStateMachine stateMachine, CharacterModel ownerModel)
     {
+        _ownerCharacter = owner;
         _stateMachine = stateMachine;
         _ownerModel = ownerModel;
 
@@ -59,6 +61,10 @@ public class CharacterAttacker : MonoBehaviour
         int damage = _ownerModel.AttackPower;
         Debug.Log($"[CharacterAttacker] {gameObject.name} → {target} 데미지 {damage} 적용");
         target.TakeDamage(damage);
+
+        var enemy = (target as MonoBehaviour)?.GetComponentInParent<Enemy>();
+        if (enemy != null && _ownerCharacter != null)
+            enemy.OnDamagedBy(_ownerCharacter);
     }
 
     public void OnAttackStarted()

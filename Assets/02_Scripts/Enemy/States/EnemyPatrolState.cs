@@ -18,17 +18,7 @@ public class EnemyPatrolState : EnemyStateBase
 
     public override void Update()
     {
-        Transform target = Machine.ChaseTarget;
-        if (target != null)
-        {
-            float dist = Vector3.Distance(Machine.Enemy.transform.position, target.position);
-            if (dist <= Machine.DetectionRadius)
-            {
-                Machine.ChangeState(EnemyStateMachine.EnemyState.Chase);
-                return;
-            }
-        }
-
+        // 탐지·어그로는 Enemy.Update에서 처리 (0.5초 주기)
         if (Machine.Enemy?.Mover == null) return;
 
         if (_isWalking)
