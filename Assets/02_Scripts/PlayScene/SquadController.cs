@@ -6,7 +6,7 @@ using UnityEngine.AI;
 /// <summary>
 /// 분대 제어. Character 관리·플레이어/동료 역할·스폰·따라가기.
 /// PlayerCharacter 변경 시 OnPlayerChanged 발행.
-/// IPlayerProvider 구현. GameServices에 등록해 Player 참조 제공.
+/// IPlayerProvider 구현. PlaySceneServices에 등록해 Player 참조 제공.
 /// </summary>
 public class SquadController : MonoBehaviour, IPlayerProvider
 {

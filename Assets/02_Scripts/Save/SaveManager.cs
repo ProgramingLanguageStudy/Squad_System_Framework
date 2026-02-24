@@ -1,11 +1,12 @@
+using System.Collections.Generic;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
 /// <summary>
-/// 세이브 시점 제어 및 API 제공. DataManager에서 데이터 수집·적용, SaveSystem에서 I/O.
-/// - Play 진입 시: 로드 후 DataManager.ApplySaveData.
+/// 세이브 시점 제어 및 API 제공. ISaveHandler 등록·수집·적용, SaveSystem에서 I/O.
+/// - Play 진입 시: 로드 후 ApplySaveData.
 /// - Play 종료 시(에디터): 저장.
 /// - 앱/에디터 종료 시: 저장.
 /// GameManager가 보유. SaveSystem은 new로 생성해 보유.
@@ -14,8 +15,40 @@ public class SaveManager : MonoBehaviour
 {
     [SerializeField] private int _defaultSlot = 0;
 
+    private readonly List<ISaveHandler> _handlers = new List<ISaveHandler>();
     private SaveSystem _saveSystem;
     private SaveSystem SaveSystem => _saveSystem ??= new SaveSystem();
+
+    /// <summary>세이브/로드에 참여할 핸들러 등록. 각 시스템은 OnEnable에서 호출.</summary>
+    public void Register(ISaveHandler handler)
+    {
+        if (handler == null || _handlers.Contains(handler)) return;
+        _handlers.Add(handler);
+    }
+
+    /// <summary>등록 해제. 각 시스템은 OnDisable에서 호출.</summary>
+    public void Unregister(ISaveHandler handler)
+    {
+        if (handler == null) return;
+        _handlers.Remove(handler);
+    }
+
+    /// <summary>등록된 핸들러들로부터 SaveData 수집. 저장 직전에 사용.</summary>
+    public SaveData GatherSaveData()
+    {
+        var data = new SaveData();
+        for (int i = 0; i < _handlers.Count; i++)
+            _handlers[i].Gather(data);
+        return data;
+    }
+
+    /// <summary>로드한 SaveData를 등록된 핸들러들에게 적용. 로드 직후에 사용.</summary>
+    public void ApplySaveData(SaveData data)
+    {
+        if (data == null) return;
+        for (int i = 0; i < _handlers.Count; i++)
+            _handlers[i].Apply(data);
+    }
 
     private void OnApplicationQuit()
     {
@@ -40,13 +73,10 @@ public class SaveManager : MonoBehaviour
     }
 #endif
 
-    /// <summary>현재 게임 상태를 DataManager로 수집 후 저장. 외부 API.</summary>
+    /// <summary>현재 게임 상태를 수집 후 저장. 외부 API.</summary>
     public void Save()
     {
-        var gm = GameManager.Instance;
-        if (gm?.DataManager == null) return;
-
-        var data = gm.DataManager.GatherSaveData();
+        var data = GatherSaveData();
         if (data == null) return;
 
         if (SaveSystem.Save(_defaultSlot, data))
@@ -61,12 +91,9 @@ public class SaveManager : MonoBehaviour
         return SaveSystem.Load(_defaultSlot);
     }
 
-    /// <summary>슬롯에서 로드 후 DataManager로 적용. 외부 API. PlayScene.Awake에서 호출.</summary>
+    /// <summary>슬롯에서 로드 후 핸들러들에게 적용. 외부 API. PlayScene.Awake에서 호출.</summary>
     public void LoadAndApply()
     {
-        var gm = GameManager.Instance;
-        if (gm?.DataManager == null) return;
-
         var data = SaveSystem.Load(_defaultSlot);
         if (data == null)
         {
@@ -74,7 +101,7 @@ public class SaveManager : MonoBehaviour
             return;
         }
 
-        gm.DataManager.ApplySaveData(data);
+        ApplySaveData(data);
         Debug.Log("[SaveManager] Loaded from slot " + _defaultSlot);
     }
 }

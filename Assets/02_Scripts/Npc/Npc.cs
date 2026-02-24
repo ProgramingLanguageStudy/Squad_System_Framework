@@ -7,7 +7,7 @@ public class Npc : MonoBehaviour, IInteractable
     public void Interact(IInteractReceiver receiver)
     {
         if (!string.IsNullOrEmpty(_npcId))
-            GameEvents.OnNpcInteracted?.Invoke(_npcId);
+            PlaySceneServices.EventHub?.RaiseNpcInteracted(_npcId);
     }
 
     public string GetInteractText() => _npcId;

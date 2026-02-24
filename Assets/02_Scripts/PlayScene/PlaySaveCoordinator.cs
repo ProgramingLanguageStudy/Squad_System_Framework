@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEngine;
 
 /// <summary>
-/// Play 씬 세이브/로드 조율. ISaveHandler 구현, DataManager에 등록.
+/// Play 씬 세이브/로드 조율. ISaveHandler 구현, SaveManager에 등록.
 /// 인스펙터에서 Contributor 할당. Gather/Apply 시 분배.
 /// </summary>
 public class PlaySaveCoordinator : MonoBehaviour, ISaveHandler
@@ -15,14 +15,14 @@ public class PlaySaveCoordinator : MonoBehaviour, ISaveHandler
 
     private void OnEnable()
     {
-        if (GameManager.Instance?.DataManager != null)
-            GameManager.Instance.DataManager.Register(this);
+        if (GameManager.Instance?.SaveManager != null)
+            GameManager.Instance.SaveManager.Register(this);
     }
 
     private void OnDisable()
     {
-        if (GameManager.Instance?.DataManager != null)
-            GameManager.Instance.DataManager.Unregister(this);
+        if (GameManager.Instance?.SaveManager != null)
+            GameManager.Instance.SaveManager.Unregister(this);
     }
 
     public void Gather(SaveData data)

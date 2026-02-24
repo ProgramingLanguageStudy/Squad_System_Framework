@@ -16,7 +16,7 @@ MonoBehaviour:
   attackPower: 5
   defense: 0
   patrolSpeed: 1.5
-  patrolRadius: 5
+  patrolRadius: 2
   arriveThreshold: 0.5
   patrolWalkDurationMin: 5
   patrolWalkDurationMax: 6

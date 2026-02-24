@@ -106,7 +106,7 @@ public class EnemyStateMachine : MonoBehaviour
         bool isChaseOrAttack = _currentStateKey == EnemyState.Chase || _currentStateKey == EnemyState.Attack;
         if (isChaseOrAttack)
         {
-            var playerTransform = GameServices.Player?.GetPlayerTransform();
+            var playerTransform = PlaySceneServices.Player?.GetPlayerTransform();
 
             if (_enemy?.Aggro?.TryResetIfPlayerOutOfRange(_enemy.transform.position, playerTransform) == true)
             {

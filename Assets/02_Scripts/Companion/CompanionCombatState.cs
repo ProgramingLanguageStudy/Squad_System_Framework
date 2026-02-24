@@ -20,7 +20,7 @@ public class CompanionCombatState : CompanionStateBase
     {
         var character = Machine.Character;
         var combat = Machine.CombatController;
-        var player = GameServices.Player?.GetPlayer();
+        var player = PlaySceneServices.Player?.GetPlayer();
         Transform followTarget = player != null ? player.transform : null;
 
         if (combat == null || combat.EnemiesInCombat.Count == 0)

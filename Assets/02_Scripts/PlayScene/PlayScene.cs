@@ -23,6 +23,10 @@ public class PlayScene : MonoBehaviour
     private CinemachineCamera _cinemachineCamera;
     [SerializeField] [Tooltip("세이브/로드 조율. 인스펙터에서 Contributor 할당")]
     private PlaySaveCoordinator _saveCoordinator;
+    [SerializeField] [Tooltip("대화 관련 컴포넌트·이벤트 연결")]
+    private DialogueController _dialogueController;
+    [SerializeField] [Tooltip("퀘스트 관련. 대화 종료 시 수락/완료 처리")]
+    private QuestController _questController;
 
     private CharacterModel _hpModelSubscribed;
 
@@ -49,7 +53,7 @@ public class PlayScene : MonoBehaviour
         var spawnPos = saveData?.squad != null ? (Vector3?)saveData.squad.playerPosition : null;
 
         _squadController.Initialize(spawnPos, _combatController);
-        GameServices.Register(_squadController);
+        PlaySceneServices.Register(_squadController);
 
         if (saveData != null && _saveCoordinator != null)
             _saveCoordinator.Apply(saveData);
@@ -79,7 +83,7 @@ public class PlayScene : MonoBehaviour
 
     private void OnDisable()
     {
-        GameServices.Clear();
+        PlaySceneServices.Clear();
 
         if (_hpModelSubscribed != null)
         {

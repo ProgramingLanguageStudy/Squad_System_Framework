@@ -56,7 +56,7 @@ public class CompanionStateMachine : MonoBehaviour
         if (_character == null || _character.Model == null || _character.Model.IsDead)
             return;
 
-        if (GameServices.Player?.GetPlayer() == _character)
+        if (PlaySceneServices.Player?.GetPlayer() == _character)
             return;
 
         bool isInCombat = _combatController != null && _combatController.IsInCombat;

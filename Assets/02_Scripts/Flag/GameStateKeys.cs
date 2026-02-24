@@ -17,6 +17,9 @@ public static class GameStateKeys
     /// <summary>퀘스트 수락 여부. 예: quest_버섯5개_수락</summary>
     public static string QuestAccepted(string questId) => QuestPrefix + questId + "_수락";
 
-    /// <summary>퀘스트 완료 여부. 예: quest_버섯5개_완료</summary>
+    /// <summary>퀘스트 목표 달성 여부. 예: quest_버섯5개_목표달성 (제출 전, 진행도만 완료)</summary>
+    public static string QuestObjectivesDone(string questId) => QuestPrefix + questId + "_목표달성";
+
+    /// <summary>퀘스트 제출 완료 여부. 예: quest_버섯5개_완료</summary>
     public static string QuestCompleted(string questId) => QuestPrefix + questId + "_완료";
 }
