@@ -29,6 +29,7 @@ public class PlayScene : MonoBehaviour
     private QuestController _questController;
     [SerializeField] [Tooltip("플래그 저장·조회. QuestSystem처럼 Play 씬에서 보유")]
     private FlagSystem _flagSystem;
+    [SerializeField] MapController _mapController;
 
     private CharacterModel _hpModelSubscribed;
     private SaveData _pendingSaveData;
@@ -74,6 +75,11 @@ public class PlayScene : MonoBehaviour
         _dialogueController?.Initialize(_questController?.Presenter, _flagSystem);
         if (_questController != null && _inventoryPresenter?.Model != null)
             _questController.Initialize(_inventoryPresenter.Model, _flagSystem);
+
+        if (_mapController != null)
+        {
+            _mapController.Initialize();
+        }
     }
 
     private void Start()
@@ -98,6 +104,7 @@ public class PlayScene : MonoBehaviour
         _inputHandler.OnAttackPerformed += HandleAttack;
         _inputHandler.OnSquadSwapPerformed += HandleSquadSwap;
         _inputHandler.OnSavePerformed += HandleSave;
+        _inputHandler.OnMapPerformed += HandleMap;
     }
 
     private void OnDisable()
@@ -119,6 +126,7 @@ public class PlayScene : MonoBehaviour
         _inputHandler.OnAttackPerformed -= HandleAttack;
         _inputHandler.OnSquadSwapPerformed -= HandleSquadSwap;
         _inputHandler.OnSavePerformed -= HandleSave;
+        _inputHandler.OnMapPerformed -= HandleMap;
     }
 
     private void Update()
@@ -130,6 +138,8 @@ public class PlayScene : MonoBehaviour
         Vector2 input = _inputHandler.MoveInput;
         Vector3 worldDir = InputToWorldDirection(input);
         player.Mover.Move(worldDir);
+
+        _mapController.RequestScrollMap(_inputHandler.ScrollInput);
     }
 
     /// <summary>입력 + 카메라 → 월드 기준 이동 방향.</summary>
@@ -173,6 +183,11 @@ public class PlayScene : MonoBehaviour
     private void HandleSave()
     {
         GameManager.Instance?.SaveManager?.Save();
+    }
+
+    private void HandleMap()
+    {
+        _mapController?.RequestToggleMap();
     }
 
     /// <summary>플레이어 변경 시 chase/follow/인벤토리/체력바/카메라 등 갱신.</summary>
