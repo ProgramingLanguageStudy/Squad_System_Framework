@@ -8,7 +8,10 @@ using UnityEngine.UI;
 /// </summary>
 public class InventoryView : MonoBehaviour
 {
+    [Header("UI References")]
     [SerializeField] private GameObject _inventoryUIPanel;
+    [SerializeField] private RectTransform _mainPanelRect; // 연출용 메인 패널
+    [SerializeField] private CanvasGroup _mainCanvasGroup;   // 연출용 Canvas에 달린 CanvasGroup
     [SerializeField] [Tooltip("인벤토리 열 때 맨 위로 보이게 할 ScrollRect. 비면 동작 안 함")]
     private ScrollRect _scrollRect;
     [SerializeField] private Image _dragIcon;
@@ -17,6 +20,7 @@ public class InventoryView : MonoBehaviour
     [SerializeField] private int _maxSlotCount = 30;
     [SerializeField] [Tooltip("오른쪽 상세 패널(아이템 설명 + USE 버튼). 인스펙터에서 할당.")]
     private InventoryTooltipView _tooltipView;
+    [SerializeField] private UIAnimation _uiAnim; // 추가
     [SerializeField] [Tooltip("인벤토리 닫기(X) 버튼. 누르면 패널 닫힘.")]
     private Button _closeButton;
 
@@ -36,6 +40,12 @@ public class InventoryView : MonoBehaviour
     /// <summary>슬롯 생성·패널·툴팁 초기 상태. Presenter가 호출.</summary>
     public void Initialize()
     {
+        if (_uiAnim != null)
+        {
+            // mainPanelRect와 backgroundDim을 주입
+            _uiAnim.Initialize(_mainPanelRect, _mainCanvasGroup);
+        }
+
         CreateSlots();
         if (_inventoryUIPanel != null)
             _inventoryUIPanel.SetActive(false);
@@ -117,22 +127,54 @@ public class InventoryView : MonoBehaviour
 
     public void ToggleInventory()
     {
-        GameObject target = _inventoryUIPanel != null ? _inventoryUIPanel : gameObject;
-        bool isActive = !target.activeSelf;
-        target.SetActive(isActive);
-        if (isActive)
+        //GameObject target = _inventoryUIPanel != null ? _inventoryUIPanel : gameObject;
+        //bool isActive = !target.activeSelf;
+        //target.SetActive(isActive);
+        //if (isActive)
+        //{
+        //    _tooltipView?.Hide();
+        //    if (_scrollRect != null)
+        //        _scrollRect.verticalNormalizedPosition = 1f;
+        //    OnRefreshRequested?.Invoke();
+        //    GameEvents.OnCursorShowRequested?.Invoke();
+        //}
+        //else
+        //{
+        //    _tooltipView?.Hide();
+        //    for (int i = 0; i < _slots.Count; i++)
+        //        _slots[i].SetSelected(false);
+        //    GameEvents.OnCursorHideRequested?.Invoke();
+        //}
+        if (_inventoryUIPanel == null) return;
+
+        bool isOpening = !_inventoryUIPanel.activeSelf;
+
+        if (isOpening)
         {
+            // [열기 연출]
+            _inventoryUIPanel.SetActive(true);
+            _uiAnim?.PlayOpen(); // 연출 실행
+
             _tooltipView?.Hide();
             if (_scrollRect != null)
                 _scrollRect.verticalNormalizedPosition = 1f;
+            
             OnRefreshRequested?.Invoke();
             GameEvents.OnCursorShowRequested?.Invoke();
         }
         else
         {
+            // [닫기 연출]
+            // 연출이 끝난 후 SetActive(false)가 되도록 콜백 전달
+            _uiAnim?.PlayClose(() => 
+            {
+                _inventoryUIPanel.SetActive(false);
+            });
+
             _tooltipView?.Hide();
             for (int i = 0; i < _slots.Count; i++)
                 _slots[i].SetSelected(false);
+            
             GameEvents.OnCursorHideRequested?.Invoke();
         }
     }
