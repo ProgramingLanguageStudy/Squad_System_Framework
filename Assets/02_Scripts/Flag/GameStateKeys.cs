@@ -7,6 +7,7 @@ public static class GameStateKeys
     private const string FirstTalkPrefix = "first_talk_";
     private const string AffectionPrefix = "affection_";
     private const string QuestPrefix = "quest_";
+    private const string PortalPrefix = "portal_unlocked_";
 
     /// <summary>해당 NPC와 첫 대화를 했는지. 0=아직, 1=했음.</summary>
     public static string FirstTalkNpc(string npcId) => FirstTalkPrefix + npcId;
@@ -22,4 +23,8 @@ public static class GameStateKeys
 
     /// <summary>퀘스트 제출 완료 여부. 예: quest_mushroom_gather_completed</summary>
     public static string QuestCompleted(string questId) => QuestPrefix + questId + "_completed";
+
+    /// <summary>포탈 해금 여부. 0=미발견, 1=해금됨.</summary>
+    /// <param name="portalId">PortalData에 정의된 고유 ID</param>
+    public static string PortalUnlocked(string portalId) => PortalPrefix + portalId;
 }
