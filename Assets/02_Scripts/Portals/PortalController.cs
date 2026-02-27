@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,27 +8,45 @@ using UnityEngine;
 /// </summary>
 public class PortalController : MonoBehaviour
 {
-    [SerializeField] [Tooltip("이 맵에 있는 포탈 전부. 인스펙터에서 할당")]
-    private List<Portal> _portals = new List<Portal>();
+    [SerializeField] [Tooltip("초기화 시점에 Find함수로 모든 포탈 등록")]
+    private List<PortalModel> _portalModels = new List<PortalModel>();
 
-    [SerializeField] [Tooltip("포탈 선택 메뉴. 여기서 직접 Show 호출")]
-    private PortalMenuView _menuView;
+    [SerializeField] FlagSystem _flagSystem;
 
-    private void OnEnable()
-    {
-        for (int i = 0; i < _portals.Count; i++)
-        {
-            if (_portals[i] != null)
-                _portals[i].OnInteracted += HandlePortalInteracted;
-        }
-    }
+    [SerializeField] [Tooltip("지도 View")]
+    MapView _mapView;
 
     private void OnDisable()
     {
-        for (int i = 0; i < _portals.Count; i++)
+        for (int i = 0; i < _portalModels.Count; i++)
         {
-            if (_portals[i] != null)
-                _portals[i].OnInteracted -= HandlePortalInteracted;
+            if (_portalModels[i] != null)
+                _portalModels[i].Portal.OnInteracted -= HandlePortalInteracted;
+        }
+    }
+
+    public void Initialize(MapView mapView, FlagSystem flagSystem)
+    {
+        Debug.Log($"{gameObject.name} + 초기화함수 실행");
+        _mapView = mapView;
+        _flagSystem = flagSystem;
+
+        // 기존 구독 해제 및 리스트 초기화 (중복 방지)
+        foreach (var model in _portalModels)
+        {
+            if (model.Portal != null)
+                model.Portal.OnInteracted -= HandlePortalInteracted;
+        }
+        _portalModels.Clear();
+
+        Portal[] worldPortals = FindObjectsByType<Portal>(FindObjectsSortMode.None);
+        foreach (var p in worldPortals)
+        {
+            var model = new PortalModel(p, _flagSystem);
+            _portalModels.Add(model);
+
+            p.Initialize(model.IsUnlocked);
+            p.OnInteracted += HandlePortalInteracted; // 여기서 구독
         }
     }
 
@@ -35,23 +54,7 @@ public class PortalController : MonoBehaviour
     {
         if (receiver == null || interactedPortal == null) return;
 
-        var reachable = GetReachablePortals(interactedPortal);
-        _menuView?.Show(reachable, receiver);
     }
 
-    /// <summary>
-    /// 현재 갈 수 있는 포탈 목록. 기본: 상호작용한 포탈 제외한 전부. 나중에 해금 조건 추가.
-    /// </summary>
-    private IReadOnlyList<Portal> GetReachablePortals(Portal currentPortal)
-    {
-        var list = new List<Portal>(_portals.Count);
-        for (int i = 0; i < _portals.Count; i++)
-        {
-            var p = _portals[i];
-            if (p == null || p == currentPortal) continue;
-            // TODO: 해금 여부 체크
-            list.Add(p);
-        }
-        return list;
-    }
+    public IReadOnlyList<PortalModel> PortalModels => _portalModels;
 }

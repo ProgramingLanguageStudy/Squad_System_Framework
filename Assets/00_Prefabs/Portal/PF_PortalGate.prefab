@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 3317620183304467193}
   - component: {fileID: 9160943745074678387}
   - component: {fileID: 6781407584522520516}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Particle_Sparks_L
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4911,7 +4911,7 @@ GameObject:
   - component: {fileID: 5518501297500016300}
   - component: {fileID: 6638518548398510483}
   - component: {fileID: 7596172933222585510}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Particle_Sparks_R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9811,7 +9811,7 @@ GameObject:
   - component: {fileID: 9204256966746702892}
   - component: {fileID: 7167374646569153543}
   - component: {fileID: 6589234599135981010}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Particle_Symbol
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14644,7 +14644,7 @@ GameObject:
   - component: {fileID: 2962857553176563625}
   - component: {fileID: 3731258199576699593}
   - component: {fileID: 7473677130185826264}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Flash_Particles
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -19544,7 +19544,7 @@ GameObject:
   - component: {fileID: 356404062479515776}
   - component: {fileID: 2485243575547819254}
   - component: {fileID: 4729618664116154025}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Particle_Orbs_R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -24375,7 +24375,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2703701432304872883}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Audio
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -24408,10 +24408,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7365416923536811619}
-  - component: {fileID: 1176135122813668187}
   - component: {fileID: 8718912577293838295}
   - component: {fileID: 1409932744697728109}
-  m_Layer: 0
+  - component: {fileID: 2489579355581303927}
+  m_Layer: 7
   m_Name: PF_PortalGate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -24426,7 +24426,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3127090012749474571}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 51.78, y: 3.03, z: 66.68}
   m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
   m_ConstrainProportionsScale: 1
@@ -24434,33 +24434,9 @@ Transform:
   - {fileID: 2179693654031934171}
   - {fileID: 168109430097791751}
   - {fileID: 2703701432304872883}
+  - {fileID: 1956376709534474071}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1176135122813668187
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3127090012749474571}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 093e4e9198870154c91cfb08154a343e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  portalEffectColor: {r: 0.25, g: 1, b: 0.7970589, a: 1}
-  portalRenderer: {fileID: 5582748458814743406}
-  effectsPartSystems:
-  - {fileID: 3780512214620707808}
-  - {fileID: 2485243575547819254}
-  - {fileID: 7167374646569153543}
-  - {fileID: 6638518548398510483}
-  - {fileID: 9160943745074678387}
-  - {fileID: 3731258199576699593}
-  portalLight: {fileID: 737480979858631479}
-  symbolTF: {fileID: 2843615094970727725}
-  portalAudio: {fileID: 4361549660048448707}
-  flashAudio: {fileID: 4964666524112179834}
 --- !u!114 &8718912577293838295
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24473,7 +24449,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d0cf11e3b4179f4f9ff76a84d173dcc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _destination: {fileID: 0}
+  _data: {fileID: 11400000, guid: 0b6d257aea9cc5941b862605ba0b4afc, type: 2}
+  _arrivalDistance: 2
+  _arrivalPointOverride: {fileID: 0}
+  _effect: {fileID: 2489579355581303927}
+  _detector: {fileID: 3855623756964511841}
+  _isUnlocked: 0
 --- !u!65 &1409932744697728109
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -24495,6 +24476,32 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.1548347, y: 5.2868347, z: 5.855274}
   m_Center: {x: -0.070323944, y: 2.1434166, z: 0.22389412}
+--- !u!114 &2489579355581303927
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3127090012749474571}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec5e82bfc45a82a4593fa34b6a364aa6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  portalEffectColor: {r: 0, g: 1, b: 1, a: 1}
+  fadeInSpeed: 0.5
+  fadeOutSpeed: 0.8
+  portalRenderer: {fileID: 5582748458814743406}
+  effectsPartSystems:
+  - {fileID: 3731258199576699593}
+  - {fileID: 3780512214620707808}
+  - {fileID: 2485243575547819254}
+  - {fileID: 6638518548398510483}
+  - {fileID: 9160943745074678387}
+  portalLight: {fileID: 737480979858631479}
+  symbolTF: {fileID: 2843615094970727725}
+  portalAudio: {fileID: 4361549660048448707}
+  flashAudio: {fileID: 4964666524112179834}
 --- !u!1 &4113279535716045784
 GameObject:
   m_ObjectHideFlags: 0
@@ -24504,7 +24511,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 168109430097791751}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Effects
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -24543,7 +24550,7 @@ GameObject:
   - component: {fileID: 6062433530402535900}
   - component: {fileID: 737480979858631479}
   - component: {fileID: 9028380583760168866}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Point Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -24653,6 +24660,72 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 0
+--- !u!1 &6644514487399723092
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1956376709534474071}
+  - component: {fileID: 7929082429365369072}
+  - component: {fileID: 3855623756964511841}
+  m_Layer: 10
+  m_Name: PortalDetector
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1956376709534474071
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6644514487399723092}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7365416923536811619}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &7929082429365369072
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6644514487399723092}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 10
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &3855623756964511841
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6644514487399723092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ad5124afe737a841a8545f63a46af73, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6708973582446008959
 GameObject:
   m_ObjectHideFlags: 0
@@ -24663,7 +24736,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8932531972973413112}
   - component: {fileID: 4361549660048448707}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: PortalAudio
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -24838,7 +24911,7 @@ GameObject:
   - component: {fileID: 8685999404626972582}
   - component: {fileID: 3780512214620707808}
   - component: {fileID: 7757789427017703437}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Particle_Orbs_L
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -29670,7 +29743,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7983791600115414775}
   - component: {fileID: 4964666524112179834}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: FlashAudio
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -29843,7 +29916,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2179693654031934171}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -29924,6 +29997,10 @@ PrefabInstance:
       value: PortalGate_Symbol
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: f31f888b3524e4040afbb14b942cfa15, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: f31f888b3524e4040afbb14b942cfa15, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
@@ -29997,6 +30074,10 @@ PrefabInstance:
       value: PortalGate
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: bfe317edcf97e7043bbb18222efe0f93, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: bfe317edcf97e7043bbb18222efe0f93, type: 3}
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
@@ -30039,7 +30120,7 @@ MeshCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30

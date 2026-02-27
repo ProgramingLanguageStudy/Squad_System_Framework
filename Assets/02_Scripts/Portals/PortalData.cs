@@ -6,6 +6,9 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "PortalData", menuName = "Portal/Data")]
 public class PortalData : ScriptableObject
 {
+    [Tooltip("포탈 식별용 고유 ID (예: Portal_Village_01)")]
+    public string portalId;
+
     [Tooltip("순간이동 목록 등에 표시할 이름 (예: 마을, 던전 입구)")]
     public string displayName = "알 수 없음";
 
