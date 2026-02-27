@@ -99,6 +99,8 @@ public class Character : MonoBehaviour, IInteractReceiver
         if (_characterController != null) _characterController.enabled = true;
         if (_navMeshAgent != null) _navMeshAgent.enabled = false;
         if (_interactor != null) _interactor.enabled = true;
+        gameObject.layer = LayerMask.NameToLayer(LayerParams.Player);
+        
         SetFollowTarget(null);
         ClearCombatTarget();
         if (_companionStateMachine != null) _companionStateMachine.enabled = false;
@@ -110,30 +112,11 @@ public class Character : MonoBehaviour, IInteractReceiver
         if (_characterController != null) _characterController.enabled = false;
         if (_navMeshAgent != null) _navMeshAgent.enabled = true;
         if (_interactor != null) _interactor.enabled = false;
+        gameObject.layer = LayerMask.NameToLayer(LayerParams.Character);
+
         SetFollowTarget(followTarget);
         ClearCombatTarget();
         if (_companionStateMachine != null) _companionStateMachine.enabled = true;
-    }
-
-    /// <summary>현재 위치·회전·체력을 저장용 데이터로 반환.</summary>
-    public PlayerSaveData GetSaveData()
-    {
-        var d = new PlayerSaveData();
-        var id = _model?.Data?.characterId;
-        d.playerCharacterId = !string.IsNullOrEmpty(id) ? id : (_model?.Data?.displayName ?? "");
-        d.position = transform.position;
-        d.rotationY = transform.eulerAngles.y;
-        d.currentHp = _model != null ? _model.CurrentHp : 0;
-        return d;
-    }
-
-    /// <summary>로드한 데이터를 실제 파츠에 적용.</summary>
-    public void ApplySaveData(PlayerSaveData data)
-    {
-        if (data == null) return;
-        Teleport(data.position);
-        transform.eulerAngles = new Vector3(0f, data.rotationY, 0f);
-        _model?.SetCurrentHpForLoad(data.currentHp);
     }
 
     public void Initialize()

@@ -30,6 +30,7 @@ public class PlayScene : MonoBehaviour
     [SerializeField] [Tooltip("플래그 저장·조회. QuestSystem처럼 Play 씬에서 보유")]
     private FlagSystem _flagSystem;
     [SerializeField] MapController _mapController;
+    [SerializeField] PortalController _portalController;
 
     private CharacterModel _hpModelSubscribed;
     private SaveData _pendingSaveData;
@@ -78,7 +79,12 @@ public class PlayScene : MonoBehaviour
 
         if (_mapController != null)
         {
-            _mapController.Initialize();
+            _mapController.Initialize(_portalController, player);
+        }
+
+        if (_portalController != null)
+        {
+            _portalController.Initialize(_mapController.MapView, _flagSystem);
         }
     }
 
