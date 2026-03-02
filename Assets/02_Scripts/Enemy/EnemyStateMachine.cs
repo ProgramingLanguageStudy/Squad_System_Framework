@@ -140,6 +140,10 @@ public class EnemyStateMachine : MonoBehaviour
     /// <summary>상태 전환. Exit → 교체 → Enter. Chase/Attack 진입 시 CombatController에 등록.</summary>
     public void ChangeState(EnemyState key)
     {
+        if (_states == null) return;
+        // 이미 죽었다면 그 어떤 상태로도 전환될 수 없도록 차단 (중요!)
+        if (_currentStateKey == EnemyState.Dead) return;
+
         if (!_states.TryGetValue(key, out EnemyStateBase newState) || newState == null) return;
         if (_currentState == newState) return;
 

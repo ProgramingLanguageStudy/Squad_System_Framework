@@ -49,7 +49,7 @@ public class Enemy : MonoBehaviour
     /// <summary>전투 진입/이탈 알림. StateMachine이 호출. CombatController에 등록/해제.</summary>
     public void NotifyCombatStateChanged(bool inCombat)
     {
-        var combat = UnityEngine.Object.FindFirstObjectByType<CombatController>();
+        var combat = FindFirstObjectByType<CombatController>();
         if (inCombat)
             combat?.RegisterInCombat(this);
         else
@@ -88,6 +88,16 @@ public class Enemy : MonoBehaviour
         if (_animator == null) _animator = GetComponent<Animator>();
     }
 
+    private void Update()
+    {
+        // 모델이 죽어있는데 상태가 Dead가 아니라면 강제로 전환
+        if (_model != null && _model.IsDead && _stateMachine.CurrentStateKey != EnemyStateMachine.EnemyState.Dead)
+        {
+            _stateMachine.ChangeState(EnemyStateMachine.EnemyState.Dead);
+            return;
+        }
+    }
+
     /// <summary>Spawner가 스폰 시 호출. 풀링 시 재사용 전에도 호출.</summary>
     public void Initialize()
     {
@@ -115,7 +125,7 @@ public class Enemy : MonoBehaviour
         if (_detector != null && _aggro != null)
             _detector.OnCharacterDetected -= _aggro.AddAggroFromDistance;
 
-        var combat = UnityEngine.Object.FindFirstObjectByType<CombatController>();
+        var combat = FindFirstObjectByType<CombatController>();
         combat?.UnregisterFromCombat(this);
     }
 
