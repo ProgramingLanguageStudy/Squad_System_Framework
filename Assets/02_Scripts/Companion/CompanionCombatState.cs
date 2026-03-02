@@ -1,8 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// 전투 상태. 가장 가까운 적 추적, 공격 범위 내면 RequestAttack.
-/// </summary>
 public class CompanionCombatState : CompanionStateBase
 {
     private Enemy _currentTarget;
@@ -10,77 +7,31 @@ public class CompanionCombatState : CompanionStateBase
 
     public CompanionCombatState(CompanionStateMachine machine) : base(machine) { }
 
-    public override void Enter()
-    {
-        _currentTarget = null;
-        _targetUpdateTimer = 0f;
-    }
+    public override void Enter() => _targetUpdateTimer = 0f;
 
     public override void Update()
     {
-        var character = Machine.Character;
         var combat = Machine.CombatController;
-        var player = PlaySceneServices.Player?.GetPlayer();
-        Transform followTarget = player != null ? player.transform : null;
-
-        if (combat == null || combat.EnemiesInCombat.Count == 0)
-        {
-            character?.ClearCombatTarget();
-            character?.SetFollowTarget(followTarget);
-            return;
-        }
+        if (combat == null || !combat.IsInCombat) return;
 
         _targetUpdateTimer += Time.deltaTime;
-        if (_targetUpdateTimer >= Machine.TargetUpdateInterval)
+        if (_targetUpdateTimer >= Machine.TargetUpdateInterval || _currentTarget == null)
         {
             _targetUpdateTimer = 0f;
-            _currentTarget = FindNearestEnemy();
+            _currentTarget = combat.GetNearestEnemy(Machine.transform.position);
         }
 
-        if (_currentTarget != null && (_currentTarget.Model == null || _currentTarget.Model.IsDead))
-            _currentTarget = null;
+        if (_currentTarget == null || _currentTarget.Model.IsDead) return;
 
-        if (_currentTarget != null)
-        {
-            float dist = Vector3.Distance(Machine.transform.position, _currentTarget.transform.position);
-            character?.SetCombatTarget(_currentTarget.transform, Machine.AttackRange);
+        float dist = Vector3.Distance(Machine.transform.position, _currentTarget.transform.position);
+        Machine.Character?.SetCombatTarget(_currentTarget.transform, Machine.AttackRange);
 
-            if (dist <= Machine.AttackRange && character?.StateMachine != null && character.StateMachine.IsIdle)
-                character.RequestAttack();
-        }
-        else
+        // 사거리 내 진입 시 공격 상태로 전환 요청
+        if (dist <= Machine.AttackRange)
         {
-            character?.ClearCombatTarget();
-            character?.SetFollowTarget(followTarget);
+            Machine.RequestAttack();
         }
     }
 
-    public override void Exit()
-    {
-        _currentTarget = null;
-    }
-
-    private Enemy FindNearestEnemy()
-    {
-        var combat = Machine.CombatController;
-        if (combat == null || combat.EnemiesInCombat.Count == 0) return null;
-
-        Vector3 myPos = Machine.transform.position;
-        Enemy nearest = null;
-        float nearestSq = float.MaxValue;
-
-        foreach (var e in combat.EnemiesInCombat)
-        {
-            if (e == null || e.Model == null || e.Model.IsDead) continue;
-
-            float sq = (e.transform.position - myPos).sqrMagnitude;
-            if (sq < nearestSq)
-            {
-                nearestSq = sq;
-                nearest = e;
-            }
-        }
-
-        return nearest;
-    }
+    public override void Exit() => _currentTarget = null;
 }
