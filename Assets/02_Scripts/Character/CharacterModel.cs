@@ -13,6 +13,7 @@ public class CharacterModel : MonoBehaviour, IDamageable, IAttackPowerSource, II
     private CharacterBaseStats _baseStats;
     private StatModifier _modifier;
     private int _currentHp;
+    [SerializeField] private float _currentMoveSpeed;
 
     private struct BuffEntry
     {
@@ -28,6 +29,11 @@ public class CharacterModel : MonoBehaviour, IDamageable, IAttackPowerSource, II
     public StatModifier Modifier => _modifier;
 
     public int CurrentHp => _currentHp;
+    public float CurrentMoveSpeed => _currentMoveSpeed;
+    public void SetCurrentMoveSpeed(float speed)
+    {
+        _currentMoveSpeed = speed;
+    }
     public int MaxHp => Mathf.Max(1, _baseStats.maxHp + _modifier.maxHp);
     public bool IsDead => _currentHp <= 0;
 

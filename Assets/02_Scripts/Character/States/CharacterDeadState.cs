@@ -11,7 +11,6 @@ public class CharacterDeadState : CharacterStateBase
     {
         if (Character != null)
         {
-            Character.CanMove = false;
             Character.SetCharacterControllerEnabled(false);
         }
         Character?.Animator?.Dead();
@@ -31,7 +30,6 @@ public class CharacterDeadState : CharacterStateBase
     {
         if (Character != null)
         {
-            Character.CanMove = true;
             Character.SetCharacterControllerEnabled(true);
         }
     }

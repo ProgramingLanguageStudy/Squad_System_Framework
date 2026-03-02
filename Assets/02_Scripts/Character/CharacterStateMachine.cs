@@ -16,6 +16,7 @@ public class CharacterStateMachine : MonoBehaviour
     public CharacterStateBase CurrentState => _currentState;
     public bool IsIdle => _currentState == _idleState;
     public bool IsDead => _currentState == _deadState;
+    public bool CanMove => _currentState != null && _currentState.CanMove;
 
     public event Action<CharacterStateBase, CharacterStateBase> OnStateChanged;
 

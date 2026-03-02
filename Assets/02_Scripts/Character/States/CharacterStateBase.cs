@@ -5,6 +5,8 @@ public abstract class CharacterStateBase
     protected readonly CharacterStateMachine Machine;
     protected readonly Character Character;
 
+    public virtual bool CanMove => false;
+
     protected CharacterStateBase(CharacterStateMachine machine, Character character)
     {
         Machine = machine;

@@ -10,8 +10,6 @@ public class CharacterAttackState : CharacterStateBase
     public override void Enter()
     {
         _timer = 0f;
-        if (Character != null)
-            Character.CanMove = false;
 
         Character?.Animator?.Attack();
         Character?.Attacker?.OnAttackStarted();
