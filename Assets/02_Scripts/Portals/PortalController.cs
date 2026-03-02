@@ -54,6 +54,7 @@ public class PortalController : MonoBehaviour
     {
         if (receiver == null || interactedPortal == null) return;
 
+        _mapView.ToggleMap();
     }
 
     public IReadOnlyList<PortalModel> PortalModels => _portalModels;

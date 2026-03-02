@@ -76,7 +76,7 @@ public class SquadDebugger : MonoBehaviour
         }
         var sc = GetSquadController();
         if (sc == null) return;
-        sc.TeleportPlayer(_teleportTarget);
+        sc.TeleportPlayer(_teleportTarget.position);
         Debug.Log("[SquadDebugger] 플레이어를 텔레포트했습니다.");
     }
 

@@ -2,19 +2,19 @@
     "squad": {
         "currentPlayerId": "celeste",
         "playerPosition": {
-            "x": 62.18819808959961,
-            "y": 3.0831127166748049,
-            "z": 62.86281967163086
+            "x": 46.8234748840332,
+            "y": 3.083112955093384,
+            "z": 68.35840606689453
         },
-        "playerRotationY": 108.89154052734375,
+        "playerRotationY": 55.66508102416992,
         "members": [
             {
                 "characterId": "sapphi",
-                "currentHp": 25
+                "currentHp": 85
             },
             {
                 "characterId": "celeste",
-                "currentHp": 100
+                "currentHp": 70
             },
             {
                 "characterId": "pico",
@@ -39,7 +39,7 @@
             {
                 "questId": "wolf_kill_5",
                 "targetId": "enemy_wolf",
-                "currentAmount": 0
+                "currentAmount": 5
             },
             {
                 "questId": "mushroom_gather",

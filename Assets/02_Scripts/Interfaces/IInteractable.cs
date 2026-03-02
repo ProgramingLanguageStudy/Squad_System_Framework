@@ -4,7 +4,6 @@ using UnityEngine;
 public interface IInteractReceiver
 {
     void Teleport(Vector3 position);
-    void Teleport(Transform destination);
 }
 
 public interface IInteractable

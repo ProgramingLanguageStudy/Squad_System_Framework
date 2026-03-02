@@ -24454,7 +24454,7 @@ MonoBehaviour:
   _arrivalPointOverride: {fileID: 0}
   _effect: {fileID: 2489579355581303927}
   _detector: {fileID: 3855623756964511841}
-  _isUnlocked: 0
+  _isUnlocked: 1
 --- !u!65 &1409932744697728109
 BoxCollider:
   m_ObjectHideFlags: 0
