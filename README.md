@@ -71,15 +71,15 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        Character (Facade)                         │
-│  RequestMove / RequestAttack / SetFollowTarget / SetCombatTarget  │
+│                        Character (Facade)                       │
+│  RequestMove / RequestAttack / SetFollowTarget / SetCombatTarget│
 └─────────────────────────────────────────────────────────────────┘
                     │                           │
         ┌───────────┴───────────┐   ┌──────────┴──────────┐
         ▼                       ▼   ▼                     ▼
 ┌───────────────┐     ┌─────────────────┐     ┌──────────────────┐
-│ CharacterState│     │ MovementHandler │     │ AIBrain (동료)    │
-│ Machine       │     │ (Direction/Target)     │                  │
+│ CharacterState│     │ MovementHandler │     │ AIBrain (동료)   │
+│ Machine       │     │ (Direction/Target)    │                  │
 │ Idle·Move·    │     │                 │     │ Follow/Combat/   │
 │ Attack·Dead   │     │ 플레이어↔동료    │     │ Attack 판단      │
 └───────────────┘     │ Handler 교체    │     └──────────────────┘
@@ -102,8 +102,8 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    PlayScene (조율층)                         │
-│  InputHandler, SquadController, QuestPresenter, Inventory... │
+│                    PlayScene (조율층)                        │
+│  InputHandler, SquadController, QuestPresenter, Inventory.. │
 └─────────────────────────────────────────────────────────────┘
     │              │              │              │
     ▼              ▼              ▼              ▼
