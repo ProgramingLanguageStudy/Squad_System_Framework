@@ -1,5 +1,9 @@
 using UnityEngine;
 
+/// <summary>
+/// 죽음 상태. 모든 죽음 시각/물리 처리는 CharacterDeathHandler에 위임.
+/// 사운드·이펙트 추가 시 DeathHandler.Handle()만 수정.
+/// </summary>
 public class CharacterDeadState : CharacterStateBase
 {
     private float _deadTimer;
@@ -9,11 +13,13 @@ public class CharacterDeadState : CharacterStateBase
 
     public override void Enter()
     {
-        if (Character != null)
+        if (Character?.DeathHandler == null)
         {
-            Character.SetCharacterControllerEnabled(false);
+            Debug.LogError($"[CharacterDeadState] {Character?.gameObject.name}: DeathHandler 없음. Character에 RequireComponent 확인.");
+            _deadTimer = 0f;
+            return;
         }
-        Character?.Animator?.Dead();
+        Character.DeathHandler.Handle();
         _deadTimer = 0f;
     }
 

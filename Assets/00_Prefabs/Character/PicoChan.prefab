@@ -3044,7 +3044,8 @@ GameObject:
   - component: {fileID: 1611935028299444258}
   - component: {fileID: 7551934365029109946}
   - component: {fileID: 8086142719733709537}
-  - component: {fileID: -4142826479235704624}
+  - component: {fileID: 6496143752398872974}
+  - component: {fileID: 7680605731032755901}
   m_Layer: 6
   m_Name: PicoChan
   m_TagString: Untagged
@@ -3103,6 +3104,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _data: {fileID: 11400000, guid: 3e70561385a351c4184de17f7e570a41, type: 2}
+  _currentMoveSpeed: 0
 --- !u!114 &5102806304099738803
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3127,6 +3129,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ea7831067d2ea94b868b71414cb5173, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _currentStateName: '-'
 --- !u!143 &7175813939179906239
 CharacterController:
   m_ObjectHideFlags: 0
@@ -3165,7 +3168,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _rotationSpeed: 15
-  _gravity: 20
 --- !u!114 &2023727780737654288
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3233,7 +3235,8 @@ MonoBehaviour:
   _characterController: {fileID: 7175813939179906239}
   _navMeshAgent: {fileID: 4447608014213124372}
   _animator: {fileID: 4073835241147514954}
-  _companionStateMachine: {fileID: -4142826479235704624}
+  _aiBrain: {fileID: 0}
+  _deathHandler: {fileID: 0}
 --- !u!136 &7551934365029109946
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -3284,7 +3287,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &-4142826479235704624
+--- !u!114 &6496143752398872974
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3293,9 +3296,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 2584634390335461423}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7f8e9d0c1b2a3f4e5d6c7b8a9e0f1d2c, type: 3}
+  m_Script: {fileID: 11500000, guid: efaf44bc771700a4184006f34148c94d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _character: {fileID: 0}
+  _navMeshAgent: {fileID: 0}
+--- !u!114 &7680605731032755901
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2584634390335461423}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 674d984be0055584db2eb138396f0b4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _character: {fileID: 0}
+  _combatController: {fileID: 0}
   _attackRange: 2
   _targetUpdateInterval: 0.5
 --- !u!1 &2694873351450634535

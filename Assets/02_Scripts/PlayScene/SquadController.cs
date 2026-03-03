@@ -97,8 +97,7 @@ public class SquadController : MonoBehaviour, IPlayerProvider
             _characters.Add(character);
             character.Model?.SetCurrentHpForLoad(m.currentHp);
 
-            var companionStateMachine = character.GetComponent<CompanionStateMachine>();
-            companionStateMachine?.Initialize(_combatController);
+            character.AIBrain?.Initialize(_combatController);
 
             if (index == 0)
                 firstCharacter = character;
@@ -145,8 +144,7 @@ public class SquadController : MonoBehaviour, IPlayerProvider
 
             _characters.Add(character);
 
-            var companionStateMachine = character.GetComponent<CompanionStateMachine>();
-            companionStateMachine?.Initialize(_combatController);
+            character.AIBrain?.Initialize(_combatController);
 
             if (index == 0)
             {
@@ -247,7 +245,7 @@ public class SquadController : MonoBehaviour, IPlayerProvider
         var c = SpawnCharacterInternal(data, nearPosition, root);
         if (c != null)
         {
-            c.GetComponent<CompanionStateMachine>()?.Initialize(_combatController);
+            c.AIBrain?.Initialize(_combatController);
             c.SetAsCompanion(followTarget);
             _characters.Add(c);
         }
@@ -280,10 +278,7 @@ public class SquadController : MonoBehaviour, IPlayerProvider
             if (NavMesh.SamplePosition(nearPos, out var hit, _spawnRadius * 2f, NavMesh.AllAreas))
             {
                 // 1. 기존 경로를 제거 (이걸 안 하면 이전 목적지로 가려고 함)
-                var agent = c.GetComponent<NavMeshAgent>();
-                if (agent != null) agent.ResetPath();
-
-                // 2. Warp로 즉시 이동
+                c.ResetNavMeshPath();
                 c.Teleport(hit.position);
             }
         }

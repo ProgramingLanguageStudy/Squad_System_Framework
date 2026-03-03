@@ -10,9 +10,8 @@ public class CharacterAttackState : CharacterStateBase
     public override void Enter()
     {
         _timer = 0f;
-
-        Character?.Animator?.Attack();
-        Character?.Attacker?.OnAttackStarted();
+        Character?.StopMovement();
+        Character?.BeginAttack();
     }
 
     public override void Update()
@@ -24,6 +23,7 @@ public class CharacterAttackState : CharacterStateBase
 
     public override void Exit()
     {
-        Character?.Attacker?.EndAttackCleanup();
+        Character?.EndAttackCleanup();
+        Character?.Animator?.ResetToIdle();
     }
 }

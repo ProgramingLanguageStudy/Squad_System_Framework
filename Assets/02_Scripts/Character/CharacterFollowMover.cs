@@ -28,7 +28,8 @@ public class CharacterFollowMover : MonoBehaviour, IMover
 
     private void Update()
     {
-        SetCurrentMoveSpeed(_agent.speed);
+        if (_agent == null || !_agent.enabled) return;
+        SetCurrentMoveSpeed(_agent.velocity.magnitude);
     }
 
     // ── 초기화 ──────────────────────────────────────────
@@ -42,14 +43,14 @@ public class CharacterFollowMover : MonoBehaviour, IMover
     }
 
     // ── 단순 실행 API ───────────────────────────────────
-    /// <summary>목적지 설정. 정지 거리는 Model.StopDistance 사용.</summary>
-    public void MoveToTarget(Vector3 targetPos)
+    /// <summary>목적지 설정. stopDistanceOverride가 null이면 Model.StopDistance 사용.</summary>
+    public void MoveToTarget(Vector3 targetPos, float? stopDistanceOverride = null)
     {
         if (_agent == null || !_agent.enabled) return;
 
         _agent.isStopped = false;
         _agent.speed = _model != null ? _model.MoveSpeed : 3.5f;
-        _agent.stoppingDistance = _model != null ? _model.StopDistance : 1f;
+        _agent.stoppingDistance = stopDistanceOverride ?? (_model != null ? _model.StopDistance : 1f);
         _agent.SetDestination(targetPos);
     }
 }

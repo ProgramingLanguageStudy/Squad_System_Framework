@@ -26,6 +26,6 @@ public class RespawnController : MonoBehaviour
             character.Teleport(_respawnPortal.ArrivalPosition);
         character.Model?.Heal(character.Model.MaxHp);
         character.Animator?.ResetToIdle();
-        character.StateMachine?.RequestIdle();
+        character.StateMachine?.RequestRespawn();
     }
 }

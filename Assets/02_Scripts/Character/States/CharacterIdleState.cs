@@ -7,7 +7,7 @@ public class CharacterIdleState : CharacterStateBase
 
     public override void Enter()
     {
-
+        Character?.ClearMovementIntent();
     }
 
     public override void Update() { }

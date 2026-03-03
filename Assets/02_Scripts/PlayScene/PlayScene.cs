@@ -138,12 +138,24 @@ public class PlayScene : MonoBehaviour
     private void Update()
     {
         var player = _squadController?.PlayerCharacter;
-        if (_inputHandler == null || player == null || player.Mover == null) return;
+        if (_inputHandler == null || player == null) return;
         if (!_squadController.CanMove) return;
 
         Vector2 input = _inputHandler.MoveInput;
         Vector3 worldDir = InputToWorldDirection(input);
-        player.Mover.Move(worldDir);
+        bool hasInput = worldDir.sqrMagnitude >= 0.01f;
+
+        // Idle↔Move: 입력 있음→Move, 없음→Idle. 상태 변경 시에만 Request 호출.
+        if (hasInput)
+        {
+            player.SetDirectionIntent(worldDir);
+            if (!player.StateMachine.IsMove && !player.StateMachine.IsAttack)
+                player.RequestMove();
+        }
+        else if (!player.StateMachine.IsIdle && !player.StateMachine.IsAttack)
+        {
+            player.RequestIdle();
+        }
 
         _mapController.RequestScrollMap(_inputHandler.ScrollInput);
     }
