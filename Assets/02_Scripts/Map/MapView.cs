@@ -73,19 +73,27 @@ public class MapView : PanelViewBase
 
         if (isOpening)
         {
-            ResetMapView();
-
-            _mapPanel.SetActive(true);
-            TakeSnapshot();      // 1. 현재 월드 상태 스냅샷 촬영
-            RefreshPortalIcons(); // 2. 해금된 포탈 배치
             OpenPanel();         // 3. UI 애니메이션 실행 (Base 기능)
         }
         else
         {
-            _mapPanel.SetActive(false);
-            ClearIcons();
             ClosePanel();
         }
+    }
+
+    protected override void OnPanelClosed()
+    {
+        _mapPanel.SetActive(false);
+        ClearIcons();
+    }
+
+    protected override void OnPanelOpened()
+    {
+        ResetMapView();
+
+        _mapPanel.SetActive(true);
+        TakeSnapshot();      // 1. 현재 월드 상태 스냅샷 촬영
+        RefreshPortalIcons(); // 2. 해금된 포탈 배치
     }
 
     private void ResetMapView()

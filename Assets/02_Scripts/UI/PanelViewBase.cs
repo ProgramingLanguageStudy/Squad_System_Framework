@@ -21,8 +21,8 @@ public abstract class PanelViewBase : MonoBehaviour
     }
 
     /// <summary> 패널 활성화 등 실제 표시 처리. 서브클래스에서 구현. </summary>
-    protected virtual void OnPanelOpened() { }
+    protected abstract void OnPanelOpened();
 
     /// <summary> 패널 비활성화 등 실제 숨김 처리. 서브클래스에서 구현. </summary>
-    protected virtual void OnPanelClosed() { }
+    protected abstract void OnPanelClosed();
 }

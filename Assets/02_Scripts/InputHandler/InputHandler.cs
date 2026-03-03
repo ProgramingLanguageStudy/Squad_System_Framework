@@ -27,6 +27,7 @@ public class InputHandler : MonoBehaviour
     private Action<InputAction.CallbackContext> _squadSwapCallback;
     private Action<InputAction.CallbackContext> _saveCallback;
     private Action<InputAction.CallbackContext> _mapCallback;
+    private Action<InputAction.CallbackContext> _settingsCallback;
 
     public Vector2 MoveInput { get; private set; }
     public Vector2 LookInput { get; private set; }
@@ -41,6 +42,7 @@ public class InputHandler : MonoBehaviour
     public event Action OnSquadSwapPerformed;
     public event Action OnSavePerformed;
     public event Action OnMapPerformed;
+    public event Action OnSettingsPerformed;
 
     private void OnEnable()
     {
@@ -73,6 +75,7 @@ public class InputHandler : MonoBehaviour
         _squadSwapCallback = _ => OnSquadSwapPerformed?.Invoke();
         _saveCallback = _ => OnSavePerformed?.Invoke();
         _mapCallback = _ => OnMapPerformed?.Invoke();
+        _settingsCallback = _ => OnSettingsPerformed?.Invoke();
 
         var interact = _playerMap.FindAction("Interact");
         var attack = _playerMap.FindAction("Attack");
@@ -80,12 +83,14 @@ public class InputHandler : MonoBehaviour
         var squadSwap = _playerMap.FindAction("SquadSwap");
         var save = _playerMap.FindAction("Save");
         var map = _playerMap.FindAction("Map");
+        var settings = _playerMap.FindAction("Settings");
         if (interact != null) interact.performed += _interactCallback;
         if (attack != null) attack.performed += _attackCallback;
         if (inventory != null) inventory.performed += _inventoryCallback;
         if (squadSwap != null) squadSwap.performed += _squadSwapCallback;
         if (save != null) save.performed += _saveCallback;
         if (map != null) map.performed += _mapCallback;
+        if (settings != null) settings.performed += _settingsCallback;
 
         _playerMap.Enable();
 
@@ -128,12 +133,14 @@ public class InputHandler : MonoBehaviour
             var squadSwap = _playerMap.FindAction("SquadSwap");
             var save = _playerMap.FindAction("Save");
             var map = _playerMap.FindAction("Map");
+            var settings = _playerMap.FindAction("Settings");
             if (interact != null && _interactCallback != null) interact.performed -= _interactCallback;
             if (attack != null && _attackCallback != null) attack.performed -= _attackCallback;
             if (inventory != null && _inventoryCallback != null) inventory.performed -= _inventoryCallback;
             if (squadSwap != null && _squadSwapCallback != null) squadSwap.performed -= _squadSwapCallback;
             if (save != null && _saveCallback != null) save.performed -= _saveCallback;
             if (map != null && _mapCallback != null) map.performed -= _mapCallback;
+            if (settings  != null && _settingsCallback != null) settings.performed -= _settingsCallback;
         }
 
         _uiMap?.Disable();

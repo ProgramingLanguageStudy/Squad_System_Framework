@@ -2,11 +2,11 @@
     "squad": {
         "currentPlayerId": "sapphi",
         "playerPosition": {
-            "x": 61.850868225097659,
-            "y": 3.083113193511963,
-            "z": 63.13082504272461
+            "x": 61.128292083740237,
+            "y": 3.083112955093384,
+            "z": 63.17423629760742
         },
-        "playerRotationY": 260.6317138671875,
+        "playerRotationY": 82.4681167602539,
         "members": [
             {
                 "characterId": "sapphi",
@@ -36,7 +36,7 @@
     "inventory": {
         "slots": [
             {
-                "index": 16,
+                "index": 0,
                 "itemId": "item_mushroom",
                 "count": 16
             }

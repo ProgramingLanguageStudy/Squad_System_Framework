@@ -31,6 +31,7 @@ public class PlayScene : MonoBehaviour
     private FlagSystem _flagSystem;
     [SerializeField] MapController _mapController;
     [SerializeField] PortalController _portalController;
+    [SerializeField] SettingsView _settingsView;
 
     private CharacterModel _hpModelSubscribed;
     private SaveData _pendingSaveData;
@@ -86,6 +87,11 @@ public class PlayScene : MonoBehaviour
         {
             _portalController.Initialize(_mapController.MapView, _flagSystem);
         }
+
+        if (_settingsView != null)
+        {
+            _settingsView.Initialize();
+        }
     }
 
     private void Start()
@@ -111,6 +117,7 @@ public class PlayScene : MonoBehaviour
         _inputHandler.OnSquadSwapPerformed += HandleSquadSwap;
         _inputHandler.OnSavePerformed += HandleSave;
         _inputHandler.OnMapPerformed += HandleMap;
+        _inputHandler.OnSettingsPerformed += HandleSettings;
     }
 
     private void OnDisable()
@@ -133,6 +140,7 @@ public class PlayScene : MonoBehaviour
         _inputHandler.OnSquadSwapPerformed -= HandleSquadSwap;
         _inputHandler.OnSavePerformed -= HandleSave;
         _inputHandler.OnMapPerformed -= HandleMap;
+        _inputHandler.OnSettingsPerformed -= HandleSettings;
     }
 
     private void Update()
@@ -206,6 +214,11 @@ public class PlayScene : MonoBehaviour
     private void HandleMap()
     {
         _mapController?.RequestToggleMap();
+    }
+
+    private void HandleSettings()
+    {
+        _settingsView.ToggleSettings();
     }
 
     /// <summary>플레이어 변경 시 chase/follow/인벤토리/체력바/카메라 등 갱신.</summary>
