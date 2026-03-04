@@ -19,7 +19,10 @@ public class SettingsView : PanelViewBase
         _quitButton.onClick.AddListener(() => OnQuitButtonClicked());
     }
 
-    public void ToggleSettings()
+    /// <summary>설정 토글. PlayScene 입력에서 Request.</summary>
+    public void RequestToggle() => ToggleSettings();
+
+    private void ToggleSettings()
     {
         if (_settingsPanel == null) return;
         bool isOpening = !_settingsPanel.activeSelf;

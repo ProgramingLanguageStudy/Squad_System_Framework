@@ -5,9 +5,6 @@ public static class GameEvents
     /// <summary>어떤 ID(아이템, 몬스터, 장소)를 얼마만큼 진행했는지 알림 (조율층에서 QuestSystem.NotifyProgress 호출용)</summary>
     public static Action<string, int> OnQuestGoalProcessed;
 
-    /// <summary>인벤토리 키 입력. PlayScene이 발행, InventoryView/Presenter가 구독해 토글.</summary>
-    public static Action OnInventoryKeyPressed;
-
     /// <summary>커서 보이기 요청. UI 열릴 때 발행. CursorController가 ref count로 처리.</summary>
     public static Action OnCursorShowRequested;
 

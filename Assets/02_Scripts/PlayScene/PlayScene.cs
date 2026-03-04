@@ -153,14 +153,13 @@ public class PlayScene : MonoBehaviour
         Vector3 worldDir = InputToWorldDirection(input);
         bool hasInput = worldDir.sqrMagnitude >= 0.01f;
 
-        // Idle↔Move: 입력 있음→Move, 없음→Idle. 상태 변경 시에만 Request 호출.
+        // Idle↔Move: 입력 있음→Move, 없음→Idle. StateMachine이 Attack/Dead 등 거부 처리.
         if (hasInput)
         {
-            player.SetDirectionIntent(worldDir);
-            if (!player.StateMachine.IsMove && !player.StateMachine.IsAttack)
-                player.RequestMove();
+            player.SetMoveDirection(worldDir);
+            player.RequestMove();
         }
-        else if (!player.StateMachine.IsIdle && !player.StateMachine.IsAttack)
+        else
         {
             player.RequestIdle();
         }
@@ -188,27 +187,27 @@ public class PlayScene : MonoBehaviour
 
     private void HandleInteract()
     {
-        _squadController?.PlayerCharacter?.Interactor?.TryInteract();
+        _squadController?.RequestInteract();
     }
 
     private void HandleInventoryKey()
     {
-        GameEvents.OnInventoryKeyPressed?.Invoke();
+        _inventoryPresenter?.RequestToggleInventory();
     }
 
     private void HandleAttack()
     {
-        _squadController?.PlayerCharacter?.RequestAttack();
+        _squadController?.RequestAttack();
     }
 
     private void HandleSquadSwap()
     {
-        _squadController?.SwapSquad();
+        _squadController?.RequestSquadSwap();
     }
 
     private void HandleSave()
     {
-        GameManager.Instance?.SaveManager?.Save();
+        _saveCoordinator?.RequestSave();
     }
 
     private void HandleMap()
@@ -218,7 +217,7 @@ public class PlayScene : MonoBehaviour
 
     private void HandleSettings()
     {
-        _settingsView.ToggleSettings();
+        _settingsView?.RequestToggle();
     }
 
     /// <summary>플레이어 변경 시 chase/follow/인벤토리/체력바/카메라 등 갱신.</summary>

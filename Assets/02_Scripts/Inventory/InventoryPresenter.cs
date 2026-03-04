@@ -14,6 +14,9 @@ public class InventoryPresenter : MonoBehaviour
     /// <summary>QuestController 등에서 Gather 퀘스트 완료 시 아이템 차감용.</summary>
     public Inventory Model => _model;
 
+    /// <summary>인벤토리 토글. PlayScene 입력에서 Request.</summary>
+    public void RequestToggleInventory() => _view?.ToggleInventory();
+
     /// <summary>PlayScene에서 주입. 플레이어 변경 시 호출.</summary>
     public void SetPlayerCharacter(Character character)
     {
@@ -48,13 +51,11 @@ public class InventoryPresenter : MonoBehaviour
             _view.OnUseItemRequested += HandleUseItemRequested;
             _view.OnRefreshRequested += RefreshView;
         }
-        GameEvents.OnInventoryKeyPressed += HandleInventoryKeyPressed;
         RefreshView();
     }
 
     private void OnDisable()
     {
-        GameEvents.OnInventoryKeyPressed -= HandleInventoryKeyPressed;
         if (_model != null)
             _model.OnSlotChanged -= OnSlotChanged;
         if (_view != null)
@@ -69,12 +70,6 @@ public class InventoryPresenter : MonoBehaviour
     {
         if (_model != null)
             _model.TryUseItem(slotIndex);
-    }
-
-    private void HandleInventoryKeyPressed()
-    {
-        if (_view != null)
-            _view.ToggleInventory();
     }
 
     private void OnSlotChanged(ItemSlotModel slot)

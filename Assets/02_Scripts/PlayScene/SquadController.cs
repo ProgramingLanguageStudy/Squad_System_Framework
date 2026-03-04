@@ -91,13 +91,11 @@ public class SquadController : MonoBehaviour, IPlayerProvider
             }
 
             var offset = GetSpawnOffset(index);
-            var character = SpawnCharacterInternal(data, basePos + offset, root);
+            var character = SpawnCharacterInternal(data, basePos + offset, root, _combatController);
             if (character == null) continue;
 
             _characters.Add(character);
             character.Model?.SetCurrentHpForLoad(m.currentHp);
-
-            character.AIBrain?.Initialize(_combatController);
 
             if (index == 0)
                 firstCharacter = character;
@@ -139,12 +137,10 @@ public class SquadController : MonoBehaviour, IPlayerProvider
             }
 
             var offset = GetSpawnOffset(index);
-            var character = SpawnCharacterInternal(data, basePos + offset, root);
+            var character = SpawnCharacterInternal(data, basePos + offset, root, _combatController);
             if (character == null) continue;
 
             _characters.Add(character);
-
-            character.AIBrain?.Initialize(_combatController);
 
             if (index == 0)
             {
@@ -174,8 +170,14 @@ public class SquadController : MonoBehaviour, IPlayerProvider
         OnPlayerChanged?.Invoke(_playerCharacter);
     }
 
+    /// <summary>상호작용 시도. PlayScene 입력에서 Request.</summary>
+    public void RequestInteract() => _playerCharacter?.Interactor?.TryInteract();
+
+    /// <summary>공격 요청. PlayScene 입력에서 Request.</summary>
+    public void RequestAttack() => _playerCharacter?.RequestAttack();
+
     /// <summary>분대원 순환 교체. 다음 캐릭터를 플레이어로. 교체되면 true.</summary>
-    public bool SwapSquad()
+    public bool RequestSquadSwap()
     {
         if (_playerCharacter == null || _characters.Count == 0) return false;
 
@@ -211,7 +213,7 @@ public class SquadController : MonoBehaviour, IPlayerProvider
     }
 
     /// <summary>캐릭터 1명 스폰. NavMesh 유효 위치에 배치. Player/Companion 설정은 호출부에서.</summary>
-    private Character SpawnCharacterInternal(CharacterData data, Vector3 nearPosition, Transform parent)
+    private Character SpawnCharacterInternal(CharacterData data, Vector3 nearPosition, Transform parent, CombatController combatController = null)
     {
         if (data == null || data.prefab == null) return null;
 
@@ -234,7 +236,7 @@ public class SquadController : MonoBehaviour, IPlayerProvider
         if (model != null && model.Data != data)
             model.Initialize(data);
 
-        character.Initialize();
+        character.Initialize(combatController);
         return character;
     }
 
@@ -242,10 +244,9 @@ public class SquadController : MonoBehaviour, IPlayerProvider
     public Character SpawnCharacter(CharacterData data, Vector3 nearPosition, Transform followTarget, Transform parent = null)
     {
         var root = parent != null ? parent : (_squadRoot != null ? _squadRoot : transform);
-        var c = SpawnCharacterInternal(data, nearPosition, root);
+        var c = SpawnCharacterInternal(data, nearPosition, root, _combatController);
         if (c != null)
         {
-            c.AIBrain?.Initialize(_combatController);
             c.SetAsCompanion(followTarget);
             _characters.Add(c);
         }
