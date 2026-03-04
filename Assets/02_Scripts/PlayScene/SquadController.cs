@@ -11,6 +11,8 @@ using UnityEngine.AI;
 public class SquadController : MonoBehaviour, IPlayerProvider
 {
     [Header("참조")]
+    [SerializeField] [Tooltip("캐릭터 스폰·삭제 담당. 비면 GetComponent 시도")]
+    private SquadSpawner _spawner;
     [SerializeField] [Tooltip("스폰된 분대 부모(비어 있으면 this)")]
     private Transform _squadRoot;
     [SerializeField] [Tooltip("세이브 없을 때만 사용(방어코드). 마을 한가운데 등 유효한 NavMesh 위치에 배치 권장. 비면 this.position")]
@@ -56,6 +58,7 @@ public class SquadController : MonoBehaviour, IPlayerProvider
     public void Initialize(Vector3? spawnPositionOverride = null, CombatController combatController = null, SquadSaveData squadSaveData = null)
     {
         _combatController = combatController;
+        if (_spawner == null) _spawner = GetComponent<SquadSpawner>();
         if (squadSaveData != null && squadSaveData.members != null && squadSaveData.members.Count > 0)
             SpawnFromSaveData(spawnPositionOverride, squadSaveData);
         else
@@ -91,7 +94,7 @@ public class SquadController : MonoBehaviour, IPlayerProvider
             }
 
             var offset = GetSpawnOffset(index);
-            var character = SpawnCharacterInternal(data, basePos + offset, root, _combatController);
+            var character = SpawnInternal(data, basePos + offset, root);
             if (character == null) continue;
 
             _characters.Add(character);
@@ -137,7 +140,7 @@ public class SquadController : MonoBehaviour, IPlayerProvider
             }
 
             var offset = GetSpawnOffset(index);
-            var character = SpawnCharacterInternal(data, basePos + offset, root, _combatController);
+            var character = SpawnInternal(data, basePos + offset, root);
             if (character == null) continue;
 
             _characters.Add(character);
@@ -212,44 +215,26 @@ public class SquadController : MonoBehaviour, IPlayerProvider
         return new Vector3(Mathf.Cos(angle) * _spawnRadius, 0f, Mathf.Sin(angle) * _spawnRadius);
     }
 
-    /// <summary>캐릭터 1명 스폰. NavMesh 유효 위치에 배치. Player/Companion 설정은 호출부에서.</summary>
-    private Character SpawnCharacterInternal(CharacterData data, Vector3 nearPosition, Transform parent, CombatController combatController = null)
+    private Character SpawnInternal(CharacterData data, Vector3 nearPosition, Transform parent)
+    {
+        if (_spawner == null) return null;
+        return _spawner.Spawn(data, nearPosition, parent, _combatController, _spawnRadius);
+    }
+
+    /// <summary>동료 영입. 플레이어 근처 스폰 후 따라가기 설정. 퀘스트·디버그 등에서 호출.</summary>
+    public Character AddCompanion(CharacterData data)
     {
         if (data == null || data.prefab == null) return null;
 
-        if (!NavMesh.SamplePosition(nearPosition, out var hit, _spawnRadius * 2f, NavMesh.AllAreas))
-        {
-            Debug.LogWarning($"[SquadController] NavMesh 샘플 실패. nearPosition={nearPosition}");
-            hit.position = nearPosition;
-        }
+        var followTarget = _playerCharacter != null ? _playerCharacter.transform : transform;
+        var root = _squadRoot != null ? _squadRoot : transform;
+        var nearPos = followTarget.position;
 
-        var instance = Instantiate(data.prefab, hit.position, Quaternion.identity, parent);
-        var character = instance.GetComponent<Character>();
+        var c = SpawnInternal(data, nearPos, root);
+        if (c == null) return null;
 
-        if (character == null)
-        {
-            Debug.LogWarning("[SquadController] 프리팹에 Character 컴포넌트가 없습니다.");
-            return null;
-        }
-
-        var model = character.Model;
-        if (model != null && model.Data != data)
-            model.Initialize(data);
-
-        character.Initialize(combatController);
-        return character;
-    }
-
-    /// <summary>캐릭터 1명 스폰 (런타임 추가용). followTarget 지정 필요.</summary>
-    public Character SpawnCharacter(CharacterData data, Vector3 nearPosition, Transform followTarget, Transform parent = null)
-    {
-        var root = parent != null ? parent : (_squadRoot != null ? _squadRoot : transform);
-        var c = SpawnCharacterInternal(data, nearPosition, root, _combatController);
-        if (c != null)
-        {
-            c.SetAsCompanion(followTarget);
-            _characters.Add(c);
-        }
+        c.SetAsCompanion(followTarget);
+        _characters.Add(c);
         return c;
     }
 
@@ -257,8 +242,13 @@ public class SquadController : MonoBehaviour, IPlayerProvider
     {
         if (character == null) return;
         _characters.Remove(character);
-        character.SetFollowTarget(null);
-        Destroy(character.gameObject);
+        if (_spawner != null)
+            _spawner.DestroyCharacter(character);
+        else
+        {
+            character.SetFollowTarget(null);
+            Destroy(character.gameObject);
+        }
     }
 
     /// <summary>동료들을 center 주위에 재배치. center(플레이어)는 제외. NavMesh 샘플링 사용.</summary>

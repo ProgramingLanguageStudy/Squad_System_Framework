@@ -92,8 +92,7 @@ public class SquadDebugger : MonoBehaviour
             return;
         }
 
-        var nearPos = player.transform.position + player.transform.forward * 2f;
-        var c = sc.SpawnCharacter(characterData, nearPos, player.transform);
+        var c = sc.AddCompanion(characterData);
         if (c != null)
             Debug.Log($"[SquadDebugger] 동료 소환: {characterData.displayName}");
         else
