@@ -1,32 +1,44 @@
 {
     "squad": {
-        "currentPlayerId": "celeste",
+        "currentPlayerId": "sapphi",
         "playerPosition": {
-            "x": 56.024879455566409,
-            "y": 3.083113193511963,
-            "z": 62.3653450012207
+            "x": 49.134544372558597,
+            "y": 3.0032129287719728,
+            "z": 66.57967376708985
         },
-        "playerRotationY": 109.4395523071289,
+        "playerRotationY": 172.5551300048828,
         "members": [
             {
-                "characterId": "sapphi",
+                "characterId": "celeste",
                 "currentHp": 100
             },
             {
-                "characterId": "celeste",
-                "currentHp": 70
+                "characterId": "pico",
+                "currentHp": 95
             },
             {
-                "characterId": "pico",
+                "characterId": "sapphi",
                 "currentHp": 100
             }
         ]
     },
     "flags": {
         "keys": [
-            "first_talk_chief"
+            "first_talk_chief",
+            "quest_mushroom_gather_completed",
+            "quest_wolf_kill_5_completed",
+            "first_talk_pico",
+            "quest_pico_recruit_completed",
+            "first_talk_sapphi",
+            "quest_sapphi_recruit_completed"
         ],
         "values": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
             1
         ]
     },
@@ -37,8 +49,8 @@
         "slots": [
             {
                 "index": 0,
-                "itemId": "item_mushroom",
-                "count": 16
+                "itemId": "item_meat",
+                "count": 9
             }
         ]
     }
