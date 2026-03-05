@@ -14,9 +14,9 @@ public enum CharacterState
 /// <summary>
 /// 캐릭터 상태머신. Idle ↔ Move ↔ Attack ↔ Dead.
 /// 전환 규칙:
-/// - Idle↔Move: 입력 있음→Move, 없음→Idle (플레이어: PlayScene.SetMoveDirection, 동료: Character.SetFollowTarget)
-/// - Attack: Idle/Move에서 RequestAttack 시 진입. 애니 종료 또는 Fallback 후 Idle
-/// - Dead: Model.OnDeath 시 진입. Respawn 이벤트 후 Idle
+/// - Idle↔Move: 플레이어는 SetMoveDirection+RequestMove. 입력 없으면 MoveState.IsComplete→Idle. 동료는 AIBrain.RequestIdle.
+/// - Attack: RequestAttack 진입. Attacker.IsAttackEnded 시 IsComplete→Idle
+/// - Dead: Model.OnDeath 진입. RequestRespawn 후 Idle
 /// </summary>
 public class CharacterStateMachine : MonoBehaviour
 {
@@ -67,11 +67,14 @@ public class CharacterStateMachine : MonoBehaviour
     private void Update()
     {
         GetState(_currentState)?.Update();
+        if (GetState(_currentState)?.IsComplete == true)
+            ChangeState(CharacterState.Idle);
     }
 
     public void RequestIdle()
     {
         if (_currentState == CharacterState.Dead) return;
+        if (_currentState == CharacterState.Attack) return; // Attack은 애니 종료·Fallback으로만 종료
         ChangeState(CharacterState.Idle);
     }
 

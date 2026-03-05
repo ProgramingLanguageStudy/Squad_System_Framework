@@ -7,6 +7,9 @@ public abstract class CharacterStateBase
 
     public virtual bool CanMove => false;
 
+    /// <summary>이 상태가 끝났는가? true면 StateMachine이 Idle로 전환.</summary>
+    public virtual bool IsComplete => false;
+
     protected CharacterStateBase(CharacterStateMachine machine, Character character)
     {
         Machine = machine;

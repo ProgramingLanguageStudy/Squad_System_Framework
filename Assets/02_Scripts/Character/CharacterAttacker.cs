@@ -15,6 +15,9 @@ public class CharacterAttacker : MonoBehaviour
     private CharacterAnimator _characterAnimator;
     private readonly HashSet<IDamageable> _hitThisAttack = new HashSet<IDamageable>();
 
+    /// <summary>애니메이션 종료 시 true. AttackState.IsComplete가 읽음. Begin()에서 초기화.</summary>
+    public bool IsAttackEnded { get; private set; }
+
     public void Initialize(Character owner, CharacterStateMachine stateMachine, CharacterModel ownerModel, CharacterAnimator characterAnimator)
     {
         _ownerCharacter = owner;
@@ -69,6 +72,7 @@ public class CharacterAttacker : MonoBehaviour
     /// <summary>AttackState.Enter에서 호출. 공격 시작.</summary>
     public void Begin()
     {
+        IsAttackEnded = false;
         _characterAnimator?.Attack();
         _hitThisAttack.Clear();
     }
@@ -94,6 +98,6 @@ public class CharacterAttacker : MonoBehaviour
     public void Animation_OnAttackEnded()
     {
         _hitboxController?.DisableHit();
-        _stateMachine?.RequestIdle();
+        IsAttackEnded = true;
     }
 }

@@ -60,6 +60,9 @@ public class Character : MonoBehaviour, IInteractReceiver
         _currentMoveDirection = worldDir;
     }
 
+    /// <summary>플레이어용. MoveState.IsComplete에서 이동 입력 유무 판단.</summary>
+    public bool HasMoveInput => _currentMoveDirection.sqrMagnitude >= 0.01f;
+
     /// <summary>동료용. SquadController 호출. 따라갈 대상 설정. null이면 타겟 해제.</summary>
     public void SetFollowTarget(Transform target)
     {
