@@ -74,17 +74,17 @@
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Character (Facade)                         │
-│  RequestMove / RequestAttack / SetFollowTarget / SetCombatTarget  │
+│  RequestMove / RequestAttack / SetMoveDirection / ApplyMovement   │
 └─────────────────────────────────────────────────────────────────┘
                     │                           │
         ┌───────────┴───────────┐   ┌──────────┴──────────┐
         ▼                       ▼   ▼                     ▼
 ┌───────────────┐     ┌─────────────────┐     ┌──────────────────┐
-│ CharacterState│     │ MovementHandler │     │ AIBrain (동료)    │
-│ Machine       │     │ (Direction/Target)     │                  │
-│ Idle·Move·    │     │                 │     │ Follow/Combat/   │
-│ Attack·Dead   │     │ 플레이어↔동료    │     │ Attack 판단      │
-└───────────────┘     │ Handler 교체    │     └──────────────────┘
+│ CharacterState│     │ CharacterMover  │     │ AIBrain (동료)    │
+│ Machine       │     │ +FollowMover    │     │                  │
+│ Idle·Move·    │     │ _isPlayer 분기  │     │ Follow/Combat/   │
+│ Attack·Dead   │     │ 플레이어=방향   │     │ Attack 판단      │
+└───────────────┘     │ 동료=타겟추적  │     └──────────────────┘
                       └─────────────────┘
 ```
 
@@ -92,9 +92,9 @@
 
 | 구분 | 내용 |
 |------|------|
-| **문제** | 플레이어(방향 이동)와 동료(목표 추적)의 이동 방식이 달라, 동일한 Mover 인터페이스로 통합하기 어려움 |
-| **해결** | `IMovementHandler` + `DirectionMovementHandler`(플레이어) / `TargetMovementHandler`(동료) 분리. SetAsPlayer/SetAsCompanion 시 Handler만 교체 |
-| **결과** | 하나의 `CharacterStateMachine`(Idle·Move·Attack·Dead)으로 플레이어·동료 모두 처리, 역할 전환 시 분기 최소화 |
+| **문제** | 플레이어(방향 이동)와 동료(목표 추적)의 이동 방식이 달라, 동일한 StateMachine으로 통합하기 어려움 |
+| **해결** | `CharacterMover`(방향) + `CharacterFollowMover`(목표) 둘 다 보유. `ApplyMovement()`에서 `_isPlayer` 분기로 선택 사용. SetAsPlayer/SetAsCompanion은 IsPlayer 플래그와 follow target 설정만 담당 |
+| **결과** | 하나의 `CharacterStateMachine`(Idle·Move·Attack·Dead)으로 플레이어·동료 모두 처리. MoveState.Update에서 ApplyMovement 호출, 플레이어=SetMoveDirection 값, 동료=AIBrain.CurrentTarget 사용 |
 
 ---
 
@@ -111,18 +111,21 @@ CombatController (IsInCombat, GetNearestEnemy)
 │  IsInCombat ? TickCombat() : TickFollow()  │
 └──────────────────────────────────────────┘
         │
-        ├─ TickFollow ──► SetFollowTarget(플레이어)
+        ├─ TickFollow ──► _currentTarget = 플레이어 (PlaySceneServices)
+        │                 Character.ApplyMovement가 CurrentTarget 읽음
         │
-        └─ TickCombat ──► SetCombatTarget(적, attackRange)
+        └─ TickCombat ──► GetNearestEnemy → _currentCombatTarget
                           dist ≤ attackRange ? RequestAttack()
 ```
+
+**SetFollowTarget**: SquadController가 플레이어 변경 시 호출 → Character → AIBrain.SetFollowTarget(플레이어). 따라갈 대상 설정.
 
 #### 문제 → 해결 → 결과
 
 | 구분 | 내용 |
 |------|------|
 | **문제** | 동료가 플레이어처럼 입력을 받지 않아, 전투 시 추적·사거리 판단·공격 시점을 자동으로 결정해야 함 |
-| **해결** | CombatController(전투 상태·가장 가까운 적) 기반 AIBrain. IsInCombat으로 Follow/Combat 분기, GetNearestEnemy로 타겟, 사거리 내에서만 RequestAttack 호출. Character API만 사용해 별도 상태머신 없음 |
+| **해결** | CombatController(전투 상태·가장 가까운 적) 기반 AIBrain. IsInCombat으로 Follow/Combat 분기, GetNearestEnemy로 타겟, 사거리 내에서만 RequestAttack 호출. CurrentTarget/CurrentStopDistance를 Character.ApplyMovement가 읽어 FollowMover.MoveToTarget 호출 |
 | **결과** | 플레이어와 동일한 CharacterStateMachine·Attacker 재사용. AIBrain은 “판단”만 담당, 실행은 Character에 위임 |
 
 ---
@@ -198,7 +201,7 @@ DialogueSelector ──► requiredFlagsOn/Off 체크
 대화 재생 (DialogueSystem)
     │
     ▼
-대화 종료 ──► flagsToSet / QuestSystem.AcceptQuest·CompleteQuest
+대화 종료 ──► flagsToModify / QuestSystem.AcceptQuest·CompleteQuest
 ```
 
 #### 문제 → 해결 → 결과
@@ -206,7 +209,7 @@ DialogueSelector ──► requiredFlagsOn/Off 체크
 | 구분 | 내용 |
 |------|------|
 | **문제** | 대화 분기·퀘스트 수락/완료를 하드코딩하면 시나리오 추가가 어려움 |
-| **해결** | DialogueData에 `requiredFlagsOn/Off`, `flagsToSet`, `questId` 등 데이터로 정의. 시나리오 설계자는 ScriptableObject만 수정 |
+| **해결** | DialogueData에 `requiredFlagsOn/Off`, `flagsToModify`, `questId` 등 데이터로 정의. 시나리오 설계자는 ScriptableObject만 수정 |
 | **결과** | 코드 수정 없이 대화·퀘스트 흐름 추가·변경 가능 |
 
 ---
@@ -251,18 +254,18 @@ DialogueSelector ──► requiredFlagsOn/Off 체크
 ### 4.2 포탈 시스템
 
 ```
-[플레이어가 포탈 근처에서 상호작용]  또는  [맵 UI에서 포탈 아이콘 클릭]
+[플레이어가 포탈 근처에서 상호작용(IInteractable)]  또는  [맵 UI에서 Map_PortalIcon 클릭]
                     │
     ┌───────────────┼───────────────┐
     ▼                               ▼
-Portal.OnInteracted           Map_PortalIcon 클릭
+Portal.OnInteracted(IInteractReceiver, Portal)   Map_PortalIcon.OnPortalClicked
     │                               │
     ▼                               │
-PortalController ───────────────────┤
+PortalController (FindObjectsByType으로 포탈 등록, OnInteracted 구독)
     │                               │
     └───────────────┬───────────────┘
                     ▼
-        MapView.ToggleMap() (맵 열기/닫기)
+        MapView (맵 열기/닫기, 포탈 아이콘 생성)
                     │
                     ▼ (맵에서 포탈 아이콘 클릭 시)
         SquadController.TeleportPlayer(ArrivalPosition)
@@ -275,10 +278,11 @@ PortalController ───────────────────┤
 **주요 컴포넌트**
 | 컴포넌트 | 역할 |
 |----------|------|
-| Portal | IInteractable. OnInteracted 발행, ArrivalPosition 제공 |
-| PortalController | FindObjectsByType으로 포탈 등록, OnInteracted 구독, MapView 연동 |
-| PortalModel | FlagSystem 기반 해금 여부 |
-| MapView | 포탈 아이콘 생성, 클릭 시 TeleportPlayer 호출 |
+| Portal | IInteractable. TryInteract 시 OnInteracted(IInteractReceiver, Portal) 발행. PortalData로 ArrivalPosition 제공 |
+| PortalDetector | 반경 내 플레이어 감지, PortalEffect 토글 |
+| PortalController | FindObjectsByType으로 포탈 등록, OnInteracted 구독, PortalModel 목록 유지 |
+| PortalModel | Portal + FlagSystem 기반 해금 여부 |
+| MapView | Map_PortalIcon 생성, OnPortalClicked 시 TeleportPlayer 호출 |
 | SquadController | TeleportPlayer, TeleportToDefaultPoint(끼임 탈출), RepositionCompanionsAround, AddCompanion(영입) |
 
 ### 4.3 맵 시스템
@@ -304,7 +308,7 @@ PlayScene.HandleMap ──► MapController.RequestToggleMap()
 ### 4.4 인벤토리 시스템
 
 ```
-GameEvents.OnInventoryKeyPressed  ←── PlayScene.HandleInventoryKey
+InputHandler.OnInventoryPerformed  ←── PlayScene.HandleInventoryKey
                     │
                     ▼
 ┌─────────────────────────────────────────────────────────────┐
@@ -374,16 +378,16 @@ PlaySceneEventHub.OnEnemyKilled(enemyId)  ←── 적 처치 시
 ### 4.7 전투·적 시스템
 
 ```
-Enemy Detector (반경 내 Character 감지)
+EnemyDetector (반경 내 Character 감지) ──► EnemyAggro에 전달
         │
         ▼
 EnemyAggro (어그로 누적) ──► 임계값 초과 시 NotifyEnteringCombat
         │
         ▼
-EnemyStateMachine (Chase/Attack) ──► NotifyCombatStateChanged
+EnemyStateMachine (Idle·Patrol·Chase·Attack·Dead) ──► NotifyCombatStateChanged
         │
         ▼
-CombatController.RegisterInCombat(Enemy)
+CombatController.RegisterInCombat(Enemy) / UnregisterFromCombat
         │
         ▼
 AIBrain (동료) ──► IsInCombat ? TickCombat() : TickFollow()
@@ -391,7 +395,7 @@ AIBrain (동료) ──► IsInCombat ? TickCombat() : TickFollow()
 
 **PlayScene 연동**: SquadController.Initialize(combatController) → AIBrain.Initialize(combatController)
 
-**적 사망**: HandleDeath → 3초 후 Destroy, _dropPrefab(Meat 등) 드롭
+**적 사망**: Enemy.HandleDeath → 3초 후 Destroy, _dropPrefab(Meat 등) 드롭
 
 ---
 
