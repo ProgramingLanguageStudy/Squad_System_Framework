@@ -93,7 +93,7 @@
 | 구분 | 내용 |
 |------|------|
 | **문제** | 플레이어(방향 이동)와 동료(목표 추적)의 이동 방식이 달라, 동일한 StateMachine으로 통합하기 어려움 |
-| **해결** | `CharacterMover`(방향) + `CharacterFollowMover`(목표) 둘 다 보유. `ApplyMovement()`에서 `_isPlayer` 분기로 선택 사용. SetAsPlayer/SetAsCompanion은 IsPlayer 플래그와 follow target 설정만 담당 |
+| **해결** | CharacterMover(방향)와 CharacterFollowMover(목표)를 모두 두고, ApplyMovement에서 플레이어/동료 여부에 따라 서로 다른 Mover를 호출 |
 | **결과** | 하나의 `CharacterStateMachine`(Idle·Move·Attack·Dead)으로 플레이어·동료 모두 처리. MoveState.Update에서 ApplyMovement 호출, 플레이어=SetMoveDirection 값, 동료=AIBrain.CurrentTarget 사용 |
 
 ---
