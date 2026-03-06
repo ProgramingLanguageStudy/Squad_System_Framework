@@ -24,29 +24,24 @@
 
 ### 1.2 게임 이미지
 
-#### 인트로
-<img src="Docs/images/intro.png" width="600" alt="인트로">
-
-#### 분대 따라오기
-<img src="Docs/images/squad-follow.png" width="600" alt="분대 따라오기">
-
-#### 분대 전투
-<img src="Docs/images/squad-combat.png" width="600" alt="분대 전투">
-
-#### 대화·퀘스트
-<img src="Docs/images/dialogue-quest.png" width="600" alt="대화·퀘스트">
-
-#### 동료 영입 완료
-<img src="Docs/images/companion-join.png" width="600" alt="동료 영입 완료">
-
-#### 인벤토리
-<img src="Docs/images/inventory.png" width="600" alt="인벤토리">
-
-#### 지도
-<img src="Docs/images/map.png" width="600" alt="지도">
-
-#### 포탈
-<img src="Docs/images/portal.png" width="600" alt="포탈">
+<table>
+<tr>
+<td><strong>인트로</strong><br><img src="Docs/images/intro.png" width="400" alt="인트로"></td>
+<td><strong>분대 따라오기</strong><br><img src="Docs/images/squad-follow.png" width="400" alt="분대 따라오기"></td>
+</tr>
+<tr>
+<td><strong>분대 전투</strong><br><img src="Docs/images/squad-combat.png" width="400" alt="분대 전투"></td>
+<td><strong>대화·퀘스트</strong><br><img src="Docs/images/dialogue-quest.png" width="400" alt="대화·퀘스트"></td>
+</tr>
+<tr>
+<td><strong>동료 영입 완료</strong><br><img src="Docs/images/companion-join.png" width="400" alt="동료 영입 완료"></td>
+<td><strong>인벤토리</strong><br><img src="Docs/images/inventory.png" width="400" alt="인벤토리"></td>
+</tr>
+<tr>
+<td><strong>지도</strong><br><img src="Docs/images/map.png" width="400" alt="지도"></td>
+<td><strong>포탈</strong><br><img src="Docs/images/portal.png" width="400" alt="포탈"></td>
+</tr>
+</table>
 
 ### 1.3 영상
 
