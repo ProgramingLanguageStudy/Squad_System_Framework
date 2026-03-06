@@ -238,72 +238,88 @@ flowchart TB
 
 > PlayScene이 조율층으로, 모든 시스템을 연결·초기화·이벤트 구독한다.
 
-### 3.1 PlayScene과 시스템 연결도
+```mermaid
+flowchart TB
+    Input["InputHandler<br/>Move/Attack/Interact/Map..."]
+    PlayScene["PlayScene (조율층)<br/>Awake: Initialize / OnEnable: 이벤트 구독"]
 
-```
-                              ┌─────────────────────┐
-                              │     InputHandler    │
-                              └──────────┬──────────┘
-                                         │ Move/Attack/Interact/Map/...
-                                         ▼
-┌──────────────────────────────────────────────────────────────────────────────────────────────┐
-│                              PlayScene (조율층)                                                │
-│  Awake: Initialize / OnEnable: 이벤트 구독 / Update: MoveInput / CursorController, SettingsView │
-└──────────────────────────────────────────────────────────────────────────────────────────────┘
-    │         │         │         │         │         │         │         │         │         │         │
-    ▼         ▼         ▼         ▼         ▼         ▼         ▼         ▼         ▼         ▼         ▼
-┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐
-│Squad  │ │Enemy  │ │Combat │ │Inventory│ │Dialogue│ │Quest  │ │Map    │ │Portal │ │Cursor │ │Settings│ │PlaySave│
-│Ctrl   │ │Spawner│ │Ctrl   │ │Present │ │Ctrl   │ │Ctrl   │ │Ctrl   │ │Ctrl   │ │Ctrl   │ │View    │ │Coord  │
-└───┬───┘ └───┬───┘ └───┬───┘ └───┬───┘ └───┬───┘ └───┬───┘ └───┬───┘ └───┬───┘ └───┬───┘ └───┬───┘ └───┬───┘
-    │         │         │         │         │         │         │         │         │
-    │         └────┬────┘         │         │         │         │         │         │
-    │              │              │         │         └────┬────┴─────────┘         │
-    │              │              │         │              │   FlagSystem           │
-    │              │              │         │              │   PlaySceneEventHub    │
-    ▼              ▼              ▼         ▼              ▼                       ▼
- Character     Enemy          AIBrain   Inventory      Dialogue               SaveManager
- (Player/      (Chase/        (Follow/  (Model+View)   (Selector+             (Contributors)
-  Companion)    Attack)        Combat)                  Presenter)
+    Input --> PlayScene
 ```
 
-**추가 연동**
-- **CursorController**: UI 열기/닫기 시 커서 표시, Cinemachine 카메라 회전값 저장·복원, InputAxisController 비활성화(UI 열린 동안 카메라 회전 차단)
-- **SettingsView**: OnEscapeRequested → PlayScene → SquadController.TeleportToDefaultPoint(끼임 탈출)
+PlayScene은 SquadController, EnemySpawner, CombatController, InventoryPresenter, DialogueController, QuestController, MapController, PortalController, CursorController, SettingsView, PlaySaveCoordinator 등 다양한 시스템 간의 연결·조율을 담당한다.
 
-### 3.2 포탈 시스템
+### 3.1 분대·캐릭터 시스템
 
-```
-[플레이어가 포탈 근처에서 상호작용(IInteractable)]  또는  [맵 UI에서 Map_PortalIcon 클릭]
-                    │
-    ┌───────────────┼───────────────┐
-    ▼                               ▼
-Portal.OnInteracted(IInteractReceiver, Portal)   Map_PortalIcon.OnPortalClicked
-    │                               │
-    ▼                               │
-PortalController (FindObjectsByType으로 포탈 등록, OnInteracted 구독)
-    │                               │
-    └───────────────┬───────────────┘
-                    ▼
-        MapView (맵 열기/닫기, 포탈 아이콘 생성)
-                    │
-                    ▼ (맵에서 포탈 아이콘 클릭 시)
-        SquadController.TeleportPlayer(ArrivalPosition)
-        (설정 끼임 탈출: TeleportToDefaultPoint → _spawnPoint)
-                    │
-                    ▼
-        플레이어·동료 전체 Teleport → RepositionCompanionsAround
+Character는 **컴포넌트화**되어 있다. 한 오브젝트에 Model·Mover·Animator·Interactor·Attacker·StateMachine 등 여러 컴포넌트를 조합하고, Request API로 외부(InputHandler, AIBrain)와 통일된 방식으로 연동한다.
+
+```mermaid
+flowchart TB
+    subgraph Character["Character (Facade)"]
+        Model["CharacterModel"]
+        StateMachine["CharacterStateMachine"]
+        Mover["CharacterMover"]
+        FollowMover["CharacterFollowMover"]
+        Attacker["CharacterAttacker"]
+        Interactor["CharacterInteractor"]
+        Animator["CharacterAnimator"]
+        AIBrain["AIBrain"]
+    end
+
+    Squad["SquadController"]
+    Squad --> Character
 ```
 
 **주요 컴포넌트**
 | 컴포넌트 | 역할 |
 |----------|------|
-| Portal | IInteractable. TryInteract 시 OnInteracted(IInteractReceiver, Portal) 발행. PortalData로 ArrivalPosition 제공 |
-| PortalDetector | 반경 내 플레이어 감지, PortalEffect 토글 |
-| PortalController | FindObjectsByType으로 포탈 등록, OnInteracted 구독, PortalModel 목록 유지 |
-| PortalModel | Portal + FlagSystem 기반 해금 여부 |
-| MapView | Map_PortalIcon 생성, OnPortalClicked 시 TeleportPlayer 호출 |
-| SquadController | TeleportPlayer, TeleportToDefaultPoint(끼임 탈출), RepositionCompanionsAround, AddCompanion(영입) |
+| Character | Facade. Request API 제공. Model·StateMachine·Mover·Attacker·Interactor·Animator·AIBrain 등 조합 |
+| CharacterModel | HP, 스탯, CharacterData 보유 |
+| CharacterStateMachine | Idle·Move·Attack·Dead 상태 관리 |
+| CharacterMover | 플레이어용 방향 이동 |
+| CharacterFollowMover | 동료용 NavMesh 목표 이동 |
+| CharacterAttacker | 공격 로직·사거리 판단 |
+| CharacterInteractor | IInteractReceiver. 상호작용 수신 |
+| CharacterAnimator | 애니메이션 연동 |
+| AIBrain | 동료 전용. TickFollow/TickCombat |
+| SquadController | 분대 스폰, 플레이어/동료 관리, SetFollowTarget |
+
+Request API·ApplyMovement 분기·통합 상태머신 등 상세는 2.1 참조.
+
+### 3.2 포탈 시스템
+
+```mermaid
+flowchart TB
+    A["플레이어 포탈 근처 상호작용"]
+    B["맵 UI Map_PortalIcon 클릭"]
+
+    Portal["Portal.OnInteracted"]
+    Icon["Map_PortalIcon.OnPortalClicked"]
+
+    PController["PortalController<br/>FindObjectsByType 등록, OnInteracted 구독"]
+    MapView["MapView<br/>맵 열기/닫기, 포탈 아이콘 생성"]
+
+    Teleport["SquadController.TeleportPlayer"]
+    Repos["RepositionCompanionsAround"]
+
+    A --> Portal
+    Portal --> PController
+    PController -->|"ToggleMap"| MapView
+
+    B --> Icon
+    Icon --> MapView
+    MapView -->|"포탈 아이콘 클릭 시"| Teleport
+    Teleport --> Repos
+```
+
+**주요 컴포넌트**
+| 컴포넌트 | 역할 |
+|----------|------|
+| Portal | IInteractable. Interact 시 OnInteracted(IInteractReceiver, Portal) 발행. PortalData 표시용, ArrivalPosition 제공 |
+| PortalDetector | OnTriggerStay/Exit로 반경 내 플레이어 감지. Portal에 연결되어 PortalEffect 토글 |
+| PortalController | FindObjectsByType으로 포탈 등록, Portal.OnInteracted 구독. HandlePortalInteracted에서 MapView.ToggleMap 호출. PortalModel 목록 유지 |
+| PortalModel | Portal + FlagSystem. 해금 여부 관리. MapView에서 해금된 포탈만 아이콘 표시 |
+| MapView | Map_PortalIcon 생성(해금된 PortalModel만). OnPortalClicked 시 SquadController.TeleportPlayer 호출 후 맵 닫기 |
+| SquadController | TeleportPlayer(ArrivalPosition), TeleportToDefaultPoint(끼임 탈출), RepositionCompanionsAround |
 
 ### 3.3 맵 시스템
 
