@@ -25,28 +25,28 @@
 ### 1.2 게임 이미지
 
 #### 인트로
-![인트로](docs/images/intro.png)
+![인트로](Docs/images/intro.png)
 
 #### 분대 따라오기
-![분대 따라오기](docs/images/squad-follow.png)
+![분대 따라오기](Docs/images/squad-follow.png)
 
 #### 분대 전투
-![분대 전투](docs/images/squad-combat.png)
+![분대 전투](Docs/images/squad-combat.png)
 
 #### 대화·퀘스트
-![대화·퀘스트](docs/images/dialogue-quest.png)
+![대화·퀘스트](Docs/images/dialogue-quest.png)
 
 #### 동료 영입 완료
-![동료 영입 완료](docs/images/companion-join.png)
+![동료 영입 완료](Docs/images/companion-join.png)
 
 #### 인벤토리
-![인벤토리](docs/images/inventory.png)
+![인벤토리](Docs/images/inventory.png)
 
 #### 지도
-![지도](docs/images/map.png)
+![지도](Docs/images/map.png)
 
 #### 포탈
-![포탈](docs/images/portal.png)
+![포탈](Docs/images/portal.png)
 
 ### 1.3 영상 (3분 이내)
 
