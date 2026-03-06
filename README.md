@@ -72,20 +72,29 @@
 #### 도식
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Character (Facade)                         │
-│  RequestMove / RequestAttack / SetMoveDirection / ApplyMovement   │
-└─────────────────────────────────────────────────────────────────┘
-                    │                           │
-        ┌───────────┴───────────┐   ┌──────────┴──────────┐
-        ▼                       ▼   ▼                     ▼
-┌───────────────┐     ┌─────────────────┐     ┌──────────────────┐
-│ CharacterState│     │ CharacterMover  │     │ AIBrain (동료)    │
-│ Machine       │     │ +FollowMover    │     │                  │
-│ Idle·Move·    │     │ _isPlayer 분기  │     │ Follow/Combat/   │
-│ Attack·Dead   │     │ 플레이어=방향   │     │ Attack 판단      │
-└───────────────┘     │ 동료=타겟추적  │     └──────────────────┘
-                      └─────────────────┘
+flowchart TB
+    subgraph PlayerPath["플레이어 경로"]
+        InputHandler["InputHandler"]
+        PlayScene["PlayScene"]
+        SquadController["SquadController"]
+    end
+
+    subgraph AIPath["동료(AI) 경로"]
+        AIBrain["AIBrain"]
+    end
+
+    subgraph Character["Character (Facade)"]
+        API["RequestMove / RequestAttack / SetMoveDirection<br/>(Request API - 플레이어·AI 공통)"]
+    end
+
+    StateMachine["CharacterStateMachine<br/>Idle·Move·Attack·Dead"]
+    Mover["플레이어 : CharacterMover 동료: FollowMover"]
+
+    InputHandler --> PlayScene --> SquadController
+    SquadController -->|Request| API
+    AIBrain -->|Request| API
+    Character --> StateMachine
+    Mover --> Character
 ```
 
 #### 문제 → 해결 → 결과
