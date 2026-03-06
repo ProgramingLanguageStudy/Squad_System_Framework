@@ -113,15 +113,13 @@ flowchart TB
     end
 
     subgraph TickFollow["TickFollow"]
-        TF1["PlaySceneServices로 플레이어 획득"]
-        TF2["_currentTarget = 플레이어"]
-        TF3["HasArrived ? RequestIdle : RequestMove"]
+        TF1["PlaySceneServices.GetPlayer → _currentTarget"]
+        TF3["HasArrived → RequestIdle<br/>!HasArrived → RequestMove"]
     end
 
     subgraph TickCombat["TickCombat"]
         TC1["GetNearestEnemy → _currentCombatTarget"]
-        TC2["dist > attackRange → RequestMove"]
-        TC3["dist ≤ attackRange → RequestAttack"]
+        TC3["dist ≤ attackRange → RequestAttack<br/>dist &gt; attackRange → RequestMove"]
     end
 
     subgraph Char["Character"]
@@ -131,8 +129,10 @@ flowchart TB
     CombatCtrl --> AIBrain
     AIBrain --> TickFollow
     AIBrain --> TickCombat
-    TF2 --> ApplyMove
-    TC1 --> ApplyMove
+    TF1 --> TF3
+    TC1 --> TC3
+    TF3 -->|RequestMove| ApplyMove
+    TC3 -->|RequestMove| ApplyMove
 ```
 
 **SetFollowTarget**: SquadController가 플레이어 변경 시 Character → AIBrain.SetFollowTarget(플레이어) 호출. 따라갈 대상 설정.
@@ -151,22 +151,23 @@ flowchart TB
 
 #### 도식
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    PlayScene (조율층)                         │
-│  InputHandler, SquadController, QuestPresenter, Inventory... │
-└─────────────────────────────────────────────────────────────┘
-    │              │              │              │
-    ▼              ▼              ▼              ▼
-┌────────┐  ┌──────────┐  ┌──────────┐  ┌────────────┐
-│ Quest  │  │ Inventory│  │ Dialogue │  │ FlagSystem │
-│ Model  │  │ (Model)  │  │ System   │  │            │
-└────────┘  └──────────┘  └──────────┘  └────────────┘
-    │              │              │
-    └──────────────┴──────────────┘
-                   │
-         서로 직접 참조 없음
-         이벤트·인터페이스·조율층으로만 연결
+```mermaid
+flowchart TB
+    subgraph Coord["조율층"]
+        CoordDesc["InputHandler, SquadController<br/>QuestController, InventoryPresenter"]
+    end
+
+    subgraph Systems["각 시스템 - 직접 참조 없음"]
+        Quest["Quest Model"]
+        Inventory["Inventory (Model)"]
+        Dialogue["Dialogue System"]
+        Flag["FlagSystem"]
+    end
+
+    CoordDesc --> Quest
+    CoordDesc --> Inventory
+    CoordDesc --> Dialogue
+    CoordDesc --> Flag
 ```
 
 #### 문제 → 해결 → 결과
@@ -174,7 +175,7 @@ flowchart TB
 | 구분 | 내용 |
 |------|------|
 | **문제** | 퀘스트·인벤토리·대화가 서로 참조하면 결합도 증가, 수정 범위 확대 |
-| **해결** | 각 시스템은 Model/View 분리, PlaySaveCoordinator·PlayScene 등 조율층이 이벤트 구독 후 다른 시스템 호출 |
+| **해결** | 퀘스트·인벤토리·대화는 Model/View 분리. PlayScene·PlaySaveCoordinator 등 조율층이 이벤트 구독 후 의존성 주입·호출 |
 | **결과** | 퀘스트 추가·수정 시 인벤토리·대화 코드를 건드리지 않고 변경 가능 |
 
 ---
