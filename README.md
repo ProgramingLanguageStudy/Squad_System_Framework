@@ -287,31 +287,37 @@ Request API·ApplyMovement 분기·통합 상태머신 등 상세는 2.1 참조.
 
 ### 3.2 전투·적 시스템
 
+Enemy도 Character처럼 **컴포넌트화**되어 있다.
+
 ```mermaid
 flowchart TB
-    Detector["EnemyDetector<br/>반경 내 Character 감지"]
-    Aggro["EnemyAggro<br/>어그로 누적"]
-    ESM["EnemyStateMachine<br/>Idle·Patrol·Chase·Attack·Dead"]
-    Combat["CombatController<br/>RegisterInCombat / UnregisterFromCombat"]
-    AIBrain["AIBrain (동료)<br/>IsInCombat ? TickCombat : TickFollow"]
+    subgraph Enemy["Enemy (Facade)"]
+        EModel["EnemyModel"]
+        EAggro["EnemyAggro"]
+        EDetector["EnemyDetector"]
+        ESM["EnemyStateMachine"]
+        EMover["EnemyMover"]
+        EAttacker["EnemyAttacker"]
+        EAnimator["EnemyAnimator"]
+    end
 
-    Detector -->|"OnCharacterDetected"| Aggro
-    Aggro -->|"임계값 초과"| ESM
-    ESM -->|"Chase/Attack 진입·이탈"| Combat
-    Combat -->|"IsInCombat, GetNearestEnemy"| AIBrain
+    Spawner["EnemySpawner"]
+    Spawner --> Enemy
 ```
 
 **주요 컴포넌트**
 | 컴포넌트 | 역할 |
 |----------|------|
-| EnemyDetector | Physics.OverlapSphere로 반경 내 Character 감지. OnCharacterDetected(Character, 거리) 발행 |
-| EnemyAggro | 거리별 어그로 누적. HasAnyAboveThreshold, GetHighestAggroTarget. EnemyDetector 구독 |
-| EnemyStateMachine | Idle·Patrol·Chase·Attack·Dead. 어그로 임계값 초과 시 NotifyEnteringCombat. Chase/Attack 시 NotifyCombatStateChanged |
-| Enemy | Model·Aggro·Detector·Mover·Attacker 보유. NotifyCombatStateChanged에서 CombatController 등록/해제 |
+| Enemy | Facade. Model·Aggro·Detector·StateMachine·Mover·Attacker·Animator 등 조합 |
+| EnemyModel | HP, 스탯, EnemyData. 어그로 수치·탐지 반경 등 |
+| EnemyDetector | Physics.OverlapSphere로 반경 내 Character 감지. OnCharacterDetected 발행 |
+| EnemyAggro | 거리별 어그로 누적. HasAnyAboveThreshold, GetHighestAggroTarget |
+| EnemyStateMachine | Idle·Patrol·Chase·Attack·Dead. 어그로 임계값 초과 시 전투 진입 |
+| EnemyMover | NavMesh 기반 이동 |
+| EnemyAttacker | 공격·Hitbox 연동 |
 | CombatController | 전투 중인 Enemy 목록 관리. IsInCombat, GetNearestEnemy. AIBrain에 주입 |
-| AIBrain | CombatController.IsInCombat으로 TickCombat/TickFollow 분기 |
 
-SquadController.Initialize(combatController) → AIBrain.Initialize(combatController). 적 사망 시 Enemy.HandleDeath → 3초 후 Destroy, _dropPrefab 드롭.
+**전투 연계** EnemyDetector가 분대(Character) 감지 → EnemyAggro에 어그로 누적 → 임계값 초과 시 EnemyStateMachine이 Chase/Attack 진입 → CombatController에 등록 → AIBrain이 IsInCombat·GetNearestEnemy로 동료 전투 판단(TickCombat). SquadController.Initialize(combatController)로 AIBrain에 CombatController 주입. 적 사망 시 HandleDeath → 3초 후 Destroy, _dropPrefab 드롭.
 
 ### 3.3 맵 시스템
 
