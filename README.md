@@ -513,11 +513,11 @@ flowchart TB
 
 | Squad | Quest | Inventory |
 |:---:|:---:|:---:|
-| ![Squad](Docs/image/debug_squad.png) | ![Quest](Docs/image/debug_quest.png) | ![Inventory](Docs/image/debug_inventory.png) |
+| ![Squad](Docs/images/debug_squad.png) | ![Quest](Docs/images/debug_quest.png) | ![Inventory](Docs/images/debug_inventory.png) |
 
 | Portal | EnemySpawner | Flag |
 |:---:|:---:|:---:|
-| ![Portal](Docs/image/debug_portal.png) | ![EnemySpawner](Docs/image/debug_enemyspawner.png) | ![Flag](Docs/image/debug_flag.png) |
+| ![Portal](Docs/images/debug_portal.png) | ![EnemySpawner](Docs/images/debug_spawner.png) | ![Flag](Docs/images/debug__flag.png) |
 
 **주요 패키지**
 - Unity AI Navigation 2.0.9
