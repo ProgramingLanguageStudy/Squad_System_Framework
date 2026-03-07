@@ -507,6 +507,18 @@ flowchart TB
 | **Git** | 버전 관리 |
 | **Cursor** | AI 기반 코드 에디터 (개발·리팩터링 보조) |
 
+개발 시 Unity 에디터 전용 디버깅 기능(Squad, Quest, Inventory, Portal 등)을 사용함.
+
+**디버거 인스펙터 뷰**
+
+| Squad | Quest | Inventory |
+|:---:|:---:|:---:|
+| ![Squad](Docs/image/debug_squad.png) | ![Quest](Docs/image/debug_quest.png) | ![Inventory](Docs/image/debug_inventory.png) |
+
+| Portal | EnemySpawner | Flag |
+|:---:|:---:|:---:|
+| ![Portal](Docs/image/debug_portal.png) | ![EnemySpawner](Docs/image/debug_enemyspawner.png) | ![Flag](Docs/image/debug_flag.png) |
+
 **주요 패키지**
 - Unity AI Navigation 2.0.9
 - Cinemachine 3.1.5
