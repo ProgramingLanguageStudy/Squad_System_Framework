@@ -93,6 +93,29 @@ flowchart TB
 | **해결** | RequestMove/RequestAttack 등 Request API는 플레이어·동료 공통. 이동 실행부만 분리: CharacterMover(방향)와 CharacterFollowMover(목표)를 두고, ApplyMovement에서 `_isPlayer`로 분기해 플레이어는 CharacterMover, 동료는 FollowMover 호출 |
 | **결과** | 하나의 `CharacterStateMachine`(Idle·Move·Attack·Dead)으로 플레이어·동료 모두 처리. 플레이어는 입력→Request, 동료는 AIBrain→Request로 같은 API 사용. MoveState.Update에서 ApplyMovement 호출, 플레이어=SetMoveDirection·CharacterMover, 동료=AIBrain.CurrentTarget·FollowMover(NavMesh) |
 
+**핵심 코드**
+
+```csharp
+// Character.cs - 플레이어/동료 분기
+public void ApplyMovement()
+{
+    if (_isPlayer)
+        _mover?.Move(_currentMoveDirection);
+    else
+    {
+        var target = _aiBrain?.CurrentTarget;
+        if (target != null)
+            _followMover?.MoveToTarget(target.position, _aiBrain.CurrentStopDistance);
+    }
+}
+
+// CharacterMoveState.cs - MoveState가 ApplyMovement 호출
+public override void Update()
+{
+    Character?.ApplyMovement();
+}
+```
+
 ---
 
 ### 2.2 AIBrain / 동료 AI
@@ -141,6 +164,41 @@ flowchart TB
 | **해결** | CombatController(전투 상태, GetNearestEnemy) 기반 AIBrain. IsInCombat으로 TickFollow/TickCombat 분기. Follow 시 PlaySceneServices로 플레이어 획득, Combat 시 GetNearestEnemy로 타겟. 사거리 밖이면 RequestMove, 안이면 RequestAttack. Character.ApplyMovement가 CurrentTarget을 읽어 NavMesh 기반 FollowMover.MoveToTarget 호출 |
 | **결과** | 플레이어와 동일한 CharacterStateMachine·Attacker 재사용. AIBrain은 “판단”만 담당, 실행은 Character에 위임 |
 
+**핵심 코드**
+
+```csharp
+// AIBrain.cs - IsInCombat 분기
+private void Update()
+{
+    if (_character == null || _character.Model == null || _character.Model.IsDead) return;
+    if (_character.StateMachine?.CurrentState == CharacterState.Attack) return;
+
+    bool isInCombat = _combatController != null && _combatController.IsInCombat;
+    if (isInCombat) TickCombat();
+    else TickFollow();
+}
+
+private void TickFollow()
+{
+    var player = PlaySceneServices.Player?.GetPlayer();
+    _currentTarget = player != null ? player.transform : null;
+    if (_currentTarget == null || HasArrived())
+        _character?.RequestIdle();
+    else
+        _character?.RequestMove();
+}
+
+private void TickCombat()
+{
+    _currentCombatTarget = _combatController?.GetNearestEnemy(transform.position);
+    if (_currentCombatTarget == null || _currentCombatTarget.Model.IsDead) return;
+    _currentTarget = _currentCombatTarget.transform;
+    float dist = Vector3.Distance(transform.position, _currentCombatTarget.transform.position);
+    if (dist > _attackRange) _character?.RequestMove();
+    else { _character?.RequestIdle(); _character?.RequestAttack(); }
+}
+```
+
 ---
 
 ### 2.3 시스템 간 독립성 (MVP + 조율층)
@@ -172,6 +230,29 @@ flowchart TB
 | **해결** | 퀘스트·인벤토리·대화는 Model/View 분리. PlayScene·PlaySaveCoordinator 등 조율층이 이벤트 구독 후 의존성 주입·호출 |
 | **결과** | 퀘스트 추가·수정 시 인벤토리·대화 코드를 건드리지 않고 변경 가능 |
 
+**핵심 코드**
+
+```csharp
+// PlayScene.cs - 조율층 Awake (시스템 연결·초기화)
+private void Awake()
+{
+    _saveCoordinator?.Initialize(_squadController, _flagSystem, _questController?.Presenter, _inventoryPresenter?.Model);
+    _pendingSaveData = GameManager.Instance?.SaveManager?.Load();
+    var spawnPos = _pendingSaveData?.squad != null ? (Vector3?)_pendingSaveData.squad.playerPosition : null;
+
+    _squadController.Initialize(spawnPos, _combatController, _pendingSaveData?.squad);
+    PlaySceneServices.Register(_squadController);
+
+    var player = _squadController.PlayerCharacter;
+    _squadController.SetFollowTarget(player?.transform ?? transform);
+    _inventoryPresenter?.SetPlayerCharacter(player);
+    _dialogueController?.Initialize(_questController?.Presenter, _flagSystem);
+    _questController?.Initialize(_inventoryPresenter?.Model, _flagSystem, _squadController);
+    _mapController?.Initialize(_portalController, player, _squadController);
+    _portalController?.Initialize(_mapController.MapView, _flagSystem);
+}
+```
+
 ---
 
 ### 2.4 세이브/로드 Contributor 패턴
@@ -202,6 +283,17 @@ flowchart TB
 | **문제** | 세이브 대상이 늘어날 때마다 조율층이 모든 시스템을 알아야 함 |
 | **해결** | `ISaveHandler` + `SaveContributorBehaviour` 기반. PlaySaveCoordinator가 Contributor 목록 보유, 각 Contributor가 Gather/Apply만 구현. SaveOrder로 적용 순서 보장 |
 | **결과** | 새 저장 대상 추가 시 Contributor 생성 후 PlaySaveCoordinator에 등록하면 되고, SaveManager 수정 불필요 |
+
+**핵심 코드**
+
+```csharp
+// SaveContributorBehaviour.cs - Gather/Apply 인터페이스
+public abstract class SaveContributorBehaviour : MonoBehaviour, ISaveContributor
+{
+    public abstract void Gather(SaveData data);
+    public abstract void Apply(SaveData data);
+}
+```
 
 ---
 
@@ -285,6 +377,20 @@ flowchart TB
 
 Request API·ApplyMovement 분기·통합 상태머신 등 상세는 2.1 참조.
 
+**핵심 코드**
+
+```csharp
+// SquadController.cs - 분대 전체 Follow 타겟 설정
+public void SetFollowTarget(Transform target)
+{
+    foreach (var c in _characters)
+    {
+        if (c == null || c.transform == target) continue;
+        c.SetFollowTarget(target);
+    }
+}
+```
+
 ### 3.2 전투·적 시스템
 
 Enemy도 Character처럼 **컴포넌트화**되어 있다.
@@ -344,6 +450,42 @@ flowchart TB
 | InventoryView | UI 표시. OnUseItemRequested, OnDropEnded, OnRefreshRequested. ToggleInventory |
 
 PlayScene.HandlePlayerChanged → InventoryPresenter.SetPlayerCharacter (플레이어 변경 시 소비품 효과 대상 ItemUser 갱신)
+
+**핵심 코드**
+
+```csharp
+// Inventory.cs - 스택 가능/불가 아이템 처리
+public void AddItem(ItemData itemData, int amount = 1)
+{
+    if (itemData == null) return;
+    if (itemData.IsStackable)
+    {
+        foreach (var slot in _slots)
+        {
+            if (slot.Item != null && slot.Item.ItemId == itemData.ItemId && slot.Count < itemData.MaxStack)
+            {
+                int canAdd = itemData.MaxStack - slot.Count;
+                int amountToAdd = Mathf.Min(amount, canAdd);
+                slot.Count += amountToAdd;
+                amount -= amountToAdd;
+                OnSlotChanged?.Invoke(slot);
+                if (amount <= 0) { NotifyItemChangedWithId(itemData.ItemId); return; }
+            }
+        }
+    }
+    while (amount > 0)
+    {
+        int emptySlotIndex = FindEmptySlotIndex();
+        if (emptySlotIndex == -1) break;
+        int amountToPut = Mathf.Min(amount, itemData.MaxStack);
+        _slots[emptySlotIndex].Item = new ItemModel(itemData);
+        _slots[emptySlotIndex].Count = amountToPut;
+        amount -= amountToPut;
+        OnSlotChanged?.Invoke(_slots[emptySlotIndex]);
+    }
+    NotifyItemChangedWithId(itemData.ItemId);
+}
+```
 
 ### 3.4 대화 시스템
 
@@ -408,6 +550,23 @@ flowchart TB
 | QuestSystem | NotifyProgress(targetId), AcceptQuest, CompleteQuest. OnQuestUpdated, OnQuestCompleted |
 
 **동료 영입** RecruitmentQuestData: 퀘스트 완료 시 `recruitCharacterId`로 CharacterData 참조해 SquadController.AddCompanion 호출. 대화·퀘스트 완료 플래그(`quest_*_completed`)로 수락 대화 재표시 여부 제어.
+
+**핵심 코드**
+
+```csharp
+// QuestSystem.cs - targetId 기반 진행 (다른 시스템과 무관한 API)
+public void NotifyProgress(string targetId)
+{
+    foreach (var quest in _activeQuests)
+    {
+        if (quest.IsCompleted || quest.TargetId != targetId) continue;
+        quest.CurrentAmount = Math.Min(quest.CurrentAmount + 1, quest.TargetAmount);
+        if (quest.IsCompleted)
+            Debug.Log($"<color=green>{quest.Title}</color> 목표 달성! NPC에게 돌아가세요.");
+        OnQuestUpdated?.Invoke(quest);
+    }
+}
+```
 
 ### 3.6 맵 시스템
 
