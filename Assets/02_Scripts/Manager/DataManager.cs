@@ -11,6 +11,7 @@ public class DataManager : MonoBehaviour
     private Dictionary<string, List<DialogueData>> _dialoguesByNpcId = new Dictionary<string, List<DialogueData>>(StringComparer.OrdinalIgnoreCase);
     private Dictionary<string, ItemData> _itemsById = new Dictionary<string, ItemData>(StringComparer.OrdinalIgnoreCase);
     private Dictionary<string, CharacterData> _charactersById = new Dictionary<string, CharacterData>(StringComparer.OrdinalIgnoreCase);
+    private Dictionary<string, QuestData> _questsById = new Dictionary<string, QuestData>(StringComparer.OrdinalIgnoreCase);
 
     public bool IsLoaded { get; private set; }
 
@@ -21,6 +22,7 @@ public class DataManager : MonoBehaviour
         LoadDialogues();
         LoadItems();
         LoadCharacters();
+        LoadQuests();
     }
 
     private void LoadCharacters()
@@ -61,6 +63,26 @@ public class DataManager : MonoBehaviour
     public ItemData GetItemData(string itemId)
     {
         return _itemsById != null && itemId != null && _itemsById.TryGetValue(itemId, out var d) ? d : null;
+    }
+
+    private void LoadQuests()
+    {
+        _questsById.Clear();
+        var assets = Resources.LoadAll<QuestData>("Quests");
+        if (assets != null)
+        {
+            foreach (var a in assets)
+            {
+                if (a != null && !string.IsNullOrEmpty(a.QuestId))
+                    _questsById[a.QuestId] = a;
+            }
+        }
+    }
+
+    /// <summary>QuestId로 QuestData 반환. Resources/Quests에 에셋이 있어야 함.</summary>
+    public QuestData GetQuestData(string questId)
+    {
+        return _questsById != null && questId != null && _questsById.TryGetValue(questId, out var d) ? d : null;
     }
 
     private void LoadDialogues()
