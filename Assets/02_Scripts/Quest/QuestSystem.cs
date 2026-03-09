@@ -4,7 +4,8 @@ using System.Linq;
 using UnityEngine;
 
 /// <summary>
-/// 퀘스트 시스템. 다른 시스템을 알지 않음. 조율층이 NotifyProgress(targetId) 호출 시 해당 targetId 퀘스트의 current를 1 올림.
+/// 퀘스트 시스템. 다른 시스템을 알지 않음.
+/// 조율층: NotifyProgress(targetId) = 증분(방문/처치), SetTaskProgress = 절대값 동기화(Gather).
 /// </summary>
 public class QuestSystem : MonoBehaviour
 {
@@ -14,7 +15,7 @@ public class QuestSystem : MonoBehaviour
     /// <summary>퀘스트 완료 시 발행. QuestController가 구독 후 QuestCompleted.InvokeAll.</summary>
     public event Action<QuestData> OnQuestCompleted;
 
-    /// <summary>targetId에 해당하는 진행이 일어났을 때 호출. 해당 퀘스트 current를 1 올림 (방문/채집/처치 공통).</summary>
+    /// <summary>targetId에 해당하는 진행이 1회 일어났을 때 호출. current를 1 올림. 방문/처치용. Gather는 SetTaskProgress 사용.</summary>
     public void NotifyProgress(string targetId)
     {
         foreach (var quest in _activeQuests)

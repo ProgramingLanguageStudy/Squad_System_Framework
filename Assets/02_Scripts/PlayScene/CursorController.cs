@@ -1,10 +1,9 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 using Unity.Cinemachine;
 
 /// <summary>
 /// 커서 표시/숨김을 한 곳에서만 처리. GameEvents OnCursorShowRequested/OnCursorHideRequested를 ref count로 구독.
-/// UI 열릴 때 카메라 회전값 저장, 닫을 때 복원하여 스핀 방지.
+/// InputHandler가 FreeCursor(Alt)·UI에서 이벤트 발행 → 여기서 커서·카메라 처리.
 /// </summary>
 public class CursorController : MonoBehaviour
 {
@@ -42,15 +41,17 @@ public class CursorController : MonoBehaviour
     private void HandleShowRequested()
     {
         _showRequestCount++;
-        ApplyCursorState(true);
+        ApplyCursorState(ShouldShowCursor());
     }
 
     private void HandleHideRequested()
     {
         if (_showRequestCount > 0)
             _showRequestCount--;
-        ApplyCursorState(_showRequestCount > 0);
+        ApplyCursorState(ShouldShowCursor());
     }
+
+    private bool ShouldShowCursor() => _showRequestCount > 0;
 
     private void Update()
     {

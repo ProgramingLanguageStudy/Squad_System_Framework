@@ -5,29 +5,41 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// PlayerInput이 참조하는 Input Action Asset을 사용. Cinemachine과 같은 인스턴스 공유 시 UI 모드에서 Look도 함께 꺼짐.
 /// GameEvents OnCursorShowRequested/HideRequested로 blocking UI 개수 카운트 후, 1개 이상이면 Player 맵 비활성화(UI 모드).
+/// Global.FreeCursor(Alt) started/canceled → 동일 이벤트 발행.
 /// </summary>
 public class InputHandler : MonoBehaviour
 {
+    // ── 의존성 ────────────────────────────────────────────────────────
+
     [Tooltip("PlayerInput 할당 필수. 같은 GameObject에 두거나, 에셋을 공유하는 PlayerInput을 넣으면 됨.")]
     [SerializeField] private PlayerInput _playerInput;
+
+    // ── Asset & Maps ──────────────────────────────────────────────────
 
     private InputActionAsset _asset;
     private InputActionMap _playerMap;
     private InputActionMap _uiMap;
+    private InputActionMap _globalMap;
+
+    // ── Actions (Value 읽기용) ────────────────────────────────────────
+
     private InputAction _moveAction;
     private InputAction _lookAction;
+    private InputAction _uiScrollAction;
     private InputAction _uiInventoryAction;
     private InputAction _uiMapAction;
-    private InputAction _uiScrollAction;
+    private InputAction _freeCursorAction;
+
+    // ── UI Mode ──────────────────────────────────────────────────────
+
     private int _blockingUICount;
 
-    private Action<InputAction.CallbackContext> _interactCallback;
-    private Action<InputAction.CallbackContext> _attackCallback;
-    private Action<InputAction.CallbackContext> _inventoryCallback;
-    private Action<InputAction.CallbackContext> _squadSwapCallback;
-    private Action<InputAction.CallbackContext> _saveCallback;
-    private Action<InputAction.CallbackContext> _mapCallback;
-    private Action<InputAction.CallbackContext> _settingsCallback;
+    // ── Player performed 구독 해제용 ──────────────────────────────────
+
+    private InputAction[] _playerButtonActions;
+    private Action<InputAction.CallbackContext>[] _playerCallbacks;
+
+    // ── Public ────────────────────────────────────────────────────────
 
     public Vector2 MoveInput { get; private set; }
     public Vector2 LookInput { get; private set; }
@@ -44,21 +56,66 @@ public class InputHandler : MonoBehaviour
     public event Action OnMapPerformed;
     public event Action OnSettingsPerformed;
 
+    // ── Unity ─────────────────────────────────────────────────────────
+
     private void OnEnable()
+    {
+        if (!ValidateAsset()) return;
+
+        SetupPlayerMap();
+        SetupUIMap();
+        SetupGlobalMap();
+        GameEvents.OnCursorShowRequested += OnBlockingUIOpened;
+        GameEvents.OnCursorHideRequested += OnBlockingUIClosed;
+    }
+
+    private void OnDisable()
+    {
+        GameEvents.OnCursorShowRequested -= OnBlockingUIOpened;
+        GameEvents.OnCursorHideRequested -= OnBlockingUIClosed;
+        TeardownGlobalMap();
+        TeardownUIMap();
+        TeardownPlayerMap();
+        ClearReferences();
+    }
+
+    private void Update()
+    {
+        if (_playerMap == null || !_playerMap.enabled)
+        {
+            MoveInput = Vector2.zero;
+            LookInput = Vector2.zero;
+        }
+        if (_uiMap == null || !_uiMap.enabled)
+            ScrollInput = Vector2.zero;
+
+        MoveInput = _moveAction?.ReadValue<Vector2>() ?? Vector2.zero;
+        LookInput = _lookAction?.ReadValue<Vector2>() ?? Vector2.zero;
+        ScrollInput = _uiScrollAction?.ReadValue<Vector2>() ?? Vector2.zero;
+    }
+
+    // ── Validate ──────────────────────────────────────────────────────
+
+    private bool ValidateAsset()
     {
         if (_playerInput == null)
         {
             Debug.LogWarning("[InputHandler] PlayerInput이 할당되지 않았습니다. 인스펙터에서 PlayerInput을 할당해 주세요.");
-            return;
+            return false;
         }
-
         _asset = _playerInput.actions;
         if (_asset == null)
         {
             Debug.LogWarning("[InputHandler] PlayerInput.actions가 없습니다.");
-            return;
+            return false;
         }
+        return true;
+    }
 
+    // ── Player Map ────────────────────────────────────────────────────
+
+    private void SetupPlayerMap()
+    {
         _playerMap = _asset.FindActionMap("Player");
         if (_playerMap == null)
         {
@@ -69,89 +126,117 @@ public class InputHandler : MonoBehaviour
         _moveAction = _playerMap.FindAction("Move");
         _lookAction = _playerMap.FindAction("Look");
 
-        _interactCallback = _ => OnInteractPerformed?.Invoke();
-        _attackCallback = _ => OnAttackPerformed?.Invoke();
-        _inventoryCallback = _ => OnInventoryPerformed?.Invoke();
-        _squadSwapCallback = _ => OnSquadSwapPerformed?.Invoke();
-        _saveCallback = _ => OnSavePerformed?.Invoke();
-        _mapCallback = _ => OnMapPerformed?.Invoke();
-        _settingsCallback = _ => OnSettingsPerformed?.Invoke();
+        var actionNames = new[] { "Interact", "Attack", "Inventory", "SquadSwap", "Save", "Map", "Settings" };
+        var events = new Action[]
+        {
+            () => OnInteractPerformed?.Invoke(),
+            () => OnAttackPerformed?.Invoke(),
+            () => OnInventoryPerformed?.Invoke(),
+            () => OnSquadSwapPerformed?.Invoke(),
+            () => OnSavePerformed?.Invoke(),
+            () => OnMapPerformed?.Invoke(),
+            () => OnSettingsPerformed?.Invoke()
+        };
 
-        var interact = _playerMap.FindAction("Interact");
-        var attack = _playerMap.FindAction("Attack");
-        var inventory = _playerMap.FindAction("Inventory");
-        var squadSwap = _playerMap.FindAction("SquadSwap");
-        var save = _playerMap.FindAction("Save");
-        var map = _playerMap.FindAction("Map");
-        var settings = _playerMap.FindAction("Settings");
-        if (interact != null) interact.performed += _interactCallback;
-        if (attack != null) attack.performed += _attackCallback;
-        if (inventory != null) inventory.performed += _inventoryCallback;
-        if (squadSwap != null) squadSwap.performed += _squadSwapCallback;
-        if (save != null) save.performed += _saveCallback;
-        if (map != null) map.performed += _mapCallback;
-        if (settings != null) settings.performed += _settingsCallback;
+        _playerButtonActions = new InputAction[actionNames.Length];
+        _playerCallbacks = new Action<InputAction.CallbackContext>[actionNames.Length];
+
+        for (int i = 0; i < actionNames.Length; i++)
+        {
+            var action = _playerMap.FindAction(actionNames[i]);
+            if (action == null) continue;
+            int index = i;
+            var cb = (Action<InputAction.CallbackContext>)(_ => events[index]());
+            _playerCallbacks[i] = cb;
+            _playerButtonActions[i] = action;
+            action.performed += cb;
+        }
 
         _playerMap.Enable();
-
-        _uiMap = _asset.FindActionMap("UI");
-        if (_uiMap != null)
-        {
-            _uiInventoryAction = _uiMap.FindAction("Inventory");
-            if (_uiInventoryAction != null)
-                _uiInventoryAction.performed += _inventoryCallback;
-            _uiMapAction = _uiMap.FindAction("Map");
-            if (_uiMapAction != null)
-            {
-                _uiMapAction.performed += _mapCallback;
-            }
-            _uiScrollAction = _uiMap.FindAction("ScrollWheel");
-        }
-
-        GameEvents.OnCursorShowRequested += OnBlockingUIOpened;
-        GameEvents.OnCursorHideRequested += OnBlockingUIClosed;
     }
 
-    private void OnDisable()
+    private void TeardownPlayerMap()
     {
-        GameEvents.OnCursorShowRequested -= OnBlockingUIOpened;
-        GameEvents.OnCursorHideRequested -= OnBlockingUIClosed;
+        if (_playerMap == null) return;
 
-        if (_uiMap != null)
+        _playerMap.Disable();
+        if (_playerButtonActions != null && _playerCallbacks != null)
         {
-            _uiInventoryAction.performed -= _inventoryCallback;
-            _uiMapAction.performed -= _mapCallback;
+            for (int i = 0; i < _playerButtonActions.Length; i++)
+            {
+                var action = _playerButtonActions[i];
+                var cb = _playerCallbacks[i];
+                if (action != null && cb != null)
+                    action.performed -= cb;
+            }
         }
-            
-
-        if (_playerMap != null)
-        {
-            _playerMap.Disable();
-            var interact = _playerMap.FindAction("Interact");
-            var attack = _playerMap.FindAction("Attack");
-            var inventory = _playerMap.FindAction("Inventory");
-            var squadSwap = _playerMap.FindAction("SquadSwap");
-            var save = _playerMap.FindAction("Save");
-            var map = _playerMap.FindAction("Map");
-            var settings = _playerMap.FindAction("Settings");
-            if (interact != null && _interactCallback != null) interact.performed -= _interactCallback;
-            if (attack != null && _attackCallback != null) attack.performed -= _attackCallback;
-            if (inventory != null && _inventoryCallback != null) inventory.performed -= _inventoryCallback;
-            if (squadSwap != null && _squadSwapCallback != null) squadSwap.performed -= _squadSwapCallback;
-            if (save != null && _saveCallback != null) save.performed -= _saveCallback;
-            if (map != null && _mapCallback != null) map.performed -= _mapCallback;
-            if (settings  != null && _settingsCallback != null) settings.performed -= _settingsCallback;
-        }
-
-        _uiMap?.Disable();
-        _asset = null;
-        _playerMap = null;
-        _uiMap = null;
-        _moveAction = null;
-        _lookAction = null;
-        _uiInventoryAction = null;
-        _uiMapAction = null;
     }
+
+    // ── UI Map ────────────────────────────────────────────────────────
+
+    private void SetupUIMap()
+    {
+        _uiMap = _asset.FindActionMap("UI");
+        if (_uiMap == null) return;
+
+        _uiScrollAction = _uiMap.FindAction("ScrollWheel");
+        _uiInventoryAction = _uiMap.FindAction("Inventory");
+        _uiMapAction = _uiMap.FindAction("Map");
+
+        var inventoryCb = (Action<InputAction.CallbackContext>)(_ => OnInventoryPerformed?.Invoke());
+        var mapCb = (Action<InputAction.CallbackContext>)(_ => OnMapPerformed?.Invoke());
+
+        if (_uiInventoryAction != null) _uiInventoryAction.performed += inventoryCb;
+        if (_uiMapAction != null) _uiMapAction.performed += mapCb;
+
+        _uiInventoryCallback = inventoryCb;
+        _uiMapCallback = mapCb;
+    }
+
+    private Action<InputAction.CallbackContext> _uiInventoryCallback;
+    private Action<InputAction.CallbackContext> _uiMapCallback;
+
+    private void TeardownUIMap()
+    {
+        if (_uiMap == null) return;
+
+        if (_uiInventoryAction != null && _uiInventoryCallback != null)
+            _uiInventoryAction.performed -= _uiInventoryCallback;
+        if (_uiMapAction != null && _uiMapCallback != null)
+            _uiMapAction.performed -= _uiMapCallback;
+
+        _uiMap.Disable();
+    }
+
+    // ── Global Map (FreeCursor) ────────────────────────────────────────
+
+    private void SetupGlobalMap()
+    {
+        _globalMap = _asset.FindActionMap("Global");
+        if (_globalMap == null) return;
+
+        _freeCursorAction = _globalMap.FindAction("FreeCursor");
+        if (_freeCursorAction == null) return;
+
+        _globalMap.Enable();
+        _freeCursorAction.started += OnFreeCursorStarted;
+        _freeCursorAction.canceled += OnFreeCursorCanceled;
+    }
+
+    private void TeardownGlobalMap()
+    {
+        if (_freeCursorAction != null)
+        {
+            _freeCursorAction.started -= OnFreeCursorStarted;
+            _freeCursorAction.canceled -= OnFreeCursorCanceled;
+        }
+        _globalMap?.Disable();
+    }
+
+    // ── 이벤트 핸들러 ──────────────────────────────────────────────────
+
+    private void OnFreeCursorStarted(InputAction.CallbackContext _) => GameEvents.OnCursorShowRequested?.Invoke();
+    private void OnFreeCursorCanceled(InputAction.CallbackContext _) => GameEvents.OnCursorHideRequested?.Invoke();
 
     private void OnBlockingUIOpened()
     {
@@ -168,6 +253,8 @@ public class InputHandler : MonoBehaviour
             SwitchToPlayMode();
     }
 
+    // ── 모드 전환 ──────────────────────────────────────────────────────
+
     private void SwitchToUIMode()
     {
         _playerMap?.Disable();
@@ -182,20 +269,21 @@ public class InputHandler : MonoBehaviour
         _playerMap?.Enable();
     }
 
-    private void Update()
-    {
-        if (_playerMap == null || !_playerMap.enabled)
-        {
-            MoveInput = Vector2.zero;
-            LookInput = Vector2.zero;
-        }
-        if (_uiMap == null || !_uiMap.enabled)
-        {
-            ScrollInput = Vector2.zero;
-        }
+    // ── 정리 ───────────────────────────────────────────────────────────
 
-        MoveInput = _moveAction?.ReadValue<Vector2>() ?? Vector2.zero;
-        LookInput = _lookAction?.ReadValue<Vector2>() ?? Vector2.zero;
-        ScrollInput = _uiScrollAction?.ReadValue<Vector2>() ?? Vector2.zero;
+    private void ClearReferences()
+    {
+        _asset = null;
+        _playerMap = null;
+        _uiMap = null;
+        _globalMap = null;
+        _moveAction = null;
+        _lookAction = null;
+        _uiScrollAction = null;
+        _uiInventoryAction = null;
+        _uiMapAction = null;
+        _freeCursorAction = null;
+        _playerButtonActions = null;
+        _playerCallbacks = null;
     }
 }

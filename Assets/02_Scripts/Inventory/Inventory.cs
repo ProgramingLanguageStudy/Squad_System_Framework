@@ -20,6 +20,8 @@ public class Inventory : MonoBehaviour
     /// <summary>아이템별 총 수량 변경 시 (itemId, 새 총 수량). 퀘스트 등에서 사용.</summary>
     public event Action<string, int> OnItemChangedWithId;
 
+    // ── 초기화 ────────────────────────────────────────────────
+
     /// <summary>슬롯 배열 생성. Presenter가 호출.</summary>
     public void Initialize()
     {
@@ -28,19 +30,52 @@ public class Inventory : MonoBehaviour
             _slots[i] = new ItemSlotModel(null, 0, i);
     }
 
-    private void OnEnable()
+    /// <summary>저장 데이터로 슬롯 복원. 슬롯 순서 유지. Initialize 후 호출.</summary>
+    public void LoadFromSave(InventorySaveData saveData)
     {
-        GameEvents.OnItemPickedUp += HandleItemPickedUp;
+        if (_slots == null || saveData?.slots == null) return;
+
+        foreach (var slot in _slots)
+            slot?.Clear();
+
+        foreach (var entry in saveData.slots)
+        {
+            if (entry.index < 0 || entry.index >= _inventorySize) continue;
+            if (string.IsNullOrEmpty(entry.itemId) || entry.count <= 0) continue;
+
+            var itemData = GameManager.Instance?.DataManager?.GetItemData(entry.itemId);
+            if (itemData == null)
+            {
+                Debug.LogWarning($"[Inventory] LoadFromSave: ItemData not found for '{entry.itemId}'. Add to Resources/Items.");
+                continue;
+            }
+
+            _slots[entry.index].Item = new ItemModel(itemData);
+            _slots[entry.index].Count = Mathf.Min(entry.count, itemData.MaxStack);
+            OnSlotChanged?.Invoke(_slots[entry.index]);
+        }
+
+        var notifiedIds = new HashSet<string>();
+        foreach (var entry in saveData.slots)
+        {
+            if (!string.IsNullOrEmpty(entry.itemId) && notifiedIds.Add(entry.itemId))
+                NotifyItemChangedWithId(entry.itemId);
+        }
     }
 
-    private void OnDisable()
-    {
-        GameEvents.OnItemPickedUp -= HandleItemPickedUp;
-    }
+    // ── Public API ─────────────────────────────────────────────
 
-    private void HandleItemPickedUp(ItemData itemData, int amount)
+    public ItemSlotModel[] GetSlots() => _slots;
+
+    public int GetTotalCount(string itemId)
     {
-        AddItem(itemData, amount);
+        int total = 0;
+        foreach (var slot in _slots)
+        {
+            if (slot.Item != null && slot.Item.ItemId == itemId)
+                total += slot.Count;
+        }
+        return total;
     }
 
     public void AddItem(ItemData itemData, int amount = 1)
@@ -83,11 +118,38 @@ public class Inventory : MonoBehaviour
         NotifyItemChangedWithId(itemData.ItemId);
     }
 
-    private int FindEmptySlotIndex()
+    public bool RemoveItem(string itemId, int amount)
     {
-        for (int i = 0; i < _slots.Length; i++)
-            if (_slots[i].Item == null) return i;
-        return -1;
+        if (GetTotalCount(itemId) < amount) return false;
+
+        int remaining = amount;
+        foreach (var slot in _slots)
+        {
+            if (remaining <= 0) break;
+            if (slot.Item == null || slot.Item.ItemId != itemId) continue;
+            int toRemove = Mathf.Min(slot.Count, remaining);
+            slot.Count -= toRemove;
+            remaining -= toRemove;
+            if (slot.Count <= 0) slot.Clear();
+            OnSlotChanged?.Invoke(slot);
+        }
+        NotifyItemChangedWithId(itemId);
+        return true;
+    }
+
+    /// <summary>해당 슬롯의 아이템 사용 시도. 소모품이면 ApplyTo 적용 후 1개 차감. 성공 시 true.</summary>
+    public bool TryUseItem(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= _inventorySize) return false;
+        var slot = _slots[slotIndex];
+        if (slot.Item == null || slot.Count <= 0) return false;
+        if (slot.Item.ItemType != ItemType.Consumable) return false;
+        if (_itemUser == null) return false;
+
+        if (slot.Item.Data is ConsumableItemData consumable)
+            consumable.ApplyTo(_itemUser);
+        RemoveItem(slot.Item.ItemId, 1);
+        return true;
     }
 
     public void SwapItems(int indexA, int indexB)
@@ -117,12 +179,38 @@ public class Inventory : MonoBehaviour
         OnSlotChanged?.Invoke(_slots[indexA]);
         OnSlotChanged?.Invoke(_slots[indexB]);
         if (_slots[indexA].Item != null)
-            OnItemChangedWithId?.Invoke(_slots[indexA].Item.ItemId, GetTotalCount(_slots[indexA].Item.ItemId));
+            NotifyItemChangedWithId(_slots[indexA].Item.ItemId);
         if (_slots[indexB].Item != null && _slots[indexB].Item != _slots[indexA].Item)
-            OnItemChangedWithId?.Invoke(_slots[indexB].Item.ItemId, GetTotalCount(_slots[indexB].Item.ItemId));
+            NotifyItemChangedWithId(_slots[indexB].Item.ItemId);
     }
 
-    private static void PerformSwap(ItemSlotModel a, ItemSlotModel b)
+    // ── Unity ──────────────────────────────────────────────────
+
+    private void OnEnable()
+    {
+        GameEvents.OnItemPickedUp += HandleItemPickedUp;
+    }
+
+    private void OnDisable()
+    {
+        GameEvents.OnItemPickedUp -= HandleItemPickedUp;
+    }
+
+    // ── Private ────────────────────────────────────────────────
+
+    private void HandleItemPickedUp(ItemData itemData, int amount)
+    {
+        AddItem(itemData, amount);
+    }
+
+    private int FindEmptySlotIndex()
+    {
+        for (int i = 0; i < _slots.Length; i++)
+            if (_slots[i].Item == null) return i;
+        return -1;
+    }
+
+    private void PerformSwap(ItemSlotModel a, ItemSlotModel b)
     {
         var tempItem = a.Item;
         var tempCount = a.Count;
@@ -130,86 +218,6 @@ public class Inventory : MonoBehaviour
         a.Count = b.Count;
         b.Item = tempItem;
         b.Count = tempCount;
-    }
-
-    public ItemSlotModel[] GetSlots() => _slots;
-
-    /// <summary>저장 데이터로 슬롯 복원. 슬롯 순서 유지. Initialize 후 호출.</summary>
-    public void LoadFromSave(InventorySaveData saveData)
-    {
-        if (_slots == null || saveData?.slots == null) return;
-
-        foreach (var slot in _slots)
-            slot?.Clear();
-
-        foreach (var entry in saveData.slots)
-        {
-            if (entry.index < 0 || entry.index >= _inventorySize) continue;
-            if (string.IsNullOrEmpty(entry.itemId) || entry.count <= 0) continue;
-
-            var itemData = GameManager.Instance?.DataManager?.GetItemData(entry.itemId);
-            if (itemData == null)
-            {
-                Debug.LogWarning($"[Inventory] LoadFromSave: ItemData not found for '{entry.itemId}'. Add to Resources/Items.");
-                continue;
-            }
-
-            _slots[entry.index].Item = new ItemModel(itemData);
-            _slots[entry.index].Count = Mathf.Min(entry.count, itemData.MaxStack);
-            OnSlotChanged?.Invoke(_slots[entry.index]);
-        }
-
-        var notifiedIds = new HashSet<string>();
-        foreach (var entry in saveData.slots)
-        {
-            if (!string.IsNullOrEmpty(entry.itemId) && notifiedIds.Add(entry.itemId))
-                OnItemChangedWithId?.Invoke(entry.itemId, GetTotalCount(entry.itemId));
-        }
-    }
-
-    public bool RemoveItem(string itemId, int amount)
-    {
-        if (GetTotalCount(itemId) < amount) return false;
-
-        int remaining = amount;
-        foreach (var slot in _slots)
-        {
-            if (remaining <= 0) break;
-            if (slot.Item == null || slot.Item.ItemId != itemId) continue;
-            int toRemove = Mathf.Min(slot.Count, remaining);
-            slot.Count -= toRemove;
-            remaining -= toRemove;
-            if (slot.Count <= 0) slot.Clear();
-            OnSlotChanged?.Invoke(slot);
-        }
-        OnItemChangedWithId?.Invoke(itemId, GetTotalCount(itemId));
-        return true;
-    }
-
-    public int GetTotalCount(string itemId)
-    {
-        int total = 0;
-        foreach (var slot in _slots)
-        {
-            if (slot.Item != null && slot.Item.ItemId == itemId)
-                total += slot.Count;
-        }
-        return total;
-    }
-
-    /// <summary>해당 슬롯의 아이템 사용 시도. 소모품이면 ApplyTo 적용 후 1개 차감. 성공 시 true.</summary>
-    public bool TryUseItem(int slotIndex)
-    {
-        if (slotIndex < 0 || slotIndex >= _inventorySize) return false;
-        var slot = _slots[slotIndex];
-        if (slot.Item == null || slot.Count <= 0) return false;
-        if (slot.Item.ItemType != ItemType.Consumable) return false;
-        if (_itemUser == null) return false;
-
-        if (slot.Item.Data is ConsumableItemData consumable)
-            consumable.ApplyTo(_itemUser);
-        RemoveItem(slot.Item.ItemId, 1);
-        return true;
     }
 
     private void NotifyItemChangedWithId(string itemId)

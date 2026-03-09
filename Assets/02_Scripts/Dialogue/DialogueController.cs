@@ -7,13 +7,13 @@ public class DialogueController : MonoBehaviour
 {
     [SerializeField] private DialogueSelector _selector;
     [SerializeField] private DialoguePresenter _presenter;
-    private QuestPresenter _questPresenter;
+    private QuestController _questController;
     private FlagSystem _flagSystem;
 
-    public void Initialize(QuestPresenter questPresenter, FlagSystem flagSystem)
+    public void Initialize(QuestController questController, FlagSystem flagSystem)
     {
-        if (_questPresenter == null && questPresenter != null)
-            _questPresenter = questPresenter;
+        if (_questController == null && questController != null)
+            _questController = questController;
         _flagSystem = flagSystem;
         _presenter.Initialize();
         _selector?.Initialize(flagSystem);
@@ -52,11 +52,11 @@ public class DialogueController : MonoBehaviour
 
     private void RequestQuestAction(DialogueData data)
     {
-        if (_questPresenter == null || string.IsNullOrEmpty(data.questId)) return;
+        if (_questController == null || string.IsNullOrEmpty(data.questId)) return;
         switch (data.questDialogueType)
         {
-            case QuestDialogueType.Complete: _questPresenter.RequestCompleteQuest(data.questId); break;
-            case QuestDialogueType.Accept: _questPresenter.RequestAcceptQuest(data.questId); break;
+            case QuestDialogueType.Complete: _questController.RequestCompleteQuest(data.questId); break;
+            case QuestDialogueType.Accept: _questController.RequestAcceptQuest(data.questId); break;
         }
     }
 
