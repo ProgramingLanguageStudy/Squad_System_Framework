@@ -1,67 +1,70 @@
 using UnityEngine;
 
 /// <summary>
-/// 퀘스트 관련 플래그·인벤토리 처리. OnItemPickedUp→NotifyProgress, OnQuestUpdated(목표달성 플래그), OnQuestCompleted(완료 플래그·아이템 차감).
-/// 대화→퀘스트 수락/완료는 DialogueController가 QuestPresenter.RequestXxx 직접 호출.
-/// PlayScene 컴포넌트. QuestPresenter를 보유.
+/// 퀘스트 이벤트 조율 + 수락/완료 요청 API. OnItemChangedWithId→SetTaskProgress(Gather), OnEnemyKilled→NotifyProgress(Kill).
+/// OnQuestUpdated(목표달성 플래그), OnQuestCompleted(완료 플래그·아이템 차감).
+/// DialogueController가 RequestAcceptQuest/RequestCompleteQuest 호출.
 /// </summary>
 public class QuestController : MonoBehaviour
 {
-    [SerializeField] private QuestPresenter _presenter;
-
-    /// <summary>PlayScene 등에서 DialogueController에 주입용.</summary>
-    public QuestPresenter Presenter => _presenter;
+    private QuestSystem _questSystem;
     private Inventory _inventory;
     private SquadController _squadController;
-
-    private QuestSystem QuestSystem => _presenter != null ? _presenter.System : null;
-
     private FlagSystem _flagSystem;
 
     /// <summary>PlayScene 등에서 주입. SquadController는 영입 퀘스트용.</summary>
-    public void Initialize(Inventory inventory, FlagSystem flagSystem, SquadController squadController = null)
+    public void Initialize(QuestSystem questSystem, Inventory inventory, FlagSystem flagSystem, SquadController squadController = null)
     {
+        _questSystem = questSystem;
         if (_inventory == null && inventory != null)
             _inventory = inventory;
         _flagSystem = flagSystem;
         _squadController = squadController;
-        _presenter?.Initialize(flagSystem);
     }
 
     private void OnEnable()
     {
-        GameEvents.OnItemPickedUp += HandleItemPickedUp;
+        if (_inventory != null)
+            _inventory.OnItemChangedWithId += HandleItemChangedWithId;
         PlaySceneEventHub.OnEnemyKilled += HandleEnemyKilled;
-        if (QuestSystem != null)
+        if (_questSystem != null)
         {
-            QuestSystem.OnQuestUpdated += HandleQuestUpdated;
-            QuestSystem.OnQuestCompleted += HandleQuestCompleted;
+            _questSystem.OnQuestUpdated += HandleQuestUpdated;
+            _questSystem.OnQuestCompleted += HandleQuestCompleted;
         }
     }
 
     private void OnDisable()
     {
-        GameEvents.OnItemPickedUp -= HandleItemPickedUp;
+        if (_inventory != null)
+            _inventory.OnItemChangedWithId -= HandleItemChangedWithId;
         PlaySceneEventHub.OnEnemyKilled -= HandleEnemyKilled;
-        if (QuestSystem != null)
+        if (_questSystem != null)
         {
-            QuestSystem.OnQuestUpdated -= HandleQuestUpdated;
-            QuestSystem.OnQuestCompleted -= HandleQuestCompleted;
+            _questSystem.OnQuestUpdated -= HandleQuestUpdated;
+            _questSystem.OnQuestCompleted -= HandleQuestCompleted;
         }
     }
 
-    private void HandleItemPickedUp(ItemData itemData, int amount)
+    private void HandleItemChangedWithId(string itemId, int totalCount)
     {
-        if (itemData == null || string.IsNullOrEmpty(itemData.ItemId) || QuestSystem == null) return;
+        if (string.IsNullOrEmpty(itemId) || _questSystem == null) return;
 
-        for (int i = 0; i < amount; i++)
-            QuestSystem.NotifyProgress(itemData.ItemId);
+        foreach (var quest in _questSystem.GetActiveQuests())
+        {
+            if (quest.IsCompleted || quest.QuestType != QuestType.Gather) continue;
+            if (quest.TargetId != itemId) continue;
+
+            _questSystem.SetTaskProgress(quest.QuestId, itemId, totalCount);
+        }
     }
 
-    private void HandleEnemyKilled(string enemyId)
+    private void HandleEnemyKilled(Enemy enemy)
     {
-        if (string.IsNullOrEmpty(enemyId) || QuestSystem == null) return;
-        QuestSystem.NotifyProgress(enemyId);
+        if (enemy?.Model?.Data == null || _questSystem == null) return;
+        var enemyId = enemy.Model.Data.enemyId;
+        if (string.IsNullOrEmpty(enemyId)) return;
+        _questSystem.NotifyProgress(enemyId);
     }
 
     private void HandleQuestUpdated(QuestModel quest)
@@ -73,7 +76,7 @@ public class QuestController : MonoBehaviour
             var count = _inventory.GetTotalCount(quest.TargetId);
             if (count > 0)
             {
-                QuestSystem.SetTaskProgress(quest.QuestId, quest.TargetId, count);
+                _questSystem.SetTaskProgress(quest.QuestId, quest.TargetId, count);
                 return;
             }
         }
@@ -88,6 +91,7 @@ public class QuestController : MonoBehaviour
         if (data == null) return;
 
         ApplyQuestCompletedFlag(data);
+        ApplyQuestRewards(data);
 
         switch (data)
         {
@@ -97,6 +101,27 @@ public class QuestController : MonoBehaviour
             default:
                 DeductGatherItems(data);
                 break;
+        }
+    }
+
+    /// <summary>퀘스트 완료 보상(골드, 아이템) 지급.</summary>
+    private void ApplyQuestRewards(QuestData data)
+    {
+        if (data.RewardGold > 0)
+            GameManager.Instance?.CurrencyManager?.AddGold(data.RewardGold);
+
+        if (data.RewardItems == null || data.RewardItems.Length == 0) return;
+        var dm = GameManager.Instance?.DataManager;
+        if (dm == null || _inventory == null) return;
+
+        foreach (var reward in data.RewardItems)
+        {
+            if (string.IsNullOrEmpty(reward.itemId) || reward.amount <= 0) continue;
+
+            var itemData = dm.GetItemData(reward.itemId);
+            if (itemData == null) continue;
+
+            _inventory.AddItem(itemData, reward.amount);
         }
     }
 
@@ -135,5 +160,35 @@ public class QuestController : MonoBehaviour
         if (data.QuestType != QuestType.Gather || string.IsNullOrEmpty(data.TargetId)) return;
 
         _inventory.RemoveItem(data.TargetId, data.TargetAmount);
+    }
+
+    // ── 요청 API (DialogueController 등에서 호출) ─────────────────────
+
+    /// <summary>퀘스트 수락 요청. DataManager에서 QuestData 로드 후 AcceptQuest·QuestAccepted 플래그.</summary>
+    public void RequestAcceptQuest(string questId)
+    {
+        if (string.IsNullOrEmpty(questId) || _questSystem == null) return;
+
+        var dm = GameManager.Instance?.DataManager;
+        var questData = dm?.GetQuestData(questId);
+        if (questData == null)
+        {
+            Debug.LogWarning($"[QuestController] QuestData not found: {questId}");
+            return;
+        }
+
+        _questSystem.AcceptQuest(questData);
+        _flagSystem?.SetFlag(GameStateKeys.QuestAccepted(questId), 1);
+    }
+
+    /// <summary>퀘스트 완료 요청. 목표 달성된 퀘스트만 CompleteQuest 호출.</summary>
+    public void RequestCompleteQuest(string questId)
+    {
+        if (string.IsNullOrEmpty(questId) || _questSystem == null) return;
+
+        var quest = _questSystem.GetQuestById(questId);
+        if (quest == null || !quest.IsCompleted) return;
+
+        _questSystem.CompleteQuest(questId);
     }
 }

@@ -14,6 +14,9 @@ public static class GameEvents
     /// <summary>아이템 획득. 월드 아이템(ItemObject)이 발행만 함. Inventory 등이 구독해 AddItem 호출.</summary>
     public static Action<ItemData, int> OnItemPickedUp;
 
+    /// <summary>골드 획득(적 처치 등). 팝업 표시용.</summary>
+    public static Action<int> OnGoldAcquired;
+
     /// <summary>상호작용 대상 변경. Interactor가 발행, InteractionUI 등이 구독해 표시.</summary>
     public static Action<IInteractable> OnInteractTargetChanged;
 

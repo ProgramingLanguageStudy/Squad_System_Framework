@@ -9,8 +9,8 @@ public static class PlaySceneEventHub
     /// <summary>NPC와 상호작용됨. Npc가 발행(npcId). DialogueController가 구독.</summary>
     public static Action<string> OnNpcInteracted;
 
-    /// <summary>적 처치. Enemy.HandleDeath에서 발행. QuestController가 구독해 NotifyProgress 호출.</summary>
-    public static Action<string> OnEnemyKilled;
+    /// <summary>적 처치. Enemy.HandleDeath에서 발행. QuestController(NotifyProgress)·EnemyGoldRewardHandler(골드) 등이 구독.</summary>
+    public static Action<Enemy> OnEnemyKilled;
 
     /// <summary>Play 씬 언로드 시 호출. 구독자 클리어.</summary>
     public static void Clear()

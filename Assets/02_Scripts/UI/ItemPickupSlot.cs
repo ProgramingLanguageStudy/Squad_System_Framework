@@ -38,6 +38,21 @@ public class ItemPickupSlot : MonoBehaviour
         StartCoroutine(DisplayThenFadeOut());
     }
 
+    /// <summary>골드 획득 표시.</summary>
+    public void ShowGold(int amount)
+    {
+        if (_icon != null)
+            _icon.sprite = null; // 골드 아이콘은 별도 지정 가능
+        if (_descText != null)
+            _descText.text = "Gold +" + amount;
+
+        if (_canvasGroup != null)
+            _canvasGroup.alpha = 1f;
+
+        StopAllCoroutines();
+        StartCoroutine(DisplayThenFadeOut());
+    }
+
     private IEnumerator DisplayThenFadeOut()
     {
         yield return new WaitForSeconds(_displayDuration);

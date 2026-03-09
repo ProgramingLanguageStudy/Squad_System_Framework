@@ -9,11 +9,13 @@ public class ItemPickupLog : MonoBehaviour
     private void OnEnable()
     {
         GameEvents.OnItemPickedUp += OnItemPickedUp;
+        GameEvents.OnGoldAcquired += OnGoldAcquired;
     }
 
     private void OnDisable()
     {
         GameEvents.OnItemPickedUp -= OnItemPickedUp;
+        GameEvents.OnGoldAcquired -= OnGoldAcquired;
     }
 
     private void OnItemPickedUp(ItemData itemData, int amount)
@@ -22,6 +24,15 @@ public class ItemPickupLog : MonoBehaviour
 
         var slot = Instantiate(_slotPrefab, _container);
         slot.Show(itemData, amount);
+        slot.transform.SetAsFirstSibling();
+    }
+
+    private void OnGoldAcquired(int amount)
+    {
+        if (_slotPrefab == null || _container == null) return;
+
+        var slot = Instantiate(_slotPrefab, _container);
+        slot.ShowGold(amount);
         slot.transform.SetAsFirstSibling();
     }
 }

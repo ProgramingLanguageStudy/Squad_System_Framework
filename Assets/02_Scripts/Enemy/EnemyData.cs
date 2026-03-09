@@ -1,5 +1,15 @@
 using UnityEngine;
 
+[System.Serializable]
+public struct DropEntry
+{
+    public ItemData itemData;
+    public int amount;
+    [Range(0f, 1f)]
+    [Tooltip("0~1. 1 = 100% 드롭")]
+    public float probability;
+}
+
 /// <summary>
 /// Enemy 기초 스탯 정의 (디자인 타임). SO로 생성 후 EnemyModel에 할당.
 /// </summary>
@@ -9,6 +19,12 @@ public class EnemyData : ScriptableObject
     [Header("식별")]
     [Tooltip("퀘스트 TargetId 매칭용. 비면 처치 퀘스트 진행 안 함")]
     public string enemyId;
+
+    [Header("보상")]
+    [Tooltip("처치 시 드롭 골드. 0이면 드롭 안 함")]
+    public int goldDrop;
+    [Tooltip("확률적 아이템 드롭. EnemyRewardController가 처리")]
+    public DropEntry[] dropTable;
 
     [Header("생존")]
     [Tooltip("최대 체력")]
