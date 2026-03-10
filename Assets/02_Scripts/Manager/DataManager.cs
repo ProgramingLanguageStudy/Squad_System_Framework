@@ -1,13 +1,23 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 /// <summary>
-/// 게임 데이터 preload·관리. DialogueData 등 Resources 로드 후 npcId 기준 매핑.
-/// GameManager가 보유.
+/// SO 데이터 로드·캐시. Addressables "Data" 라벨로 일괄 로드 후 타입별 분류.
 /// </summary>
 public class DataManager : MonoBehaviour
 {
+    [Header("경로")]
+    [SerializeField] [Tooltip("SO 경로 앞부분. 주소 = prefix/category/name")]
+    private string _soPathPrefix = "Assets/02_Scripts/0_ScriptableObjects";
+
+    [Header("라벨")]
+    [SerializeField] [Tooltip("모든 SO에 부여한 라벨")]
+    private string _dataLabel = "Data";
+
     private Dictionary<string, List<DialogueData>> _dialoguesByNpcId = new Dictionary<string, List<DialogueData>>(StringComparer.OrdinalIgnoreCase);
     private Dictionary<string, ItemData> _itemsById = new Dictionary<string, ItemData>(StringComparer.OrdinalIgnoreCase);
     private Dictionary<string, CharacterData> _charactersById = new Dictionary<string, CharacterData>(StringComparer.OrdinalIgnoreCase);
@@ -15,106 +25,153 @@ public class DataManager : MonoBehaviour
 
     public bool IsLoaded { get; private set; }
 
-    /// <summary>GameManager에서 호출. 중복 호출 시 스킵.</summary>
+    /// <summary>동기 초기화. Data 라벨로 일괄 로드 후 타입별 분류.</summary>
     public void Initialize()
     {
         if (IsLoaded) return;
-        LoadDialogues();
-        LoadItems();
-        LoadCharacters();
-        LoadQuests();
+        LoadAllByLabel();
+        IsLoaded = true;
     }
 
-    private void LoadCharacters()
+    /// <summary>비동기 초기화. LoadAssetsAsync 일괄 로드 후 타입별 분류. 진행률 콜백 지원.</summary>
+    public IEnumerator InitializeAsync(Action<float, string> onProgress = null)
     {
-        _charactersById.Clear();
-        var assets = Resources.LoadAll<CharacterData>("Characters");
-        if (assets != null)
+        if (IsLoaded) yield break;
+
+        onProgress?.Invoke(0f, "DataManager 로드중...");
+        var handle = Addressables.LoadAssetsAsync<ScriptableObject>(_dataLabel, null);
+
+        while (!handle.IsDone)
         {
-            foreach (var a in assets)
+            onProgress?.Invoke(handle.PercentComplete, "DataManager 로드중...");
+            yield return null;
+        }
+
+        ClearCaches();
+        var list = handle.Result;
+        if (list != null)
+        {
+            foreach (var so in list)
             {
-                if (a != null && !string.IsNullOrEmpty(a.characterId))
-                    _charactersById[a.characterId] = a;
+                if (so != null)
+                    CacheByType(so);
             }
         }
+
+        IsLoaded = true;
+        onProgress?.Invoke(1f, "DataManager 로드 완료");
     }
 
-    /// <summary>characterId로 CharacterData 반환. Resources/Characters에 에셋이 있어야 함.</summary>
-    public CharacterData GetCharacterData(string characterId)
+    private void LoadAllByLabel()
     {
-        return _charactersById != null && characterId != null && _charactersById.TryGetValue(characterId, out var d) ? d : null;
-    }
+        if (IsLoaded) return;
 
-    private void LoadItems()
-    {
-        _itemsById.Clear();
-        var assets = Resources.LoadAll<ItemData>("Items");
-        if (assets != null)
+        var handle = Addressables.LoadAssetsAsync<ScriptableObject>(_dataLabel, null);
+        var list = handle.WaitForCompletion();
+
+        ClearCaches();
+        if (list != null)
         {
-            foreach (var a in assets)
+            foreach (var so in list)
             {
-                if (a != null && !string.IsNullOrEmpty(a.ItemId))
-                    _itemsById[a.ItemId] = a;
-            }
-        }
-    }
-
-    /// <summary>ItemId로 ItemData 반환. Resources/Items에 에셋이 있어야 함.</summary>
-    public ItemData GetItemData(string itemId)
-    {
-        return _itemsById != null && itemId != null && _itemsById.TryGetValue(itemId, out var d) ? d : null;
-    }
-
-    private void LoadQuests()
-    {
-        _questsById.Clear();
-        var assets = Resources.LoadAll<QuestData>("Quests");
-        if (assets != null)
-        {
-            foreach (var a in assets)
-            {
-                if (a != null && !string.IsNullOrEmpty(a.QuestId))
-                    _questsById[a.QuestId] = a;
-            }
-        }
-    }
-
-    /// <summary>QuestId로 QuestData 반환. Resources/Quests에 에셋이 있어야 함.</summary>
-    public QuestData GetQuestData(string questId)
-    {
-        return _questsById != null && questId != null && _questsById.TryGetValue(questId, out var d) ? d : null;
-    }
-
-    private void LoadDialogues()
-    {
-        _dialoguesByNpcId.Clear();
-        var assets = Resources.LoadAll<DialogueData>("Dialogues");
-
-        if (assets != null)
-        {
-            for (int i = 0; i < assets.Length; i++)
-            {
-                var d = assets[i];
-                if (d == null || string.IsNullOrEmpty(d.npcId)) continue;
-
-                var key = d.npcId;
-                if (!_dialoguesByNpcId.TryGetValue(key, out var list))
-                {
-                    list = new List<DialogueData>();
-                    _dialoguesByNpcId[key] = list;
-                }
-                list.Add(d);
+                if (so != null)
+                    CacheByType(so);
             }
         }
 
         IsLoaded = true;
     }
 
-    /// <summary>해당 npcId의 대화 목록. 없으면 빈 리스트. npcId는 대소문자 구분 없음.</summary>
+    private void ClearCaches()
+    {
+        _dialoguesByNpcId.Clear();
+        _itemsById.Clear();
+        _charactersById.Clear();
+        _questsById.Clear();
+    }
+
+    private void CacheByType(ScriptableObject so)
+    {
+        if (so is CharacterData cd)
+        {
+            if (!string.IsNullOrEmpty(cd.characterId))
+                _charactersById[cd.characterId] = cd;
+            return;
+        }
+
+        if (so is ItemData id)
+        {
+            if (!string.IsNullOrEmpty(id.ItemId))
+                _itemsById[id.ItemId] = id;
+            return;
+        }
+
+        if (so is QuestData qd)
+        {
+            if (!string.IsNullOrEmpty(qd.QuestId))
+                _questsById[qd.QuestId] = qd;
+            return;
+        }
+
+        if (so is DialogueData dd)
+        {
+            if (string.IsNullOrEmpty(dd.npcId)) return;
+            if (!_dialoguesByNpcId.TryGetValue(dd.npcId, out var list))
+            {
+                list = new List<DialogueData>();
+                _dialoguesByNpcId[dd.npcId] = list;
+            }
+            list.Add(dd);
+        }
+    }
+
+    private string BuildAddress(string category, string name)
+    {
+        var prefix = string.IsNullOrEmpty(_soPathPrefix) ? "Assets/02_Scripts/0_ScriptableObjects" : _soPathPrefix.TrimEnd('/');
+        return $"{prefix}/{category}/{name}";
+    }
+
+    private T LoadAndCache<T>(string category, string name, Dictionary<string, T> cache, Func<T, string> getCacheKey) where T : ScriptableObject
+    {
+        if (string.IsNullOrEmpty(name) || cache == null) return null;
+
+        var address = BuildAddress(category, name);
+        var handle = Addressables.LoadAssetAsync<T>(address);
+        var asset = handle.WaitForCompletion();
+        if (asset == null) return null;
+
+        var cacheKey = getCacheKey != null ? getCacheKey(asset) : name;
+        if (!string.IsNullOrEmpty(cacheKey))
+            cache[cacheKey] = asset;
+        return asset;
+    }
+
+    public CharacterData GetCharacterData(string characterId)
+    {
+        if (string.IsNullOrEmpty(characterId)) return null;
+        if (_charactersById.TryGetValue(characterId, out var cached)) return cached;
+        var name = characterId.EndsWith("Data", StringComparison.OrdinalIgnoreCase) ? characterId : characterId + "Data";
+        return LoadAndCache("Character", name, _charactersById, a => a.characterId);
+    }
+
+    public ItemData GetItemData(string itemId)
+    {
+        if (string.IsNullOrEmpty(itemId)) return null;
+        if (_itemsById.TryGetValue(itemId, out var cached)) return cached;
+        return LoadAndCache("Items", itemId, _itemsById, a => a.ItemId);
+    }
+
+    public QuestData GetQuestData(string questId)
+    {
+        if (string.IsNullOrEmpty(questId)) return null;
+        if (_questsById.TryGetValue(questId, out var cached)) return cached;
+        return LoadAndCache("Quests", questId, _questsById, a => a.QuestId);
+    }
+
     public IReadOnlyList<DialogueData> GetDialoguesForNpc(string npcId)
     {
-        if (string.IsNullOrEmpty(npcId) || !_dialoguesByNpcId.TryGetValue(npcId, out var list))
-            return Array.Empty<DialogueData>();
-        return list;
+        if (string.IsNullOrEmpty(npcId)) return Array.Empty<DialogueData>();
+        if (!IsLoaded) LoadAllByLabel();
+        return _dialoguesByNpcId.TryGetValue(npcId, out var list) ? list : Array.Empty<DialogueData>();
     }
 }
