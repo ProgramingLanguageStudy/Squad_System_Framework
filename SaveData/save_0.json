@@ -2,11 +2,11 @@
     "squad": {
         "currentPlayerId": "celeste",
         "playerPosition": {
-            "x": 62.42506790161133,
-            "y": 3.0032131671905519,
-            "z": 63.459285736083987
+            "x": 63.011932373046878,
+            "y": 3.246999979019165,
+            "z": 62.20046615600586
         },
-        "playerRotationY": 94.57762145996094,
+        "playerRotationY": 0.0,
         "members": [
             {
                 "characterId": "celeste",
