@@ -135,15 +135,23 @@ public class DataManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(name) || cache == null) return null;
 
-        var address = BuildAddress(category, name);
-        var handle = Addressables.LoadAssetAsync<T>(address);
-        var asset = handle.WaitForCompletion();
-        if (asset == null) return null;
+        try
+        {
+            var address = BuildAddress(category, name);
+            var handle = Addressables.LoadAssetAsync<T>(address);
+            var asset = handle.WaitForCompletion();
+            if (asset == null) return null;
 
-        var cacheKey = getCacheKey != null ? getCacheKey(asset) : name;
-        if (!string.IsNullOrEmpty(cacheKey))
-            cache[cacheKey] = asset;
-        return asset;
+            var cacheKey = getCacheKey != null ? getCacheKey(asset) : name;
+            if (!string.IsNullOrEmpty(cacheKey))
+                cache[cacheKey] = asset;
+            return asset;
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning($"[DataManager] LoadAndCache failed ({category}/{name}): {e.Message}");
+            return null;
+        }
     }
 
     public CharacterData GetCharacterData(string characterId)

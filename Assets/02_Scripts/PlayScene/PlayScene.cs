@@ -75,6 +75,10 @@ public class PlayScene : MonoBehaviour
 
     private IEnumerator InitAfterLoadRoutine(GameManager gm)
     {
+        // DataManager 미초기화 시 선로드 (Play 씬 직접 진입 대응)
+        if (gm?.DataManager != null && !gm.DataManager.IsLoaded)
+            gm.DataManager.Initialize();
+
         var loadTask = gm?.SaveManager?.LoadAsync() ?? System.Threading.Tasks.Task.FromResult<SaveData>(null);
         yield return new WaitUntil(() => loadTask.IsCompleted);
 
