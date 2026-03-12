@@ -8,15 +8,14 @@ using TMPro;
 public class InteractionUI : MonoBehaviour
 {
     [SerializeField] private GameObject _uiPanel;
+    [SerializeField] private UITweenFacade _uiFacade;
     [SerializeField] private TextMeshProUGUI _msgText;
-
-    // UIAnimation이 있다면 추가해서 쫀득한 피드백을 줄 수 있습니다.
-    // [SerializeField] private UIAnimation _uiAnim; 
 
     public void Awake()
     {
-        // 초기화 시 패널을 비활성화합니다.
-        _uiPanel.SetActive(false);
+        var panel = _uiFacade != null ? _uiFacade.gameObject : _uiPanel;
+        if (panel != null)
+            panel.SetActive(false);
     }
 
     private void OnEnable()
@@ -41,16 +40,18 @@ public class InteractionUI : MonoBehaviour
     {
         if (string.IsNullOrEmpty(message))
         {
-            // 타겟이 없을 때: 패널 끄기
-            _uiPanel.SetActive(false);
-            // _uiAnim?.PlayClose(() => _uiPanel.SetActive(false)); // 연출 버전
+            if (_uiFacade != null)
+                _uiFacade.PlayExit();
+            else if (_uiPanel != null)
+                _uiPanel.SetActive(false);
         }
         else
         {
-            // 타겟이 있을 때: 텍스트 갱신 후 패널 켜기
             _msgText.text = message;
-            _uiPanel.SetActive(true);
-            // _uiAnim?.PlayOpen(); // 연출 버전
+            if (_uiFacade != null)
+                _uiFacade.PlayEnter();
+            else if (_uiPanel != null)
+                _uiPanel.SetActive(true);
         }
     }
 }

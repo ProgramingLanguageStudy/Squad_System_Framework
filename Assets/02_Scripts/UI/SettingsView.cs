@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -6,6 +7,7 @@ using UnityEngine.UI;
 public class SettingsView : PanelViewBase
 {
     [SerializeField] GameObject _settingsPanel;
+    [SerializeField] UITweenFacade _settingsFacade;
     [SerializeField] Button _closeButton;
     [SerializeField] Button _escapeButton;
     [SerializeField] Button _introButton;
@@ -16,7 +18,10 @@ public class SettingsView : PanelViewBase
 
     public void Initialize()
     {
-        _settingsPanel.SetActive(false);
+        if (_settingsFacade != null && _settingsFacade.gameObject.activeSelf)
+            _settingsFacade.gameObject.SetActive(false);
+        else if (_settingsPanel != null)
+            _settingsPanel.SetActive(false);
         _closeButton.onClick.AddListener(() => ToggleSettings());
         _escapeButton.onClick.AddListener(() => OnEscapeRequested?.Invoke());
         _introButton.onClick.AddListener(() => OnIntroButtonClicked());
@@ -28,8 +33,9 @@ public class SettingsView : PanelViewBase
 
     private void ToggleSettings()
     {
-        if (_settingsPanel == null) return;
-        bool isOpening = !_settingsPanel.activeSelf;
+        var panel = _settingsFacade != null ? _settingsFacade.gameObject : _settingsPanel;
+        if (panel == null) return;
+        bool isOpening = !panel.activeSelf;
 
         if (isOpening)
         {
@@ -43,23 +49,37 @@ public class SettingsView : PanelViewBase
 
     protected override void OnPanelOpened()
     {
-        _settingsPanel.SetActive(true);
+        if (_settingsFacade != null)
+            _settingsFacade.PlayEnter();
+        else if (_settingsPanel != null)
+            _settingsPanel.SetActive(true);
     }
 
     protected override void OnPanelClosed()
     {
-        _settingsPanel.SetActive(false);
+        if (_settingsFacade != null)
+            _settingsFacade.PlayExit();
+        else if (_settingsPanel != null)
+            _settingsPanel.SetActive(false);
     }
 
     public void OnIntroButtonClicked()
     {
-        GameManager.Instance.SaveManager.Save();
+        StartCoroutine(SaveThenLoadIntro());
+    }
+
+    private IEnumerator SaveThenLoadIntro()
+    {
+        var task = GameManager.Instance?.SaveManager?.SaveAsync();
+        if (task != null)
+        {
+            yield return new WaitUntil(() => task.IsCompleted);
+        }
         SceneManager.LoadScene("Intro");
     }
 
     public void OnQuitButtonClicked()
     {
-        GameManager.Instance.SaveManager.Save();
         Application.Quit();
     }
 }

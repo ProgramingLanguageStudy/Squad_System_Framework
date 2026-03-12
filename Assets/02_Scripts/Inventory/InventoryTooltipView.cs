@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public class InventoryTooltipView : MonoBehaviour
 {
     [SerializeField] private GameObject _tooltipPanel;
+    [SerializeField] private UITweenFacade _tooltipFacade;
     [SerializeField] private Image _icon;
     [SerializeField] private TextMeshProUGUI _nameText;
     [SerializeField] private TextMeshProUGUI _descText;
@@ -64,7 +65,10 @@ public class InventoryTooltipView : MonoBehaviour
         if (_nameText != null) _nameText.text = slot.Item.ItemName;
         if (_descText != null) _descText.text = slot.Item.Description ?? string.Empty;
         if (_useButton != null) _useButton.interactable = true;
-        _tooltipPanel.SetActive(true);
+        if (_tooltipFacade != null)
+            _tooltipFacade.PlayEnter();
+        else if (_tooltipPanel != null)
+            _tooltipPanel.SetActive(true);
     }
 
     /// <summary>패널 숨김. 인벤토리 닫을 때 또는 드래그 시작 시.</summary>
@@ -76,7 +80,9 @@ public class InventoryTooltipView : MonoBehaviour
             _icon.sprite = null;
             _icon.enabled = false;
         }
-        if (_tooltipPanel != null)
+        if (_tooltipFacade != null)
+            _tooltipFacade.PlayExit();
+        else if (_tooltipPanel != null)
             _tooltipPanel.SetActive(false);
         if (_useButton != null)
             _useButton.interactable = false;

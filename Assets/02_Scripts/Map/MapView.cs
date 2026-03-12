@@ -7,6 +7,7 @@ public class MapView : PanelViewBase
 {
     [Header("UI Hierarchy")]
     [SerializeField] private GameObject _mapPanel;
+    [SerializeField] private UITweenFacade _mapFacade;
     [SerializeField] private RectTransform _mapContent;    // ScrollRect의 Content (배경+아이콘 포함)
     [SerializeField] private RectTransform _iconContainer; // 포탈 아이콘이 생성될 부모
     [SerializeField] private RectTransform _playerIcon;    // 플레이어 화살표 아이콘
@@ -60,7 +61,10 @@ public class MapView : PanelViewBase
             _zoomSlider.onValueChanged.AddListener(OnSliderValueChanged);
         }
 
-        if (_mapPanel != null) _mapPanel.SetActive(false);
+        if (_mapFacade != null)
+            _mapFacade.gameObject.SetActive(false);
+        else if (_mapPanel != null)
+            _mapPanel.SetActive(false);
     }
 
     /// <summary>
@@ -68,8 +72,9 @@ public class MapView : PanelViewBase
     /// </summary>
     public void ToggleMap()
     {
-        if (_mapPanel == null) return;
-        bool isOpening = !_mapPanel.activeSelf;
+        var panel = _mapFacade != null ? _mapFacade.gameObject : _mapPanel;
+        if (panel == null) return;
+        bool isOpening = !panel.activeSelf;
 
         if (isOpening)
         {
@@ -83,15 +88,24 @@ public class MapView : PanelViewBase
 
     protected override void OnPanelClosed()
     {
-        _mapPanel.SetActive(false);
-        ClearIcons();
+        if (_mapFacade != null)
+            _mapFacade.PlayExit(ClearIcons);
+        else
+        {
+            if (_mapPanel != null) _mapPanel.SetActive(false);
+            ClearIcons();
+        }
     }
 
     protected override void OnPanelOpened()
     {
         ResetMapView();
 
-        _mapPanel.SetActive(true);
+        if (_mapFacade != null)
+            _mapFacade.PlayEnter();
+        else if (_mapPanel != null)
+            _mapPanel.SetActive(true);
+
         TakeSnapshot();      // 1. 현재 월드 상태 스냅샷 촬영
         RefreshPortalIcons(); // 2. 해금된 포탈 배치
     }
@@ -157,7 +171,8 @@ public class MapView : PanelViewBase
 
     private void Update()
     {
-        if (!_mapPanel.activeSelf || _player.transform == null) return;
+        var panel = _mapFacade != null ? _mapFacade.gameObject : _mapPanel;
+        if (panel == null || !panel.activeSelf || _player.transform == null) return;
 
         // 플레이어 마커 실시간 업데이트 (지형 위에 있으므로 매 프레임 위치 갱신)
         _playerIcon.anchoredPosition = WorldToMapPos(_player.transform.position);
@@ -176,7 +191,8 @@ public class MapView : PanelViewBase
 
     public void ScrollZoom(Vector2 scrollInput)
     {
-        if (!_mapPanel.activeSelf) return;
+        var panel = _mapFacade != null ? _mapFacade.gameObject : _mapPanel;
+        if (panel == null || !panel.activeSelf) return;
 
         float scrollY = scrollInput.y;
         if (Mathf.Abs(scrollY) < 0.001f) return;
