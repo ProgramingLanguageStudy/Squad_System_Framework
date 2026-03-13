@@ -1,191 +1,175 @@
 using System;
-using TMPro;
+using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
 
+/// <summary>
+/// Intro 씬 UI 조율. LoginView, ErrorView, MainView, LoadingView를 조합해 흐름 제어.
+/// </summary>
 public class IntroSceneView : MonoBehaviour
 {
-    [Header("메인 (씬 기본. 로그인됐을 때만 표시)")]
-    [SerializeField] Button _gameStartButton;
-    [SerializeField] Button _logoutButton;
+    #region Fields
 
-    [Header("타이틀 패널 (playEnterOnStart 체크한 Facade 붙이면 자동 연출)")]
-    [SerializeField] UITweenFacade _titleFacade;
+    [Header("배경")]
+    [SerializeField] private RectTransform _backgroundImage;
 
-    [Header("로그인 패널")]
-    [SerializeField] GameObject _loginPanel;
-    [SerializeField] UITweenFacade _loginFacade;
-    [SerializeField] TMP_InputField _emailInput;
-    [SerializeField] TMP_InputField _passwordInput;
-    [SerializeField] Button _loginButton;
-    [SerializeField] Button _signUpButton;
+    [Header("하위 View")]
+    [SerializeField] private TitleView _titleView;
+    [SerializeField] private LoginView _loginView;
+    [SerializeField] private ErrorView _errorView;
+    [SerializeField] private MainView _mainView;
+    [SerializeField] private LoadingView _loadingView;
 
-    [Header("에러 패널 (로그인 패널 내부)")]
-    [SerializeField] GameObject _errorPanel;
-    [SerializeField] UITweenFacade _errorFacade;
-    [SerializeField] TextMeshProUGUI _errorText;
-    [SerializeField] Button _errorCloseButton;
-
-    [Header("메인 패널 (Game Start, Logout)")]
-    [SerializeField] UITweenFacade _mainFacade;
-
-    [Header("로딩 UI")]
-    [SerializeField] GameObject _loadingPanel;
-    [SerializeField] UITweenFacade _loadingFacade;
-    [SerializeField] Slider _loadingSlider;
-    [SerializeField] TextMeshProUGUI _loadingStatusText;
+    [Header("전환 연출")]
+    [SerializeField] [Min(0.5f)] private float _transitionDuration = 1.2f;
+    [SerializeField] [Min(1f)] private float _transitionScaleEnd = 1.2f;
 
     public event Action OnGameStartRequested;
     public event Action OnLogoutRequested;
     public event Action<string, string> OnLoginRequested;
     public event Action<string, string> OnSignUpRequested;
 
+    #endregion
+
+    #region Initialize
+
     public void Initialize()
     {
-        _gameStartButton?.onClick.AddListener(() => OnGameStartRequested?.Invoke());
-        _logoutButton?.onClick.AddListener(() => OnLogoutRequested?.Invoke());
-        _loginButton?.onClick.AddListener(HandleLoginClick);
-        _signUpButton?.onClick.AddListener(HandleSignUpClick);
-        _errorCloseButton?.onClick.AddListener(HideErrorPanel);
+        _titleView?.Initialize();
+        _loginView?.Initialize();
+        _errorView?.Initialize();
+        _mainView?.Initialize();
+        _loadingView?.Initialize();
 
-        if (_mainFacade != null)
-            _mainFacade.gameObject.SetActive(false);
-        else
-        {
-            if (_gameStartButton != null) _gameStartButton.gameObject.SetActive(false);
-            if (_logoutButton != null) _logoutButton.gameObject.SetActive(false);
-        }
-        if (_loginFacade != null)
-            _loginFacade.gameObject.SetActive(false);
-        else if (_loginPanel != null)
-            _loginPanel.SetActive(false);
-        if (_errorFacade != null)
-            _errorFacade.gameObject.SetActive(false);
-        else if (_errorPanel != null)
-            _errorPanel.SetActive(false);
-        if (_loadingFacade != null)
-            _loadingFacade.gameObject.SetActive(true);
-        else if (_loadingPanel != null)
-            _loadingPanel.SetActive(true);
+        _mainView.OnGameStartRequested += () => OnGameStartRequested?.Invoke();
+        _mainView.OnLogoutRequested += () => OnLogoutRequested?.Invoke();
+        _loginView.OnLoginRequested += (e, p) => OnLoginRequested?.Invoke(e, p);
+        _loginView.OnSignUpRequested += (e, p) => OnSignUpRequested?.Invoke(e, p);
     }
 
-    private void HandleLoginClick()
+    #endregion
+
+    #region Title
+
+    public void ShowTitle(Action onComplete = null)
     {
-        var (email, password) = GetInput();
-        OnLoginRequested?.Invoke(email, password);
+        _titleView?.Show(onComplete);
     }
 
-    private void HandleSignUpClick()
-    {
-        var (email, password) = GetInput();
-        OnSignUpRequested?.Invoke(email, password);
-    }
+    #endregion
 
-    private (string email, string password) GetInput()
-    {
-        var email = _emailInput != null ? _emailInput.text.Trim() : string.Empty;
-        var password = _passwordInput != null ? _passwordInput.text : string.Empty;
-        return (email, password);
-    }
+    #region Login / Main
 
-    /// <summary>에러 패널 표시. 닫기 버튼으로 HideErrorPanel 호출.</summary>
-    public void ShowErrorPanel(string message)
-    {
-        if (_errorText != null) _errorText.text = message ?? string.Empty;
-        if (_errorFacade != null)
-            _errorFacade.PlayEnter();
-        else if (_errorPanel != null)
-            _errorPanel.SetActive(true);
-    }
-
-    /// <summary>에러 패널 숨김.</summary>
-    public void HideErrorPanel()
-    {
-        if (_errorFacade != null)
-            _errorFacade.PlayExit();
-        else if (_errorPanel != null)
-            _errorPanel.SetActive(false);
-    }
-
-    /// <summary>로그인 UI 활성화 여부 (로딩 중 비활성화용).</summary>
-    public void SetLoginInteractable(bool interactable)
-    {
-        if (_loginButton != null) _loginButton.interactable = interactable;
-        if (_signUpButton != null) _signUpButton.interactable = interactable;
-        if (_emailInput != null) _emailInput.interactable = interactable;
-        if (_passwordInput != null) _passwordInput.interactable = interactable;
-    }
-
-    /// <summary>로그인 패널 표시.</summary>
     public void ShowLoginPanel()
     {
-        if (_loginFacade != null)
-            _loginFacade.PlayEnter();
-        else if (_loginPanel != null)
-            _loginPanel.SetActive(true);
-        HideErrorPanel();
+        _loginView?.Show();
     }
 
-    /// <summary>로그인 패널 숨김.</summary>
     public void HideLoginPanel()
     {
-        if (_loginFacade != null)
-            _loginFacade.PlayExit();
-        else if (_loginPanel != null)
-            _loginPanel.SetActive(false);
-        HideErrorPanel();
+        _loginView?.Hide();
+        _errorView?.Hide();
     }
 
-    /// <summary>메인(Game Start + Logout) 표시. 로그인됐을 때.</summary>
     public void ShowMainPanel()
     {
-        if (_mainFacade != null)
-            _mainFacade.PlayEnter();
-        else
-        {
-            if (_gameStartButton != null) _gameStartButton.gameObject.SetActive(true);
-            if (_logoutButton != null) _logoutButton.gameObject.SetActive(true);
-        }
+        _mainView?.Show();
         HideLoginPanel();
     }
 
-    /// <summary>메인(Game Start + Logout) 숨김.</summary>
     public void HideMainPanel()
     {
-        if (_mainFacade != null)
-            _mainFacade.PlayExit();
-        else
-        {
-            if (_gameStartButton != null) _gameStartButton.gameObject.SetActive(false);
-            if (_logoutButton != null) _logoutButton.gameObject.SetActive(false);
-        }
+        _mainView?.Hide();
     }
 
-    /// <summary>로딩 패널 표시 (Game Start 시 DataManager/Preload 진행용).</summary>
-    public void ShowLoading()
+    public void SetLoginInteractable(bool interactable)
+    {
+        _loginView?.SetInteractable(interactable);
+    }
+
+    #endregion
+
+    #region Error
+
+    public void ShowErrorPanel(string message)
+    {
+        _errorView?.Show(message);
+    }
+
+    public void HideErrorPanel()
+    {
+        _errorView?.Hide();
+    }
+
+    #endregion
+
+    #region Loading
+
+    public void ShowLoading(bool clearText = true)
     {
         HideMainPanel();
-        if (_loadingFacade != null)
-            _loadingFacade.PlayEnter();
-        else if (_loadingPanel != null)
-            _loadingPanel.SetActive(true);
+        _loadingView?.Show(clearText);
     }
 
-    /// <summary>로딩 패널 숨김 (초기 로그인 확인 완료 시).</summary>
-    public void HideLoading()
+    public void HideLoading(Action onComplete = null)
     {
-        if (_loadingFacade != null)
-            _loadingFacade.PlayExit();
-        else if (_loadingPanel != null)
-            _loadingPanel.SetActive(false);
+        if (_loadingView != null)
+            _loadingView.Hide(onComplete);
+        else
+            onComplete?.Invoke();
     }
 
-    /// <summary>로딩 진행률·상태 갱신.</summary>
-    public void UpdateProgress(float progress, string status)
+    public void UpdateProgress(float? progress, string status)
     {
-        if (_loadingSlider != null)
-            _loadingSlider.value = Mathf.Clamp01(progress);
-        if (_loadingStatusText != null)
-            _loadingStatusText.text = status ?? string.Empty;
+        _loadingView?.UpdateProgress(progress, status);
     }
+
+    #endregion
+
+    #region Transition to Play
+
+    /// <summary>패널 숨김 → 배경 확대 연출 → onComplete 호출.</summary>
+    public void PlayTransitionToPlayScene(Action onComplete)
+    {
+        StartCoroutine(TransitionRoutine(onComplete));
+    }
+
+    private IEnumerator TransitionRoutine(Action onComplete)
+    {
+        SetPanelsActive(false);
+
+        if (_backgroundImage == null)
+        {
+            onComplete?.Invoke();
+            yield break;
+        }
+
+        var rect = _backgroundImage;
+        var startScale = Vector3.one;
+        var endScale = Vector3.one * _transitionScaleEnd;
+        var duration = _transitionDuration;
+        var elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            var t = Mathf.Clamp01(elapsed / duration);
+            t = 1f - (1f - t) * (1f - t); // ease-out
+            rect.localScale = Vector3.Lerp(startScale, endScale, t);
+            yield return null;
+        }
+
+        rect.localScale = endScale;
+        onComplete?.Invoke();
+    }
+
+    private void SetPanelsActive(bool active)
+    {
+        if (_titleView != null) _titleView.gameObject.SetActive(active);
+        if (_loginView != null) _loginView.gameObject.SetActive(active);
+        if (_errorView != null) _errorView.gameObject.SetActive(active);
+        if (_mainView != null) _mainView.gameObject.SetActive(active);
+        if (_loadingView != null) _loadingView.gameObject.SetActive(active);
+    }
+
+    #endregion
 }
